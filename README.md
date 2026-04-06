@@ -1,34 +1,62 @@
-# 学习小星星 / Study Stars
+# 🪐 Study Planet / 学習の惑星 
 
-## 部署到 Vercel（免费，5分钟）
-
-### 方法 A：拖拽上传（最简单）
-1. 打开 https://vercel.com 注册免费账号
-2. 点 Add New → Project → 选 "Upload"
-3. 把整个 study-reminder 文件夹拖进去
-4. 点 Deploy，等30秒拿到链接
-
-### 方法 B：GitHub + Vercel（推荐，自动更新）
-1. 上传文件夹到 GitHub 仓库
-2. Vercel 连接该仓库，之后改代码 push 自动更新
+> **EN:** A web application to help children cultivate effective study habits.  
+> **JP:** 子供たちの学習習慣の定着をサポートする、直感的なウェブアプリ。
 
 ---
 
-## 配置邮件（EmailJS 免费，每月200封）
+## 🚀 Features / 主な機能
 
-1. 注册 https://emailjs.com
-2. Create Service → 选 Gmail 授权
-3. Create Template，To Email 设为 {{to_email}}
-   模板变量：{{subject_name}} {{date}} {{done}} {{duration}} {{difficulty}} {{summary}} {{hard_points}} {{points_earned}}
-4. 复制 Public Key / Service ID / Template ID
-5. 在 index.html 中找到并替换：
-   const PUBLIC_KEY='YOUR_PUBLIC_KEY';
-   const SERVICE_ID='YOUR_SERVICE_ID';
-   const TEMPLATE_ID='YOUR_TEMPLATE_ID';
+- 📋 **EN:** Subject settings & reminder schedules | **JP:** 学習科目の管理と通知設定
+- 📝 **EN:** Daily study logs & mood tracking | **JP:** 学習内容と気分のデイリー記録
+- 🏆 **EN:** Reward center & achievement badges | **JP:** ポイント制度とバッジ獲得システム
+- 🌐 **EN:** Bilingual UI (English / Japanese) | **JP:** 英語・日本語のバイリンガル対応
 
 ---
 
-## LINE Notify 设置
-1. 打开 notify-bot.line.me 用LINE账号登录
-2. Generate token → 选聊天室 → 复制Token
-3. 在应用的「提醒设置」页面开启LINE，贴入Token，点测试
+## 🛠️ Deployment / デプロイ (Vercel)
+
+### 1️⃣ Method A: Drag & Drop / ドラッグ＆ドロップ
+
+1. **EN:** Visit [Vercel.com](https://vercel.com) -> **Add New** -> **Project**.  
+   **JP:** [Vercel.com](https://vercel.com) にアクセスし、**Add New** -> **Project** を選択。
+
+2. **EN:** Select the **Upload** tab and drag your folder.  
+   **JP:** **Upload** タブを選び、プロジェクトフォルダをドラッグ。
+
+3. **EN:** Click **Deploy**. Done!  
+   **JP:** **Deploy** をクリックして公開完了！
+
+### 2️⃣ Method B: GitHub Sync / GitHub 連携 (Recommended)
+
+1. **EN:** Create a GitHub repo and push your local code.  
+   **JP:** GitHub リポジトリを作成し、コードを push。
+
+2. **EN:** Import the repository into Vercel.  
+   **JP:** Vercel 上でそのリポジトリを **Import**。
+
+3. **EN:** Sites update automatically on every push!  
+   **JP:** 今後、GitHub に push するだけでサイトが自動更新されます。
+
+---
+
+## 📧 Email Configuration / メール設定 (EmailJS)
+
+1. **EN:** Sign up at [EmailJS.com](https://emailjs.com).  
+   **JP:** [EmailJS.com](https://emailjs.com) でサインアップ。
+
+2. **EN:** Go to **Create Service** -> Select **Gmail** and authorize.  
+   **JP:** **Create Service** -> **Gmail** を選択して認証。
+
+3. **EN:** Create Template. Set `To Email` to `{{to_email}}`.  
+   **JP:** **Create Template** で、`To Email` を `{{to_email}}` に設定。
+
+4. **EN:** Copy your **Public Key**, **Service ID**, and **Template ID**.  
+   **JP:** **Public Key**, **Service ID**, **Template ID** をコピー。
+
+5. **EN:** Replace the placeholders in `index.html`:  
+   **JP:** `index.html` 内の以下の箇所を書き換えます：
+   ```javascript
+   const PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+   const SERVICE_ID = 'YOUR_SERVICE_ID';
+   const TEMPLATE_ID = 'YOUR_TEMPLATE_ID';

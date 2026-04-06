@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习星球</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F5F0;--card:#FFF;--text:#1A1A2E;--muted:#888899;--border:#E8E4DC;--accent:#6C63FF;--r:20px;--sh:0 4px 20px rgba(0,0,0,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+.lang-btn{position:fixed;top:16px;left:16px;z-index:100;background:var(--card);border:1.5px solid var(--border);border-radius:50px;padding:6px 4px;display:flex;gap:2px;box-shadow:var(--sh)}
+.lang-btn button{border:none;background:transparent;cursor:pointer;padding:4px 10px;border-radius:40px;font-size:12px;font-weight:700;color:var(--muted);font-family:inherit;transition:all .2s}
+.lang-btn button.active{background:var(--accent);color:#fff}
+.header{text-align:center;padding:60px 20px 20px}
+.planet{font-size:56px;display:block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.header h1{font-size:28px;font-weight:900}.header p{font-size:14px;color:var(--muted);margin-top:4px}
+.tabs{display:flex;gap:8px;padding:0 16px 16px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);font-family:inherit;transition:all .2s}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sec{display:none;padding:0 16px}.sec.active{display:block}
+.card{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);padding:20px;margin-bottom:16px;box-shadow:var(--sh)}
+.card-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.subj-list{display:flex;flex-direction:column;gap:10px}
+.subj-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:16px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;background:var(--bg)}
+.sl{display:flex;align-items:center;gap:12px}
+.si{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.sn{font-size:15px;font-weight:800}.st{font-size:12px;color:var(--muted);margin-top:2px}
+.tw{position:relative;width:44px;height:26px}
+.tw input{opacity:0;width:0;height:0}
+.sl2{position:absolute;inset:0;border-radius:13px;background:var(--border);cursor:pointer;transition:.25s}
+.sl2:before{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input:checked+.sl2{background:var(--accent)}
+input:checked+.sl2:before{transform:translateX(18px)}
+.ng{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.no{padding:12px 8px;border-radius:14px;border:1.5px solid var(--border);background:var(--bg);text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ni{font-size:22px}.nl{font-size:11px;font-weight:700;color:var(--muted)}
+.no.on{border-color:var(--accent);background:#F0EEFF}.no.on .nl{color:var(--accent)}
+.tr{display:flex;align-items:center;gap:10px;margin-top:14px}
+.tr label{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
+.tr input{flex:1;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);font-size:15px;font-family:inherit;background:var(--bg);color:var(--text)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:7px 14px;border-radius:50px;border:1.5px solid var(--border);background:var(--bg);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+textarea{width:100%;border-radius:14px;border:1.5px solid var(--border);padding:14px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);resize:none;line-height:1.6;outline:none;transition:border .2s}
+textarea:focus{border-color:var(--accent)}
+.mood-row{display:flex;gap:8px;margin:12px 0}
+.mb{flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg);font-size:22px;cursor:pointer;text-align:center;transition:all .2s}
+.mb.on{border-color:#FFD93D;background:#FFFBE6;transform:scale(1.1)}
+.dr{display:flex;gap:4px;align-items:center;margin-bottom:14px}
+.dl{font-size:12px;color:var(--muted);font-weight:700}
+.sb{font-size:20px;cursor:pointer;opacity:.25;transition:opacity .15s;border:none;background:none;padding:2px}
+.sb.lit{opacity:1}
+.btn{width:100%;padding:16px;border-radius:16px;background:var(--accent);border:none;color:#fff;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;transition:all .2s}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.ph{text-align:center;padding:16px 0 8px}
+.pn{font-size:64px;font-weight:900;color:var(--accent);line-height:1}
+.pl{font-size:14px;color:var(--muted);margin-top:4px}
+.sk{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FF6B6B,#FFD93D);color:#fff;padding:6px 16px;border-radius:50px;font-size:13px;font-weight:800;margin-top:10px}
+.pw{margin:14px 0}
+.plb{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.pb{height:12px;background:var(--border);border-radius:10px;overflow:hidden}
+.pf{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent),#A78BFA);transition:width .6s ease}
+.bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bi{background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center}
+.bi.e{border-color:#FFD93D;background:#FFFBE6}
+.bic{font-size:28px;margin-bottom:4px}.bin{font-size:11px;font-weight:700;color:var(--muted)}
+.bi.e .bin{color:#9A7500}
+.rl{display:flex;flex-direction:column;gap:10px}
+.ri{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:16px;border:1.5px solid var(--border);background:var(--bg)}
+.ril{display:flex;align-items:center;gap:10px}
+.ric{font-size:26px}.rn{font-size:14px;font-weight:700}.rc{font-size:12px;color:var(--muted);margin-top:2px;font-weight:600}
+.rb{padding:7px 14px;border-radius:50px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .2s}
+.rb:hover{background:var(--accent);color:#fff}
+.hi{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.hi:last-child{border-bottom:none}
+.hd{width:10px;height:10px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.ht{font-size:13px;line-height:1.5}.htm{font-size:11px;color:var(--muted);margin-top:2px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;padding:12px 24px;border-radius:50px;font-size:13px;font-weight:700;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes bst{0%{transform:scale(0) rotate(0);opacity:1}100%{transform:scale(1.8) rotate(360deg);opacity:0}}
+.fx{position:fixed;font-size:28px;pointer-events:none;z-index:999;animation:bst .7s ease forwards}
+</style>
+</head>
+<body>
+
+<div class="lang-btn">
+  <button onclick="setLang('zh')" id="btn-zh" class="active">中</button>
+  <button onclick="setLang('ja')" id="btn-ja">日</button>
+  <button onclick="setLang('en')" id="btn-en">EN</button>
+</div>
+
+<div class="header">
+  <span class="planet">🪐</span>
+  <h1 id="H1">学习星球</h1>
+  <p id="H2">每天一点点，进步看得见</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" id="T1" onclick="goTab('s1',this)">📅 课程设置</button>
+  <button class="tab" id="T2" onclick="goTab('s2',this)">📝 学习简报</button>
+  <button class="tab" id="T3" onclick="goTab('s3',this)">🏆 奖励中心</button>
+</div>
+
+<!-- TAB 1 -->
+<div class="sec active" id="s1">
+  <div class="card">
+    <div class="card-title" id="L_cs">学习科目</div>
+    <div class="subj-list" id="subj-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="L_nm">提醒方式</div>
+    <div class="ng">
+      <div class="no on" onclick="this.classList.toggle('on')"><div class="ni">📧</div><div class="nl" id="L_em">邮件</div></div>
+      <div class="no" onclick="this.classList.toggle('on')"><div class="ni">💬</div><div class="nl" id="L_ln">LINE</div></div>
+      <div class="no" onclick="this.classList.toggle('on')"><div class="ni">📅</div><div class="nl" id="L_cl">日历</div></div>
+    </div>
+    <div class="tr"><label id="L_tl">提醒时间</label><input type="time" value="09:00"></div>
+  </div>
+  <button class="btn" id="L_sv1" onclick="toast(T('sv1'))">保存设置 ✓</button>
+</div>
+
+<!-- TAB 2 -->
+<div class="sec" id="s2">
+  <div class="card">
+    <div class="card-title" id="L_what">今天学了什么</div>
+    <div class="chips" id="chips"></div>
+    <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px" id="L_dif">今天的难度</div>
+    <div class="dr">
+      <span class="dl" id="L_ez">简单</span>
+      <button class="sb lit" onclick="setD(1)">⭐</button>
+      <button class="sb" onclick="setD(2)">⭐</button>
+      <button class="sb" onclick="setD(3)">⭐</button>
+      <button class="sb" onclick="setD(4)">⭐</button>
+      <button class="sb" onclick="setD(5)">⭐</button>
+      <span class="dl" id="L_hd">很难</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="L_md">今天的心情</div>
+    <div class="mood-row">
+      <div class="mb on" onclick="setM(this,'😊')">😊</div>
+      <div class="mb" onclick="setM(this,'😐')">😐</div>
+      <div class="mb" onclick="setM(this,'😪')">😪</div>
+      <div class="mb" onclick="setM(this,'🤩')">🤩</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="L_sm">今天学到了什么？</div>
+    <textarea id="tx1" rows="4" placeholder="写下今天的收获..."></textarea>
+  </div>
+  <div class="card">
+    <div class="card-title" id="L_ch">遇到了什么难点？</div>
+    <textarea id="tx2" rows="3" placeholder="有什么不懂的地方？"></textarea>
+  </div>
+  <button class="btn" id="L_sv2" onclick="submit()">提交今日简报 🚀</button>
+</div>
+
+<!-- TAB 3 -->
+<div class="sec" id="s3">
+  <div class="card">
+    <div class="ph">
+      <div class="pn" id="pts-n">0</div>
+      <div class="pl" id="L_pl">学习积分</div>
+      <div class="sk">🔥 <span id="L_sk">连续学习 3 天！</span></div>
+    </div>
+    <div class="pw">
+      <div class="plb"><span id="L_pg">下一等级</span><span id="pg-v">0 / 100</span></div>
+      <div class="pb"><div class="pf" id="pf" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title" id="L_bg">我的徽章</div><div class="bg-grid" id="bg-grid"></div></div>
+  <div class="card"><div class="card-title" id="L_sh">奖励兑换</div><div class="rl" id="rw-list"></div></div>
+  <div class="card"><div class="card-title" id="L_hs">最近记录</div><div id="hist"></div></div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+const L={
+zh:{H1:'学习星球',H2:'每天一点点，进步看得见',T1:'📅 课程设置',T2:'📝 学习简报',T3:'🏆 奖励中心',
+  L_cs:'学习科目',L_nm:'提醒方式',L_what:'今天学了什么',L_md:'今天的心情',L_sm:'今天学到了什么？',L_ch:'遇到了什么难点？',
+  L_bg:'我的徽章',L_sh:'奖励兑换',L_hs:'最近记录',L_em:'邮件',L_ln:'LINE',L_cl:'日历',
+  L_tl:'提醒时间',L_sv1:'保存设置 ✓',L_sv2:'提交今日简报 🚀',L_dif:'今天的难度',L_ez:'简单',L_hd:'很难',
+  L_pl:'学习积分',L_pg:'下一等级',L_sk:'连续学习 3 天！',
+  sv1:'✅ 设置已保存！',rep:'🎉 简报提交！+20 积分',rdm:'🎁 兑换成功！',nopt:'积分不足',fill:'✍️ 请先写点什么！',nohist:'还没有记录，快去提交简报吧！',
+  rdm_btn:'兑换',daily:'每天',
+  sn:{en:'英语学习',zh:'中文阅读',py:'Python编程',math:'数学练习',jp:'日语学习'},
+  st:{en:'30分钟',zh:'20分钟',py:'30分钟',math:'20分钟',jp:'20分钟'},
+  bg:{f:'第一步',s3:'3天连续',ep:'英语达人',pp:'Python新手',s7:'7天连续',p1:'100积分'},
+  rw:{ic:'🍦 冰淇淋',gm:'🎮 30分游戏',mv:'🎬 看电影',sp:'🛍️ 购物礼物',dn:'🍕 选晚餐'}},
+ja:{H1:'学習プラネット',H2:'毎日少しずつ、進歩が見える',T1:'📅 スケジュール',T2:'📝 レポート',T3:'🏆 ご褒美',
+  L_cs:'学習科目',L_nm:'通知方法',L_what:'今日何を学んだ？',L_md:'今日の気分',L_sm:'今日学んだこと',L_ch:'難しかったこと',
+  L_bg:'バッジ',L_sh:'ご褒美交換',L_hs:'最近の記録',L_em:'メール',L_ln:'LINE',L_cl:'カレンダー',
+  L_tl:'通知時刻',L_sv1:'設定を保存 ✓',L_sv2:'レポート提出 🚀',L_dif:'今日の難易度',L_ez:'簡単',L_hd:'難しい',
+  L_pl:'学習ポイント',L_pg:'次のレベルまで',L_sk:'3日連続学習中！',
+  sv1:'✅ 保存しました！',rep:'🎉 提出！+20ポイント',rdm:'🎁 交換成功！',nopt:'ポイント不足',fill:'✍️ 何か書いてください！',nohist:'まだ記録がありません',
+  rdm_btn:'交換',daily:'毎日',
+  sn:{en:'英語',zh:'中国語',py:'Python',math:'数学',jp:'日本語'},
+  st:{en:'30分',zh:'20分',py:'30分',math:'20分',jp:'20分'},
+  bg:{f:'ファースト',s3:'3日連続',ep:'英語マスター',pp:'Python入門',s7:'7日連続',p1:'100ポイント'},
+  rw:{ic:'🍦 アイス',gm:'🎮 ゲーム30分',mv:'🎬 映画',sp:'🛍️ プレゼント',dn:'🍕 夕食を選ぶ'}},
+en:{H1:'Study Planet',H2:'A little every day goes a long way',T1:'📅 Schedule',T2:'📝 Daily Report',T3:'🏆 Rewards',
+  L_cs:'Subjects',L_nm:'Notifications',L_what:'What did you study?',L_md:"Today's mood",L_sm:'What did you learn?',L_ch:'What was challenging?',
+  L_bg:'My Badges',L_sh:'Reward Shop',L_hs:'Recent Activity',L_em:'Email',L_ln:'LINE',L_cl:'Calendar',
+  L_tl:'Reminder time',L_sv1:'Save Settings ✓',L_sv2:'Submit Report 🚀',L_dif:'Difficulty',L_ez:'Easy',L_hd:'Hard',
+  L_pl:'Study Points',L_pg:'Next level',L_sk:'3-day streak!',
+  sv1:'✅ Settings saved!',rep:'🎉 Report submitted! +20 pts',rdm:'🎁 Redeemed!',nopt:'Not enough points',fill:'✍️ Please write something!',nohist:'No records yet. Submit your first report!',
+  rdm_btn:'Redeem',daily:'Daily',
+  sn:{en:'English',zh:'Chinese',py:'Python',math:'Math',jp:'Japanese'},
+  st:{en:'30 min',zh:'20 min',py:'30 min',math:'20 min',jp:'20 min'},
+  bg:{f:'First Step',s3:'3-Day Streak',ep:'English Pro',pp:'Python Rookie',s7:'7-Day Streak',p1:'100 Points'},
+  rw:{ic:'🍦 Ice Cream',gm:'🎮 30min Gaming',mv:'🎬 Watch Movie',sp:'🛍️ Shopping Gift',dn:'🍕 Pick Dinner'}}
+};
+
+let lang='zh';
+const T=k=>L[lang][k]||k;
+
+const SUBJS=[
+  {id:'en',icon:'🇬🇧',color:'#6C63FF',bg:'#F0EEFF',on:true},
+  {id:'zh',icon:'📖',color:'#FF6B6B',bg:'#FFF0F0',on:true},
+  {id:'py',icon:'🐍',color:'#6BCB77',bg:'#F0FFF2',on:false},
+  {id:'math',icon:'🔢',color:'#FFD93D',bg:'#FFFBE6',on:false},
+  {id:'jp',icon:'🗾',color:'#F97316',bg:'#FFF4ED',on:false}
+];
+const BADGES=[
+  {k:'f',icon:'🌟',e:true},{k:'s3',icon:'🔥',e:true},{k:'ep',icon:'📚',e:false},
+  {k:'pp',icon:'🐍',e:false},{k:'s7',icon:'💎',e:false},{k:'p1',icon:'🏅',e:false}
+];
+const REWARDS=[{k:'ic',c:50},{k:'gm',c:80},{k:'mv',c:120},{k:'sp',c:200},{k:'dn',c:60}];
+
+let state={
+  pts:+localStorage.getItem('pts')||0,
+  hist:JSON.parse(localStorage.getItem('hist')||'[]'),
+  sel:'en',diff:1,mood:'😊'
+};
+const sv=()=>{localStorage.setItem('pts',state.pts);localStorage.setItem('hist',JSON.stringify(state.hist.slice(0,30)))};
+
+function setLang(l){
+  lang=l;
+  ['zh','ja','en'].forEach(x=>document.getElementById('btn-'+x).classList.toggle('active',x===l));
+  Object.keys(L[l]).forEach(k=>{const el=document.getElementById(k);if(el&&typeof L[l][k]==='string')el.textContent=L[l][k]});
+  document.getElementById('tx1').placeholder=L[l].ph1||'...';
+  document.getElementById('tx2').placeholder=L[l].ph2||'...';
+  rSubj();rChips();rBadges();rRewards();rHist();
+}
+
+function goTab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');btn.classList.add('active');
+  if(id==='s3'){rBadges();rRewards();rHist();updPts()}
+}
+
+function rSubj(){
+  document.getElementById('subj-list').innerHTML=SUBJS.map(s=>`
+    <div class="subj-item" style="${s.on?`background:${s.bg};border-color:${s.color}40`:''}" onclick="togS('${s.id}')">
+      <div class="sl">
+        <div class="si" style="background:${s.bg}">${s.icon}</div>
+        <div><div class="sn">${T('sn')[s.id]}</div><div class="st">${T('daily')} ${T('st')[s.id]}</div></div>
+      </div>
+      <label class="tw" onclick="event.stopPropagation()">
+        <input type="checkbox" ${s.on?'checked':''} onchange="togS('${s.id}')">
+        <span class="sl2" style="${s.on?`background:${s.color}`:''}"></span>
+      </label>
+    </div>`).join('');
+}
+function togS(id){const s=SUBJS.find(x=>x.id===id);s.on=!s.on;rSubj();rChips()}
+
+function rChips(){
+  document.getElementById('chips').innerHTML=SUBJS.filter(s=>s.on).map(s=>`
+    <button class="chip ${state.sel===s.id?'on':''}" onclick="state.sel='${s.id}';rChips()">
+      ${s.icon} ${T('sn')[s.id]}
+    </button>`).join('');
+}
+
+function setD(n){state.diff=n;document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('lit',i<n))}
+function setM(el,m){state.mood=m;document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));el.classList.add('on')}
+
+function submit(){
+  const s=document.getElementById('tx1').value.trim();
+  if(!s){toast(T('fill'));return}
+  const c=document.getElementById('tx2').value.trim();
+  state.pts+=20;
+  const subj=SUBJS.find(x=>x.id===state.sel);
+  const d=new Date().toLocaleDateString(lang==='en'?'en-US':lang==='ja'?'ja-JP':'zh-CN',{month:'short',day:'numeric'});
+  state.hist.unshift({subj:subj?subj.icon+' '+T('sn')[subj.id]:'📚',s,c,mood:state.mood,diff:state.diff,date:d,pts:20});
+  sv();
+  document.getElementById('tx1').value='';document.getElementById('tx2').value='';
+  toast(T('rep'));burst();
+  setTimeout(()=>{
+    document.querySelectorAll('.sec').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.getElementById('s3').classList.add('active');
+    document.getElementById('T3').classList.add('active');
+    rBadges();rRewards();rHist();updPts();
+  },900);
+}
+
+function updPts(){
+  document.getElementById('pts-n').textContent=state.pts;
+  const p=state.pts%100;
+  document.getElementById('pf').style.width=p+'%';
+  document.getElementById('pg-v').textContent=p+' / 100';
+  BADGES[5].e=state.pts>=100;
+}
+
+function rBadges(){
+  document.getElementById('bg-grid').innerHTML=BADGES.map(b=>`
+    <div class="bi ${b.e?'e':''}">
+      <div class="bic">${b.icon}</div>
+      <div class="bin">${T('bg')[b.k]}</div>
+    </div>`).join('');
+}
+
+function rRewards(){
+  document.getElementById('rw-list').innerHTML=REWARDS.map(r=>`
+    <div class="ri">
+      <div class="ril">
+        <div class="ric">${T('rw')[r.k].split(' ')[0]}</div>
+        <div><div class="rn">${T('rw')[r.k].slice(3)}</div><div class="rc">⭐ ${r.c} pts</div></div>
+      </div>
+      <button class="rb" onclick="redeem(${r.c})">${T('rdm_btn')}</button>
+    </div>`).join('');
+}
+function redeem(c){
+  if(state.pts<c){toast(T('nopt'));return}
+  state.pts-=c;sv();updPts();rRewards();toast(T('rdm'));
+}
+
+function rHist(){
+  const el=document.getElementById('hist');
+  if(!state.hist.length){el.innerHTML=`<p style="text-align:center;color:var(--muted);font-size:14px;padding:20px 0">${T('nohist')}</p>`;return}
+  el.innerHTML=state.hist.map(h=>`
+    <div class="hi">
+      <div class="hd"></div>
+      <div>
+        <div class="ht"><strong>${h.subj}</strong> ${h.mood} ${'⭐'.repeat(h.diff)}</div>
+        <div class="ht">${h.s.slice(0,60)}${h.s.length>60?'…':''}</div>
+        <div class="htm">${h.date} · +${h.pts} pts</div>
+      </div>
+    </div>`).join('');
+}
+
+function toast(msg){
+  const el=document.getElementById('toastEl');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+function burst(){
+  ['🌟','✨','🎉','⭐','🎊'].forEach((e,i)=>{
+    const d=document.createElement('div');d.className='fx';d.textContent=e;
+    d.style.cssText=`left:${15+i*17}vw;top:${25+Math.random()*35}vh;animation-delay:${i*.1}s`;
+    document.body.appendChild(d);setTimeout(()=>d.remove(),900);
+  });
+}
+
+rSubj();rChips();updPts();rBadges();rRewards();rHist();
+</script>
+</body>
+</html>

@@ -13,8 +13,8 @@ const Report = {
     }
 
     enabled.forEach(s => {
-      const r   = S.todayReport[s.id] || {};
-      const nm  = subjName(s);
+      const r = S.todayReport[s.id] || {};
+      const nm = subjName(s);
       const pts = s.duration >= 30 ? 20 : 10;
       const div = document.createElement('div');
       div.className = 'rep-card';
@@ -41,10 +41,10 @@ const Report = {
 
         <div class="diff-row">
           <span class="diff-lbl">${t('diff_lbl')}</span>
-          ${[1,2,3,4,5].map(i =>
-            `<button class="sb ${(r.diff||0) >= i ? 'lit' : ''}"
+          ${[1, 2, 3, 4, 5].map(i =>
+        `<button class="sb ${(r.diff || 0) >= i ? 'lit' : ''}"
                      onclick="Report._setDiff('${s.id}', ${i})">⭐</button>`
-          ).join('')}
+      ).join('')}
         </div>`;
       el.appendChild(div);
     });
@@ -78,10 +78,10 @@ const Report = {
     enabled.forEach(s => {
       if (!S.todayReport[s.id]) S.todayReport[s.id] = {};
       const r = S.todayReport[s.id];
-      const sumEl  = document.getElementById('sum_'  + s.id);
+      const sumEl = document.getElementById('sum_' + s.id);
       const hardEl = document.getElementById('hard_' + s.id);
-      if (sumEl)  r.summary = sumEl.value;
-      if (hardEl) r.hard    = hardEl.value;
+      if (sumEl) r.summary = sumEl.value;
+      if (hardEl) r.hard = hardEl.value;
     });
 
     const doneSubjects = enabled.filter(s => S.todayReport[s.id]?.done);
@@ -92,7 +92,7 @@ const Report = {
     if (!S.history[today]) S.history[today] = {};
     let totalPts = 0;
     doneSubjects.forEach(s => {
-      const r   = S.todayReport[s.id];
+      const r = S.todayReport[s.id];
       const pts = s.duration >= 30 ? 20 : 10;
       totalPts += pts;
       S.history[today][s.id] = { ...r, subj: s.name, icon: s.icon };
@@ -109,7 +109,7 @@ const Report = {
       const r = S.todayReport[s.id] || {};
       return `
 ${s.icon} ${subjName(s)}
-✅ 完成 | ⏱ ${s.duration} 分钟 | ${'⭐'.repeat(r.diff||0)||'未评级'}
+✅ 完成 | ⏱ ${s.duration} 分钟 | ${'⭐'.repeat(r.diff || 0) || '未评级'}
 📝 ${r.summary || '（未填写）'}
 🤔 难点：${r.hard || '（未填写）'}`;
     }).join('\n\n────────────────────\n');
@@ -129,7 +129,7 @@ ${s.icon} ${subjName(s)}
     if (window.Auth?.user) await Auth.saveUserData();
 
     // Update calendar and rewards
-    if (window.Cal)     Cal.render();
+    if (window.Cal) Cal.render();
     if (window.Rewards) Rewards.render();
   },
 
@@ -137,16 +137,16 @@ ${s.icon} ${subjName(s)}
   _sendEmail(to, subject, body) {
     // Replace these 3 IDs with your EmailJS credentials (emailjs.com, free plan)
     // Template needs: {{to_email}}, {{subject}}, {{body}}
-    const PUBLIC_KEY  = 'YOUR_EMAILJS_PUBLIC_KEY';
-    const SERVICE_ID  = 'YOUR_SERVICE_ID';
-    const TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+    const PUBLIC_KEY = '1o0k8Wov1W7HtYneq';
+    const SERVICE_ID = 'service_mvd09ib';
+    const TEMPLATE_ID = 'template_bp2bmun';
 
     emailjs.init(PUBLIC_KEY);
     emailjs.send(SERVICE_ID, TEMPLATE_ID, {
       to_email: to,
       subject,
       body,
-    }).catch(() => {}); // Fail silently if not configured
+    }).catch(() => { }); // Fail silently if not configured
   },
 
   // ── Telegram send ────────────────────────────────────────
@@ -159,10 +159,12 @@ ${s.icon} ${subjName(s)}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: S.tgChatId, text }),
       });
-    } catch (e) {}
+    } catch (e) { }
   },
 
   // ── AI encouragement via Claude API ──────────────────────
+  // Calls /api/encourage (a Vercel serverless function in api/encourage.js).
+  // If the endpoint is not deployed, falls back to a friendly local message.
   async _fetchAI(doneSubjects) {
     const aiEl = document.getElementById('aiEncouragement');
     if (!aiEl) return;
@@ -177,34 +179,41 @@ ${s.icon} ${subjName(s)}
       </div>`;
 
     const subjectList = doneSubjects.map(s =>
-      `${s.icon} ${subjName(s)} (${s.duration}分钟, 难度${s.diff||'—'})`
-    ).join('、');
+      `${s.icon} ${subjName(s)} (${s.duration} min, difficulty ${s.diff || '—'})`
+    ).join(', ');
 
-    const prompt = I18n.lang === 'en'
-      ? `A child just completed their study session: ${subjectList}. Write a warm, enthusiastic 2-3 sentence encouragement in English. Be specific and mention the subjects. Use a friendly, motivating tone.`
-      : I18n.lang === 'ja'
-      ? `子どもが今日の学習を終えました：${subjectList}。日本語で温かく励ます2〜3文を書いてください。具体的な科目に触れ、フレンドリーな口調で。`
-      : `一个孩子刚完成了今天的学习：${subjectList}。请用温暖鼓励的语气写2-3句中文鼓励话语，要具体提到学习的科目，让孩子感到被肯定和有动力继续。`;
+    const lang = I18n.lang;
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      // POST to our own Vercel serverless function (api/encourage.js)
+      // which securely calls the Anthropic API using a server-side env var.
+      const res = await fetch('/api/encourage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 200,
-          messages: [{ role: 'user', content: prompt }],
-        }),
+        body: JSON.stringify({ subjectList, lang }),
       });
+
+      if (!res.ok) throw new Error('API error ' + res.status);
       const data = await res.json();
-      const text = data.content?.[0]?.text || '';
+      const text = data.text || '';
+
       aiEl.innerHTML = `
         <div class="ai-card">
           <div class="ai-label">${t('ai_label')}</div>
           <div class="ai-text">${text}</div>
         </div>`;
     } catch (e) {
-      aiEl.style.display = 'none';
+      // Friendly fallback messages when the API is not configured
+      const fallbacks = {
+        zh: `🌟 太棒了！今天完成了 ${doneSubjects.map(s => s.icon).join('')} 的学习，你真的很努力！明天继续加油，每一天的坚持都在让你变得更强大！`,
+        ja: `🌟 すごい！今日も${doneSubjects.map(s => s.icon).join('')}を頑張りました！毎日の積み重ねが大きな力になります。明日も一緒に頑張ろう！`,
+        en: `🌟 Amazing work today! You completed ${doneSubjects.map(s => s.icon).join(' ')} — every day you study you're getting stronger. Keep it up, you're doing great!`,
+      };
+      aiEl.innerHTML = `
+        <div class="ai-card">
+          <div class="ai-label">${t('ai_label')}</div>
+          <div class="ai-text">${fallbacks[lang] || fallbacks.en}</div>
+        </div>`;
     }
   },
 };

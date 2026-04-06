@@ -19,5 +19,3 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "122788831469",
   appId: "1:122788831469:web:fd6f652f9ab5d90c39ace4"
 };
-
-export default FIREBASE_CONFIG;

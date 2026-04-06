@@ -1,62 +1,137 @@
-# 🪐 Study Planet / 学習の惑星 
-
-> **EN:** A web application to help children cultivate effective study habits.  
-> **JP:** 子供たちの学習習慣の定着をサポートする、直感的なウェブアプリ。
+# Study Stars / スタディスター
 
 ---
 
-## 🚀 Features / 主な機能
+## v1 — Initial Release (Single File)
 
-- 📋 **EN:** Subject settings & reminder schedules | **JP:** 学習科目の管理と通知設定
-- 📝 **EN:** Daily study logs & mood tracking | **JP:** 学習内容と気分のデイリー記録
-- 🏆 **EN:** Reward center & achievement badges | **JP:** ポイント制度とバッジ獲得システム
-- 🌐 **EN:** Bilingual UI (English / Japanese) | **JP:** 英語・日本語のバイリンガル対応
+> Previous single-file version (`index.html` only). See git history for reference.
 
 ---
 
-## 🛠️ Deployment / デプロイ (Vercel)
+## v2 — Multi-File Refactor + New Features
 
-### 1️⃣ Method A: Drag & Drop / ドラッグ＆ドロップ
+### English
 
-1. **EN:** Visit [Vercel.com](https://vercel.com) -> **Add New** -> **Project**.  
-   **JP:** [Vercel.com](https://vercel.com) にアクセスし、**Add New** -> **Project** を選択。
+**What's new in v2:**
+- Split into multiple files (`css/`, `js/` modules) for easier maintenance
+- Subject settings: add / delete / toggle subjects with custom icon & color
+- Save settings → auto-updates today's calendar as a todo-list (green checkmarks)
+- Reminder: Email (.ics calendar export), Telegram Bot, Browser banner push
+- Email config: one button to export `.ics` file (works with Gmail, Outlook, Apple Calendar)
+- Browser reminder: in-page banner (no OS permission needed)
+- Focus Timer: per-subject countdown, pause/resume/reset
+- Study Stats: weekly bar chart + subject doughnut chart (Chart.js)
+- AI Encouragement: Claude API generates personalized message after report submission
+- Rewards: points → badges → redeem → generates a beautiful coupon card stored in Coupon Center
+- Firebase Auth: Email/Password + Google login, cloud sync across devices
+- Language switcher: Chinese / Japanese / English (top-left)
+- Code comments: all in English
 
-2. **EN:** Select the **Upload** tab and drag your folder.  
-   **JP:** **Upload** タブを選び、プロジェクトフォルダをドラッグ。
-
-3. **EN:** Click **Deploy**. Done!  
-   **JP:** **Deploy** をクリックして公開完了！
-
-### 2️⃣ Method B: GitHub Sync / GitHub 連携 (Recommended)
-
-1. **EN:** Create a GitHub repo and push your local code.  
-   **JP:** GitHub リポジトリを作成し、コードを push。
-
-2. **EN:** Import the repository into Vercel.  
-   **JP:** Vercel 上でそのリポジトリを **Import**。
-
-3. **EN:** Sites update automatically on every push!  
-   **JP:** 今後、GitHub に push するだけでサイトが自動更新されます。
+**File structure:**
+```
+study-reminder/
+├── index.html              # Main HTML shell
+├── css/
+│   └── style.css           # All styles
+├── js/
+│   ├── firebase-config.js  # Firebase credentials (fill in yours)
+│   ├── i18n.js             # zh/ja/en language pack
+│   ├── state.js            # Runtime state + localStorage helpers
+│   ├── auth.js             # Firebase auth (Email + Google)
+│   ├── subjects.js         # Subject add/delete/toggle
+│   ├── remind.js           # Email / Telegram / Browser push
+│   ├── timer.js            # Focus countdown timer
+│   ├── report.js           # Daily report + EmailJS + AI encouragement
+│   ├── calendar.js         # Calendar view + daily todo-list
+│   ├── stats.js            # Chart.js statistics
+│   ├── rewards.js          # Points / badges / coupon generation
+│   └── app.js              # Entry point, page routing, save settings
+└── vercel.json
+```
 
 ---
 
-## 📧 Email Configuration / メール設定 (EmailJS)
+### 日本語
 
-1. **EN:** Sign up at [EmailJS.com](https://emailjs.com).  
-   **JP:** [EmailJS.com](https://emailjs.com) でサインアップ。
+**v2 の新機能：**
+- 複数ファイルに分割（`css/`、`js/` モジュール）でメンテナンスしやすく
+- 科目設定：アイコン・カラー付きで科目を追加・削除・停止
+- 保存ボタン → その日のカレンダーがTodoリスト（緑チェック）に自動更新
+- リマインド：メール（.icsエクスポート）、Telegram Bot、ブラウザバナー
+- メール設定：.icsファイルをダウンロード（Gmail・Outlook・Appleカレンダー対応）
+- ブラウザ通知：ページ内バナー（OS許可不要）
+- 集中タイマー：科目ごとのカウントダウン、一時停止・再開・リセット
+- 学習統計：週間棒グラフ＋科目ドーナツチャート（Chart.js）
+- AI応援：レポート提出後にClaudeがパーソナライズされたメッセージを生成
+- 報酬：ポイント→バッジ→交換→クーポンカード生成（クーポンセンターに保存）
+- Firebase認証：メール/パスワード＋Googleログイン、複数デバイス同期
+- 言語切替：中国語・日本語・英語（左上）
+- コードコメント：すべて英語
 
-2. **EN:** Go to **Create Service** -> Select **Gmail** and authorize.  
-   **JP:** **Create Service** -> **Gmail** を選択して認証。
+---
 
-3. **EN:** Create Template. Set `To Email` to `{{to_email}}`.  
-   **JP:** **Create Template** で、`To Email` を `{{to_email}}` に設定。
+## Setup Guide / セットアップ手順
 
-4. **EN:** Copy your **Public Key**, **Service ID**, and **Template ID**.  
-   **JP:** **Public Key**, **Service ID**, **Template ID** をコピー。
+### 1. Deploy to Vercel / Vercelへデプロイ
 
-5. **EN:** Replace the placeholders in `index.html`:  
-   **JP:** `index.html` 内の以下の箇所を書き換えます：
-   ```javascript
-   const PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
-   const SERVICE_ID = 'YOUR_SERVICE_ID';
-   const TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+**EN:** Upload the entire `study-reminder/` folder at [vercel.com](https://vercel.com) → Add New → Project → Upload.
+
+**JA:** `study-reminder/` フォルダを [vercel.com](https://vercel.com) にドラッグ＆ドロップしてデプロイ。
+
+---
+
+### 2. Firebase Setup / Firebase設定
+
+**EN:**
+1. Go to [console.firebase.google.com](https://console.firebase.google.com)
+2. Create a project → Add Web App → copy `firebaseConfig`
+3. Enable **Authentication** → Email/Password + Google
+4. Enable **Firestore** → Start in test mode
+5. Paste your config into `js/firebase-config.js`
+
+**JA:**
+1. [console.firebase.google.com](https://console.firebase.google.com) でプロジェクト作成
+2. ウェブアプリを追加 → `firebaseConfig` をコピー
+3. **Authentication** → メール/パスワード＋Google を有効化
+4. **Firestore** → テストモードで開始
+5. `js/firebase-config.js` に貼り付け
+
+---
+
+### 3. EmailJS Setup / EmailJS設定
+
+**EN:**
+1. Sign up at [emailjs.com](https://emailjs.com) (free: 200 emails/month)
+2. Create a Service (Gmail recommended) and a Template
+3. Template variables: `{{to_email}}` `{{subject}}` `{{body}}`
+4. Replace `YOUR_EMAILJS_PUBLIC_KEY`, `YOUR_SERVICE_ID`, `YOUR_TEMPLATE_ID` in `js/report.js`
+
+**JA:**
+1. [emailjs.com](https://emailjs.com) に登録（無料：月200通）
+2. サービス（Gmail推奨）とテンプレートを作成
+3. テンプレート変数：`{{to_email}}` `{{subject}}` `{{body}}`
+4. `js/report.js` の `YOUR_*` を置き換える
+
+---
+
+### 4. Telegram Bot Setup / Telegramボット設定
+
+**EN:**
+1. Open Telegram → search `@BotFather` → send `/newbot`
+2. Copy the **Token**
+3. Start your bot → visit `api.telegram.org/bot{TOKEN}/getUpdates` → copy `chat_id`
+4. Enter Token + Chat ID in the app's Reminder Settings
+
+**JA:**
+1. Telegram で `@BotFather` を検索 → `/newbot` を送信
+2. **Token** をコピー
+3. ボットをスタート → `api.telegram.org/bot{TOKEN}/getUpdates` で `chat_id` をコピー
+4. アプリのリマインド設定にTokenとChat IDを入力
+
+---
+
+### 5. AI Encouragement (Claude API) / AI応援機能
+
+**EN:** The AI encouragement in `js/report.js` calls the Anthropic API directly. Add your Anthropic API key as a Vercel environment variable `ANTHROPIC_API_KEY` and create a small serverless function, or call the API from your own backend. For a quick test, you can temporarily hardcode the key (not recommended for production).
+
+**JA:** `js/report.js` のAI応援はAnthropic APIを呼び出します。Vercelの環境変数 `ANTHROPIC_API_KEY` を設定して、サーバーレス関数経由で呼び出すか、独自バックエンドを使用してください。

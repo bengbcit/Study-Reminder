@@ -1,114 +1,158 @@
-/* remind.js — Notification settings: Email, Telegram, Browser push */
+/* remind.js — Notification: Email (.ics), Discord Webhook, Browser banner push */
 
 const Remind = {
+  // Track scheduled banner timer IDs so we can cancel on re-save
+  _bannerTimer: null,
+
   toggleN(type) {
     S.notify[type] = !S.notify[type];
     document.getElementById('nb-' + type).classList.toggle('on', S.notify[type]);
     document.getElementById('emailCfg').style.display    = S.notify.email    ? 'block' : 'none';
-    document.getElementById('telegramCfg').style.display = S.notify.telegram ? 'block' : 'none';
+    document.getElementById('discordCfg').style.display  = S.notify.discord  ? 'block' : 'none';
     document.getElementById('pushCfg').style.display     = S.notify.push     ? 'block' : 'none';
   },
 
-  // ── Add today's subjects to Google / Outlook calendar via ICS email ──
+  // ── Export .ics calendar file ─────────────────────────────
   addToCalendar() {
     const addr = document.getElementById('emailAddr').value.trim();
     if (!addr) { showToast('请先填写邮箱地址'); return; }
-
     const [h, m] = S.startTime.split(':');
-    const enabled = S.subjects.filter(s => s.enabled);
-
-    // Build .ics content
     let ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyStars//EN\n';
-    enabled.forEach(s => {
+    S.subjects.filter(s => s.enabled).forEach(s => {
       const dt = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      ics += [
-        'BEGIN:VEVENT',
-        `SUMMARY:${s.icon} ${s.name} (${s.duration}分)`,
-        `DTSTART:${dt}T${h}${m}00`,
-        `DURATION:PT${s.duration}M`,
-        'RRULE:FREQ=DAILY',
-        'END:VEVENT',
-      ].join('\n') + '\n';
+      ics += `BEGIN:VEVENT\nSUMMARY:${s.icon} ${s.name} (${s.duration}min)\nDTSTART:${dt}T${h}${m}00\nDURATION:PT${s.duration}M\nRRULE:FREQ=DAILY\nEND:VEVENT\n`;
     });
     ics += 'END:VCALENDAR';
-
-    // Download .ics file — works with Gmail, Outlook, Apple Calendar
-    const blob = new Blob([ics], { type: 'text/calendar' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
     a.download = 'study-schedule.ics';
     a.click();
-    showToast('📅 .ics 文件已下载，用邮件客户端打开即可添加到日历！');
+    showToast('📅 .ics 已下载 — 双击即可导入 Gmail / Outlook / Apple 日历！');
   },
 
-  // ── Telegram ─────────────────────────────────────────────
-  async testTelegram() {
-    const token  = document.getElementById('tgToken').value.trim();
-    const chatId = document.getElementById('tgChatId').value.trim();
-    if (!token || !chatId) { showToast('请填写 Token 和 Chat ID'); return; }
-
-    const msg = encodeURIComponent('📚 学习小星星测试消息！今天记得完成学习哦 🌟');
-    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${msg}`;
+  // ── Discord Webhook ───────────────────────────────────────
+  // No bot account needed — just create a webhook URL in Discord server settings.
+  async testDiscord() {
+    const url = document.getElementById('discordWebhook').value.trim();
+    if (!url) { showToast('请先填入 Discord Webhook URL'); return; }
     try {
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.ok) showToast(t('tg_ok'));
-      else showToast('发送失败：' + data.description);
+      const res = await fetch(url, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: null,
+          embeds: [{
+            title:       '📚 学习小星星 — 测试通知',
+            description: '✅ Discord 通知设置成功！今天的学习科目：\n' +
+              S.subjects.filter(s => s.enabled).map(s => `${s.icon} ${s.name}`).join('\n'),
+            color: 0xFF6B35,
+            footer: { text: 'Study Stars' },
+          }],
+        }),
+      });
+      if (res.ok || res.status === 204) showToast('✅ Discord 发送成功！');
+      else showToast('发送失败，请检查 Webhook URL');
     } catch (e) {
-      showToast('发送失败，请检查 Token / Chat ID');
+      showToast('发送失败：' + e.message);
     }
   },
 
-  // ── Browser in-page banner reminder ──────────────────────
+  async sendDiscord(text) {
+    const url = S.discordWebhook;
+    if (!S.notify.discord || !url) return;
+    try {
+      await fetch(url, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: null,
+          embeds: [{
+            title:       '📚 学习简报已提交',
+            description: text,
+            color:       0xFF6B35,
+            footer:      { text: `Study Stars • ${todayKey()}` },
+          }],
+        }),
+      });
+    } catch (e) { console.warn('Discord send failed', e); }
+  },
+
+  // ── Browser in-page banner ────────────────────────────────
+  // Shows a visible banner inside the page at the scheduled time.
+  // Also shows a "test" button so you can preview it immediately.
   scheduleBanner() {
+    if (this._bannerTimer) clearTimeout(this._bannerTimer);
     if (!S.notify.push) return;
+
     const [h, m] = S.startTime.split(':').map(Number);
-    const before = S.remindBefore;
-    const now  = new Date();
-    const fire = new Date();
+    const before = parseInt(S.remindBefore) || 0;
+    const now    = new Date();
+    const fire   = new Date();
     fire.setHours(h, m - before, 0, 0);
-    if (fire < now) fire.setDate(fire.getDate() + 1);
+    if (fire <= now) fire.setDate(fire.getDate() + 1); // schedule for tomorrow if past
 
     const ms = fire - now;
-    setTimeout(() => {
-      const banner = document.getElementById('remindBanner');
-      const text   = document.getElementById('remindBannerText');
-      text.textContent = `📚 ${t('timer_running')} ` +
-        S.subjects.filter(s => s.enabled).map(s => s.icon).join(' ');
-      banner.style.display = 'flex';
-      // Auto-hide after 30 seconds
-      setTimeout(() => { banner.style.display = 'none'; }, 30000);
-    }, ms);
+    const hh = String(fire.getHours()).padStart(2,'0');
+    const mm = String(fire.getMinutes()).padStart(2,'0');
+    console.info(`Banner scheduled for ${hh}:${mm} (in ${Math.round(ms/60000)} min)`);
+
+    this._bannerTimer = setTimeout(() => this._showBanner(), ms);
+  },
+
+  _showBanner() {
+    const icons   = S.subjects.filter(s => s.enabled).map(s => s.icon).join(' ');
+    const banner  = document.getElementById('remindBanner');
+    const textEl  = document.getElementById('remindBannerText');
+    textEl.textContent = `📚 该开始学习了！${icons} — 加油！`;
+    banner.style.display = 'flex';
+    // Auto-hide after 60 seconds
+    setTimeout(() => { banner.style.display = 'none'; }, 60000);
+    // Play gentle audio cue (works without any server)
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(); osc.stop(ctx.currentTime + 0.6);
+    } catch(e) {}
+  },
+
+  // Called by the "Preview" button in the remind page
+  previewBanner() {
+    this._showBanner();
   },
 
   // ── Sync UI from state ────────────────────────────────────
   syncUI() {
-    const ta = document.getElementById('startTime');
-    const ea = document.getElementById('emailAddr');
-    const tk = document.getElementById('tgToken');
-    const ci = document.getElementById('tgChatId');
+    const fields = {
+      startTime:      'startTime',
+      emailAddr:      'emailAddr',
+      discordWebhook: 'discordWebhook',
+    };
+    Object.entries(fields).forEach(([stateKey, elId]) => {
+      const el = document.getElementById(elId);
+      if (el) el.value = S[stateKey] || '';
+    });
     const rb = document.getElementById('remindBefore');
-    if (ta) ta.value = S.startTime;
-    if (ea) ea.value = S.emailAddr;
-    if (tk) tk.value = S.tgToken;
-    if (ci) ci.value = S.tgChatId;
-    if (rb) rb.value = S.remindBefore;
+    if (rb) rb.value = S.remindBefore || 15;
 
-    ['email','telegram','push'].forEach(k => {
+    ['email','discord','push'].forEach(k => {
       const btn = document.getElementById('nb-' + k);
       if (btn) btn.classList.toggle('on', !!S.notify[k]);
     });
-    document.getElementById('emailCfg').style.display    = S.notify.email    ? 'block' : 'none';
-    document.getElementById('telegramCfg').style.display = S.notify.telegram ? 'block' : 'none';
-    document.getElementById('pushCfg').style.display     = S.notify.push     ? 'block' : 'none';
+    document.getElementById('emailCfg').style.display   = S.notify.email   ? 'block':'none';
+    document.getElementById('discordCfg').style.display = S.notify.discord ? 'block':'none';
+    document.getElementById('pushCfg').style.display    = S.notify.push    ? 'block':'none';
   },
 
   // ── Read UI into state ────────────────────────────────────
   readUI() {
-    S.startTime    = document.getElementById('startTime').value;
-    S.remindBefore = parseInt(document.getElementById('remindBefore').value) || 0;
-    S.emailAddr    = document.getElementById('emailAddr').value.trim();
-    S.tgToken      = document.getElementById('tgToken').value.trim();
-    S.tgChatId     = document.getElementById('tgChatId').value.trim();
+    S.startTime      = document.getElementById('startTime').value;
+    S.remindBefore   = parseInt(document.getElementById('remindBefore')?.value) || 0;
+    S.emailAddr      = document.getElementById('emailAddr').value.trim();
+    S.discordWebhook = (document.getElementById('discordWebhook')?.value || '').trim();
   },
 };

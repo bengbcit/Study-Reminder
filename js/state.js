@@ -10,12 +10,11 @@ const DEFAULT_SUBJECTS = [
 // S holds all runtime state (merged from localStorage + Firestore)
 const S = {
   subjects:      [],
-  notify:        { email: true, telegram: false, push: false },
+  notify:        { email: true, discord: false, push: false },
   startTime:     '09:00',
   remindBefore:  15,
   emailAddr:     'takeiteasylyaoi@gmail.com',
-  tgToken:       '',
-  tgChatId:      '',
+  discordWebhook: '',
   points:        0,
   streak:        0,
   history:       {},   // { 'YYYY-MM-DD': { subjectId: { done, summary, hard, diff, subj, icon } } }

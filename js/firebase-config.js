@@ -7,15 +7,15 @@
    4. Enable Authentication → Email/Password + Google
    5. Enable Firestore Database (start in test mode)
    6. Paste your values below
-
-  Note: For security, it's best to use environment variables for these values in production.
 */
 
 const FIREBASE_CONFIG = {
-  apiKey: typeof FIREBASE_KEYS !== 'undefined' ? FIREBASE_KEYS.apiKey : "YOUR_API_KEY",
-  authDomain: typeof FIREBASE_KEYS !== 'undefined' ? FIREBASE_KEYS.authDomain : "YOUR_AUTH_DOMAIN",
-  projectId: "study-reminder-8910",
-  storageBucket: "study-reminder-8910.firebasestorage.app",
-  messagingSenderId: "122788831469",
-  appId: "1:122788831469:web:fd6f652f9ab5d90c39ace4"
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT.firebaseapp.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID",
 };
+
+export default FIREBASE_CONFIG;

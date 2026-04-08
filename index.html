@@ -16,10 +16,14 @@
     <div class="auth-logo">⭐</div>
     <div class="auth-title" id="authTitle">学习小星星</div>
     <div class="auth-tabs">
-      <button class="auth-tab active" id="tabLogin"    onclick="Auth.showLogin()">登录</button>
-      <button class="auth-tab"        id="tabRegister" onclick="Auth.showRegister()">注册</button>
+      <button class="auth-tab active" id="tabLogin"
+              onclick="window.Auth.showLogin()">登录</button>
+      <button class="auth-tab" id="tabRegister"
+              onclick="window.Auth.showRegister()">注册</button>
     </div>
-    <div id="authForm"></div>
+    <div id="authForm">
+      <!-- Populated by app.js (_localAuthUI) or firebase-init.js -->
+    </div>
     <p class="auth-err" id="authErr"></p>
   </div>
 </div>

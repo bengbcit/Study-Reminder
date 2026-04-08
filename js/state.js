@@ -28,9 +28,30 @@ const S = {
 // ── Persistence ──────────────────────────────────────────────
 function loadLocal() {
   try {
+    // Try current key first
     const raw = localStorage.getItem('ss_v4');
-    if (raw) Object.assign(S, JSON.parse(raw));
-  } catch (e) {}
+    if (raw) {
+      Object.assign(S, JSON.parse(raw));
+    } else {
+      // Migrate from older version (ss_v3 had tgToken/tgChatId)
+      const old = localStorage.getItem('ss_v3');
+      if (old) {
+        const parsed = JSON.parse(old);
+        // Migrate telegram → discord (just drop the token, keep notify structure)
+        if (parsed.notify?.telegram !== undefined) {
+          parsed.notify.discord = false;
+          delete parsed.notify.telegram;
+        }
+        delete parsed.tgToken;
+        delete parsed.tgChatId;
+        Object.assign(S, parsed);
+      }
+    }
+  } catch (e) {
+    console.warn('loadLocal error:', e);
+  }
+  // Ensure notify has all expected keys (safe defaults)
+  S.notify = { email: true, discord: false, push: false, ...S.notify };
   if (!S.subjects || !S.subjects.length) {
     S.subjects = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
   }

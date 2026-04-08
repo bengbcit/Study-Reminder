@@ -100,24 +100,29 @@ const Remind = {
   },
 
   _showBanner() {
-    const icons   = S.subjects.filter(s => s.enabled).map(s => s.icon).join(' ');
-    const banner  = document.getElementById('remindBanner');
-    const textEl  = document.getElementById('remindBannerText');
-    textEl.textContent = `📚 该开始学习了！${icons} — 加油！`;
+    const icons  = S.subjects.filter(s => s.enabled).map(s => s.icon).join(' ');
+    const msgs   = {
+      zh: `📚 该开始学习了！${icons} — 加油！`,
+      ja: `📚 勉強の時間だよ！${icons} — 頑張って！`,
+      en: `📚 Time to study! ${icons} — Let's go!`,
+    };
+    const banner = document.getElementById('remindBanner');
+    const textEl = document.getElementById('remindBannerText');
+    textEl.textContent = msgs[I18n.lang] || msgs.zh;
     banner.style.display = 'flex';
     // Auto-hide after 60 seconds
     setTimeout(() => { banner.style.display = 'none'; }, 60000);
-    // Play gentle audio cue (works without any server)
+    // Play gentle audio cue
     try {
-      const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
+      const ctx  = new AudioContext();
+      const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-      osc.start(); osc.stop(ctx.currentTime + 0.6);
-    } catch(e) {}
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+      osc.start(); osc.stop(ctx.currentTime + 0.8);
+    } catch (e) {}
   },
 
   // Called by the "Preview" button in the remind page

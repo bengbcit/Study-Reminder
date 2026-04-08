@@ -13,8 +13,8 @@ const Report = {
     }
 
     enabled.forEach(s => {
-      const r   = S.todayReport[s.id] || {};
-      const nm  = subjName(s);
+      const r = S.todayReport[s.id] || {};
+      const nm = subjName(s);
       const pts = s.duration >= 30 ? 20 : 10;
       const div = document.createElement('div');
       div.className = 'rep-card';
@@ -26,17 +26,17 @@ const Report = {
           </div>
           <div class="rc-pts">⭐ +${pts}</div>
         </div>
-        <label class="done-check ${r.done?'checked':''}" id="doneLabel_${s.id}">
-          <input type="checkbox" ${r.done?'checked':''} onchange="Report._togDone('${s.id}',this)">
+        <label class="done-check ${r.done ? 'checked' : ''}" id="doneLabel_${s.id}">
+          <input type="checkbox" ${r.done ? 'checked' : ''} onchange="Report._togDone('${s.id}',this)">
           ${t('done_lbl')}
         </label>
-        <textarea class="rta" id="sum_${s.id}"  placeholder="${t('sum_ph')}">${r.summary||''}</textarea>
-        <textarea class="rta" id="hard_${s.id}" placeholder="${t('hard_ph')}" style="min-height:52px">${r.hard||''}</textarea>
+        <textarea class="rta" id="sum_${s.id}"  placeholder="${t('sum_ph')}">${r.summary || ''}</textarea>
+        <textarea class="rta" id="hard_${s.id}" placeholder="${t('hard_ph')}" style="min-height:52px">${r.hard || ''}</textarea>
         <div class="diff-row">
           <span class="diff-lbl">${t('diff_lbl')}</span>
-          ${[1,2,3,4,5].map(i=>
-            `<button class="sb ${(r.diff||0)>=i?'lit':''}" onclick="Report._setDiff('${s.id}',${i})">⭐</button>`
-          ).join('')}
+          ${[1, 2, 3, 4, 5].map(i =>
+        `<button class="sb ${(r.diff || 0) >= i ? 'lit' : ''}" onclick="Report._setDiff('${s.id}',${i})">⭐</button>`
+      ).join('')}
         </div>`;
       el.appendChild(div);
     });
@@ -63,16 +63,16 @@ const Report = {
 
   // ── Submit ALL enabled subjects ───────────────────────────
   async submitAll() {
-    const enabled  = S.subjects.filter(s => s.enabled);
-    const toEmail  = document.getElementById('reportEmail').value.trim()
-                     || S.emailAddr || 'takeiteasylyaoi@gmail.com';
+    const enabled = S.subjects.filter(s => s.enabled);
+    const toEmail = document.getElementById('reportEmail').value.trim()
+      || S.emailAddr || 'takeiteasylyaoi@gmail.com';
 
     // Collect current textarea values into state
     enabled.forEach(s => {
       if (!S.todayReport[s.id]) S.todayReport[s.id] = {};
       const r = S.todayReport[s.id];
-      r.summary = document.getElementById('sum_'  + s.id)?.value || '';
-      r.hard    = document.getElementById('hard_' + s.id)?.value || '';
+      r.summary = document.getElementById('sum_' + s.id)?.value || '';
+      r.hard = document.getElementById('hard_' + s.id)?.value || '';
     });
 
     const doneSubjects = enabled.filter(s => S.todayReport[s.id]?.done);
@@ -83,7 +83,7 @@ const Report = {
     if (!S.history[today]) S.history[today] = {};
     let totalPts = 0;
     doneSubjects.forEach(s => {
-      const r   = S.todayReport[s.id];
+      const r = S.todayReport[s.id];
       const pts = s.duration >= 30 ? 20 : 10;
       totalPts += pts;
       S.history[today][s.id] = { ...r, subj: s.name, icon: s.icon };
@@ -107,7 +107,7 @@ const Report = {
 
     // Sync cloud + re-render
     if (window.Auth?.user) await Auth.saveUserData();
-    if (window.Cal)     Cal.render();
+    if (window.Cal) Cal.render();
     if (window.Rewards) Rewards.render();
   },
 
@@ -115,49 +115,69 @@ const Report = {
   _buildTextBody(doneSubjects, totalPts, today) {
     const rows = doneSubjects.map(s => {
       const r = S.todayReport[s.id] || {};
-      return `${s.icon} ${subjName(s)} — ${s.duration}min — ${'⭐'.repeat(r.diff||0)||'—'}\n` +
-             `📝 ${r.summary||'—'}\n🤔 ${r.hard||'—'}`;
+      return `${s.icon} ${subjName(s)} — ${s.duration}min — ${'⭐'.repeat(r.diff || 0) || '—'}\n` +
+        `📝 ${r.summary || '—'}\n🤔 ${r.hard || '—'}`;
     }).join('\n\n');
     return `📚 Study Report ${today}\n\n${rows}\n\n🏆 +${totalPts} pts  🔥 ${S.streak} day streak`;
   },
 
-  // ── EmailJS — matches your template variables exactly ─────
-  // Your EmailJS template variables (from screenshot):
-  //   {{subject_name}}, {{date}}, {{done}}, {{duration}},
-  //   {{difficulty}}, {{summary}}, {{difficulty}} (hard points in body)
-  //   To Email field in template: takeiteasylyaoi@gmail.com (hardcoded in template)
-  //   OR use {{to_email}} if you set "To Email" = {{to_email}} in template settings
+  // ── EmailJS send — matches your template variables from the screenshot ───
+  //
+  // YOUR TEMPLATE (from screenshot) uses these variables:
+  //   Subject field:  "Study Planet Report: {{subject_name}}"
+  //   To Email:        takeiteasylyaoi@gmail.com  (hardcoded in template)
+  //   Body variables: {{name}}, {{date}}, {{subject_name}}, {{done}},
+  //                   {{duration}}, {{difficulty}}, {{summary}}, {{time}}
+  //
+  // SETUP STEPS (one time):
+  //   1. emailjs.com → Account → API Keys → copy "Public Key"
+  //   2. Email Templates → your template → copy the Template ID (e.g. "template_xxxxxx")
+  //   3. Replace the two YOUR_* values below and save
+  //
   _sendEmail(toEmail, doneSubjects, totalPts, today) {
-    // ── Fill in your EmailJS credentials here ──
-    const PUBLIC_KEY  = 'YOUR_EMAILJS_PUBLIC_KEY';   // Account → API Keys
-    const SERVICE_ID  = 'service_mvd09ib';            // Already set from screenshot
-    const TEMPLATE_ID = 'YOUR_TEMPLATE_ID';           // Email Templates → template ID
+    const PUBLIC_KEY = '1o0k8Wov1W7HtYneq';  // ← Account → API Keys
+    const SERVICE_ID = 'service_mvd09ib';           // ← already correct from your screenshot
+    const TEMPLATE_ID = 'template_bp2bmun';          // ← Email Templates → ID column
 
-    if (PUBLIC_KEY === 'YOUR_EMAILJS_PUBLIC_KEY') {
-      console.warn('EmailJS not configured. Fill in PUBLIC_KEY and TEMPLATE_ID in report.js');
+    if (PUBLIC_KEY === '1o0k8Wov1W7HtYneq' || TEMPLATE_ID === 'template_bp2bmun') {
+      console.warn(
+        '⚠️ EmailJS not fully configured.\n' +
+        'Open js/report.js and fill in PUBLIC_KEY and TEMPLATE_ID.\n' +
+        'Service ID (service_mvd09ib) is already set correctly.'
+      );
+      showToast('⚠️ EmailJS 未配置 — 请在 report.js 填入 PUBLIC_KEY 和 TEMPLATE_ID');
       return;
     }
 
     emailjs.init(PUBLIC_KEY);
 
-    // Send one email per done subject (matches your template structure)
+    // Send one email per completed subject (one template call each)
     doneSubjects.forEach(s => {
       const r = S.todayReport[s.id] || {};
+      const name = S._localName || window.Auth?.user?.displayName || 'Student';
+
       emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-        to_email:     toEmail,
-        name:         S._localName || (window.Auth?.user?.displayName) || 'Student',
-        subject_name: subjName(s),
-        date:         today,
-        time:         new Date().toLocaleTimeString(),
-        done:         r.done ? '✅ Completed / 完了 / 完成' : '❌ Not done',
-        duration:     s.duration + ' min',
-        difficulty:   '⭐'.repeat(r.diff || 0) || '—',
-        summary:      r.summary || '—',
-        hard_points:  r.hard    || '—',
-        points:       '+' + (s.duration >= 30 ? 20 : 10),
+        // ── Core fields (match your template exactly) ──
+        name: name,
+        subject_name: subjName(s),           // {{subject_name}}
+        date: today,                 // {{date}}
+        time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+        done: r.done ? '✅ Completed / 完了 / 完成' : '❌ Incomplete',
+        duration: s.duration + ' min',   // {{duration}}
+        difficulty: '⭐'.repeat(r.diff || 0) || 'N/A',  // {{difficulty}}
+        summary: r.summary || '—',      // {{summary}}
+        // Extra fields (add to template if you want them)
+        hard_points: r.hard || '—',
+        points: '+' + (s.duration >= 30 ? 20 : 10) + ' pts',
         total_points: String(S.points),
-        streak:       S.streak + ' days',
-      }).catch(err => console.warn('EmailJS error:', err));
+        streak: S.streak + ' days 🔥',
+        to_email: toEmail,               // only used if your template has {{to_email}}
+      }).then(() => {
+        console.info('EmailJS sent for', s.name);
+      }).catch(err => {
+        console.warn('EmailJS error:', err);
+        showToast('📧 邮件发送失败：' + (err.text || err.message || '请检查配置'));
+      });
     });
   },
 
@@ -176,16 +196,16 @@ const Report = {
 
     // Build subject list in the correct language
     const subjectList = doneSubjects.map(s => {
-      const nm = lang==='ja' && s.nameJa ? s.nameJa
-               : lang==='en' && s.nameEn ? s.nameEn : s.name;
+      const nm = lang === 'ja' && s.nameJa ? s.nameJa
+        : lang === 'en' && s.nameEn ? s.nameEn : s.name;
       return `${s.icon} ${nm}`;
-    }).join(lang==='en' ? ', ' : '、');
+    }).join(lang === 'en' ? ', ' : '、');
 
     try {
       const res = await fetch('/api/encourage', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ subjectList, lang }),
+        body: JSON.stringify({ subjectList, lang }),
       });
       if (!res.ok) throw new Error('status ' + res.status);
       const data = await res.json();

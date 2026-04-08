@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 # Firebase keys
 js/keys.js
+js/firebase-config.js

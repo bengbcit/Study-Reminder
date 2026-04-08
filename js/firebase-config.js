@@ -10,12 +10,12 @@
 */
 
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID",
+  apiKey: "AIzaSyDFVkbF9NHn9F8gv2_JS6uRbwE38VDY4CY",
+  authDomain: "study-reminder-8910.firebaseapp.com",
+  projectId: "study-reminder-8910",
+  storageBucket: "study-reminder-8910.firebasestorage.app",
+  messagingSenderId: "122788831469",
+  appId: "1:122788831469:web:fd6f652f9ab5d90c39ace4",
 };
 
 export default FIREBASE_CONFIG;

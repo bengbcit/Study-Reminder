@@ -3,10 +3,12 @@
    If Firebase config is placeholder values, skips silently (app.js 3s timer handles fallback).
 */
 
-import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-         createUserWithEmailAndPassword, signInWithPopup,
-         GoogleAuthProvider, signOut, updateProfile }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, signInWithPopup,
+  GoogleAuthProvider, signOut, updateProfile
+}
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -21,7 +23,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
   try {
     const app = initializeApp(FIREBASE_CONFIG);
     _auth = getAuth(app);
-    _db   = getFirestore(app);
+    _db = getFirestore(app);
   } catch (e) {
     console.warn('Firebase init error:', e.message);
     // local fallback will kick in via app.js timer
@@ -37,14 +39,14 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         this.user = user;
         await this._loadUserData(user.uid);
         document.getElementById('authGate').style.display = 'none';
-        document.getElementById('mainApp').style.display  = 'block';
+        document.getElementById('mainApp').style.display = 'block';
         this._updateAvatar();
         App.init();
       },
 
       _onSignOut() {
         this.user = null;
-        document.getElementById('mainApp').style.display  = 'none';
+        document.getElementById('mainApp').style.display = 'none';
         document.getElementById('authGate').style.display = 'flex';
         this.showLogin();
       },
@@ -55,7 +57,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         document.getElementById('tabRegister').classList.remove('active');
         document.getElementById('authErr').textContent = '';
         // Update tab labels to current language
-        document.getElementById('tabLogin').textContent    = t('login');
+        document.getElementById('tabLogin').textContent = t('login');
         document.getElementById('tabRegister').textContent = t('register');
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiEmail" type="email"
@@ -71,7 +73,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         document.getElementById('tabRegister').classList.add('active');
         document.getElementById('tabLogin').classList.remove('active');
         document.getElementById('authErr').textContent = '';
-        document.getElementById('tabLogin').textContent    = t('login');
+        document.getElementById('tabLogin').textContent = t('login');
         document.getElementById('tabRegister').textContent = t('register');
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiName"  type="text"
@@ -88,8 +90,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       // ── Sign-in actions ───────────────────────────────────────
       async _login() {
         const email = document.getElementById('aiEmail')?.value.trim();
-        const pass  = document.getElementById('aiPass')?.value;
-        if (!email || !pass) { _setErr('请填写邮箱和密码'); return; }
+        const pass = document.getElementById('aiPass')?.value;
+        if (!email || !pass) { _setErr('Please enter both email and password'); return; }
         _setErr('');
         try {
           await signInWithEmailAndPassword(_auth, email, pass);
@@ -98,11 +100,11 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       },
 
       async _register() {
-        const name  = document.getElementById('aiName')?.value.trim() || '';
+        const name = document.getElementById('aiName')?.value.trim() || '';
         const email = document.getElementById('aiEmail')?.value.trim();
-        const pass  = document.getElementById('aiPass')?.value;
-        if (!email || !pass) { _setErr('请填写邮箱和密码'); return; }
-        if (pass.length < 6) { _setErr('密码至少需要 6 位'); return; }
+        const pass = document.getElementById('aiPass')?.value;
+        if (!email || !pass) { _setErr('Please enter both email and password'); return; }
+        if (pass.length < 6) { _setErr('Password must be at least 6 characters'); return; }
         _setErr('');
         try {
           const cred = await createUserWithEmailAndPassword(_auth, email, pass);
@@ -116,7 +118,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         _setErr('');
         try {
           const cred = await signInWithPopup(_auth, new GoogleAuthProvider());
-          const ref  = doc(_db, 'users', cred.user.uid);
+          const ref = doc(_db, 'users', cred.user.uid);
           const snap = await getDoc(ref);
           if (!snap.exists()) {
             await this._createUserDoc(cred.user, cred.user.displayName || cred.user.email);
@@ -127,13 +129,13 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       async _createUserDoc(user, displayName) {
         await setDoc(doc(_db, 'users', user.uid), {
           displayName,
-          email:     user.email,
-          points:    0,
-          streak:    0,
-          coupons:   [],
-          subjects:  JSON.parse(JSON.stringify(DEFAULT_SUBJECTS)),
-          history:   {},
-          settings:  {},
+          email: user.email,
+          points: 0,
+          streak: 0,
+          coupons: [],
+          subjects: JSON.parse(JSON.stringify(DEFAULT_SUBJECTS)),
+          history: {},
+          settings: {},
           createdAt: new Date().toISOString(),
         });
       },
@@ -145,11 +147,11 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           if (!snap.exists()) return;
           const d = snap.data();
           if (d.subjects?.length) S.subjects = d.subjects;
-          if (d.points   != null) S.points   = d.points;
-          if (d.streak   != null) S.streak   = d.streak;
-          if (d.history)          S.history  = d.history;
-          if (d.coupons)          S.coupons  = d.coupons;
-          if (d.settings)         Object.assign(S, d.settings);
+          if (d.points != null) S.points = d.points;
+          if (d.streak != null) S.streak = d.streak;
+          if (d.history) S.history = d.history;
+          if (d.coupons) S.coupons = d.coupons;
+          if (d.settings) Object.assign(S, d.settings);
           saveLocal();
         } catch (e) { console.warn('Firestore load:', e.message); }
       },
@@ -159,10 +161,10 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         try {
           await updateDoc(doc(_db, 'users', this.user.uid), {
             subjects: S.subjects,
-            points:   S.points,
-            streak:   S.streak,
-            history:  S.history,
-            coupons:  S.coupons,
+            points: S.points,
+            streak: S.streak,
+            history: S.history,
+            coupons: S.coupons,
             settings: {
               notify: S.notify, startTime: S.startTime,
               remindBefore: S.remindBefore, emailAddr: S.emailAddr,
@@ -174,7 +176,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
 
       // ── Avatar + Profile ──────────────────────────────────────
       _updateAvatar() {
-        const btn  = document.getElementById('userAvatar');
+        const btn = document.getElementById('userAvatar');
         const name = this.user?.displayName || this.user?.email || '?';
         if (btn) btn.textContent = name.charAt(0).toUpperCase();
       },
@@ -190,8 +192,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       },
 
       _renderProfile() {
-        const u      = this.user;
-        const name   = u?.displayName || u?.email || 'User';
+        const u = this.user;
+        const name = u?.displayName || u?.email || 'User';
         const earned = Rewards.getEarned();
         const badges = Rewards.BADGES.filter(b => earned.has(b.id));
         document.getElementById('profileContent').innerHTML = `
@@ -205,8 +207,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           </div>
           <p class="sec-label">${t('profile_badges')}</p>
           <div class="profile-badges">
-            ${badges.map(b=>`<div class="profile-badge" title="${b.name[I18n.lang]||b.name.zh}">${b.icon}</div>`).join('')
-              || '<span style="font-size:13px;color:var(--text2)">—</span>'}
+            ${badges.map(b => `<div class="profile-badge" title="${b.name[I18n.lang] || b.name.zh}">${b.icon}</div>`).join('')
+          || '<span style="font-size:13px;color:var(--text2)">—</span>'}
           </div>
           <button class="logout-btn" onclick="window.Auth._logout()">${t('profile_logout')}</button>`;
       },
@@ -223,7 +225,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
     // Start auth state listener
     onAuthStateChanged(_auth, user => {
       if (user) FirebaseAuth._onSignIn(user);
-      else      FirebaseAuth._onSignOut();
+      else FirebaseAuth._onSignOut();
     });
 
     // Show login form immediately (don't wait for auth state)
@@ -249,15 +251,15 @@ function _gIcon() {
 
 function _friendlyError(code) {
   const map = {
-    'auth/invalid-email':          '邮箱格式不正确',
-    'auth/user-not-found':         '账号不存在，请先注册',
-    'auth/wrong-password':         '密码错误，请重试',
-    'auth/invalid-credential':     '邮箱或密码错误',
-    'auth/email-already-in-use':   '该邮箱已注册，请直接登录',
-    'auth/weak-password':          '密码至少需要 6 位',
-    'auth/popup-closed-by-user':   '登录窗口已关闭，请重试',
-    'auth/network-request-failed': '网络错误，请检查连接',
-    'auth/too-many-requests':      '登录尝试过多，请稍后再试',
+    'auth/invalid-email': 'Invalid email format',
+    'auth/user-not-found': 'Account not found, please register first',
+    'auth/wrong-password': 'Incorrect password, please try again',
+    'auth/invalid-credential': 'Invalid email or password',
+    'auth/email-already-in-use': 'This email is already registered, please log in directly',
+    'auth/weak-password': 'Password must be at least 6 characters',
+    'auth/popup-closed-by-user': 'Login window closed, please try again',
+    'auth/network-request-failed': 'Network error, please check your connection',
+    'auth/too-many-requests': 'Too many login attempts, please try again later',
   };
-  return map[code] || `登录失败 (${code})`;
+  return map[code] || `Login failed (${code})`;
 }

@@ -139,17 +139,10 @@ const Report = {
     const SERVICE_ID = 'service_mvd09ib';           // ← already correct from your screenshot
     const TEMPLATE_ID = 'template_bp2bmun';          // ← Email Templates → ID column
 
-    if (PUBLIC_KEY === '1o0k8Wov1W7HtYneq' || TEMPLATE_ID === 'template_bp2bmun') {
-      console.warn(
-        '⚠️ EmailJS not fully configured.\n' +
-        'Open js/report.js and fill in PUBLIC_KEY and TEMPLATE_ID.\n' +
-        'Service ID (service_mvd09ib) is already set correctly.'
-      );
-      showToast('⚠️ EmailJS 未配置 — 请在 report.js 填入 PUBLIC_KEY 和 TEMPLATE_ID');
-      return;
-    }
+    // Keys are configured — proceeding with send
 
-    emailjs.init(PUBLIC_KEY);
+    // Initialize EmailJS once
+    emailjs.init({ publicKey: PUBLIC_KEY });
 
     // Send one email per completed subject (one template call each)
     doneSubjects.forEach(s => {

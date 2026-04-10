@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>学习小星星 / Study Stars</title>
+<title>学习星球 / Study Planet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
@@ -14,7 +14,13 @@
 <div id="authGate" class="auth-gate">
   <div class="auth-box">
     <div class="auth-logo">⭐</div>
-    <div class="auth-title" id="authTitle">学习小星星</div>
+    <div class="auth-title" id="authTitle">学习星球</div>
+    <!-- Language switcher in auth gate too -->
+    <div class="auth-lang-sw">
+      <button class="lb active" onclick="I18n.set('zh');Auth.showLogin&&Auth.showLogin()">中</button>
+      <button class="lb"        onclick="I18n.set('ja');Auth.showLogin&&Auth.showLogin()">日</button>
+      <button class="lb"        onclick="I18n.set('en');Auth.showLogin&&Auth.showLogin()">EN</button>
+    </div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tabLogin"
               onclick="window.Auth.showLogin()">登录</button>
@@ -22,7 +28,7 @@
               onclick="window.Auth.showRegister()">注册</button>
     </div>
     <div id="authForm">
-      <!-- Populated by app.js (_localAuthUI) or firebase-init.js -->
+      <!-- Populated by app.js or firebase-init.js -->
     </div>
     <p class="auth-err" id="authErr"></p>
   </div>
@@ -38,8 +44,9 @@
       <button class="lb"        onclick="I18n.set('ja')">日</button>
       <button class="lb"        onclick="I18n.set('en')">EN</button>
     </div>
-    <div class="app-title" id="appTitle">学习小星星</div>
+    <div class="app-title" id="appTitle">学习星球</div>
     <div class="topbar-right">
+      <button class="theme-btn-top" id="themeBtnTop" onclick="ThemeManager.open()" title="背景主题">🎨</button>
       <div class="streak-pill">🔥<span id="streakNum">0</span></div>
       <button class="user-btn" onclick="Auth.openProfile()" id="userAvatar">👤</button>
     </div>
@@ -54,6 +61,8 @@
     <button class="tab"        onclick="App.showPage('calendar',this)" data-i18n="tab_cal">📅 日历</button>
     <button class="tab"        onclick="App.showPage('stats',this)"    data-i18n="tab_stats">📊 统计</button>
     <button class="tab"        onclick="App.showPage('rewards',this)"  data-i18n="tab_rew">⭐ 奖励</button>
+    <!-- Notion button — sits right after calendar in the tab bar -->
+    <button class="tab notion-tab" id="notionTabBtn" onclick="Notion.open()">📋 打卡</button>
   </div>
 
   <!-- PAGE: SUBJECTS -->
@@ -77,13 +86,13 @@
   <div class="page" id="page-remind">
     <p class="sec-label" data-i18n="lbl_noti">提醒方式</p>
     <div class="n-grid">
-      <div class="n-btn on" id="nb-email"    onclick="Remind.toggleN('email')">
+      <div class="n-btn on" id="nb-email"   onclick="Remind.toggleN('email')">
         <span class="ni">📧</span><span data-i18n="n_email">邮件</span>
       </div>
-      <div class="n-btn" id="nb-discord" onclick="Remind.toggleN('discord')">
+      <div class="n-btn" id="nb-discord"    onclick="Remind.toggleN('discord')">
         <span class="ni">🎮</span><span>Discord</span>
       </div>
-      <div class="n-btn" id="nb-push" onclick="Remind.toggleN('push')">
+      <div class="n-btn" id="nb-push"       onclick="Remind.toggleN('push')">
         <span class="ni">🔔</span><span data-i18n="n_push">浏览器</span>
       </div>
     </div>
@@ -98,20 +107,20 @@
       <p class="cfg-note" data-i18n="email_note">简报提交后自动发到此邮箱</p>
     </div>
 
-    <!-- Discord Webhook config -->
+    <!-- Discord Webhook config — fully i18n'd -->
     <div id="discordCfg" class="cfg-panel" style="display:none">
       <div class="line-info">
-        <div class="li-title">🎮 Discord Webhook 设置（最简单，无需账号）</div>
-        <div class="li-step"><span>1</span>打开 Discord → 进入你的频道 → 点击右上角 <b>齿轮设置</b></div>
-        <div class="li-step"><span>2</span>左侧选 <b>Integrations</b> → <b>Webhooks</b> → <b>New Webhook</b></div>
-        <div class="li-step"><span>3</span>点击 <b>Copy Webhook URL</b>，贴到下方</div>
-        <div class="li-step"><span>4</span>点测试按钮，Discord 频道会收到消息 ✅</div>
+        <div class="li-title" data-i18n="discord_title">🎮 Discord Webhook 设置</div>
+        <div class="li-step"><span>1</span><span data-i18n-html="discord_step1">打开 Discord → 进入频道 → 齿轮设置</span></div>
+        <div class="li-step"><span>2</span><span data-i18n-html="discord_step2">Integrations → Webhooks → New Webhook</span></div>
+        <div class="li-step"><span>3</span><span data-i18n-html="discord_step3">Copy Webhook URL 贴到下方</span></div>
+        <div class="li-step"><span>4</span><span data-i18n="discord_step4">点测试 ✅</span></div>
       </div>
       <input class="cfg-input" id="discordWebhook"
              placeholder="https://discord.com/api/webhooks/…" style="margin-top:8px">
-      <button class="ltest-btn" onclick="Remind.testDiscord()">🎮 发送测试消息</button>
-      <p style="font-size:11px;color:#1976D2;margin-top:8px">
-        ✅ 优点：完全免费 · 无需 Bot · 一个 URL 搞定 · 支持富文本消息
+      <button class="ltest-btn" onclick="Remind.testDiscord()" data-i18n="discord_test_btn">🎮 发送测试消息</button>
+      <p style="font-size:11px;color:#1976D2;margin-top:8px" data-i18n="discord_note">
+        ✅ 优点：完全免费 · 无需 Bot
       </p>
     </div>
 
@@ -125,8 +134,8 @@
         <option value="15" selected>15 分钟前</option>
         <option value="30">30 分钟前</option>
       </select>
-      <p class="cfg-note" data-i18n="push_note">页面打开时生效，在页面顶部弹出横幅+提示音</p>
-      <button class="ltest-btn" onclick="Remind.previewBanner()" style="margin-top:8px">
+      <p class="cfg-note" data-i18n="push_note">页面打开时生效</p>
+      <button class="ltest-btn" onclick="Remind.previewBanner()" style="margin-top:8px" data-i18n="push_preview_btn">
         👀 立即预览提醒效果
       </button>
     </div>
@@ -217,6 +226,24 @@
   </div>
 </div>
 
+<!-- ══ NOTION MODAL ═══════════════════════════════════════ -->
+<div class="modal-ov notion-modal-ov" id="notionModal" onclick="Notion.close(event)">
+  <div class="notion-modal-box" id="notionBox">
+    <!-- Populated by notion.js -->
+  </div>
+</div>
+
+<!-- ══ THEME MODAL ════════════════════════════════════════ -->
+<div class="modal-ov" id="themeModal" onclick="ThemeManager.closeModal(event)">
+  <div class="modal-box theme-modal-box">
+    <div class="modal-title" data-i18n="theme_title">背景主题</div>
+    <div class="theme-grid" id="themeGrid"></div>
+    <div class="modal-row" style="margin-top:16px">
+      <button class="mcancel" onclick="ThemeManager.closeModal()" data-i18n="btn_cancel">取消</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ IN-PAGE PUSH REMINDER BANNER ══════════════════════ -->
 <div class="remind-banner" id="remindBanner" style="display:none">
   <span id="remindBannerText">📚 该学习啦！</span>
@@ -231,12 +258,7 @@
   <div class="modal-box" id="couponBox"></div>
 </div>
 
-<!-- ══ SCRIPTS ════════════════════════════════════════════
-     Load order:
-     1. CDN libraries (EmailJS, Chart.js)
-     2. App modules as classic scripts (expose globals)
-     3. Firebase init + auth as ES module (last)
--->
+<!-- ══ SCRIPTS ════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -249,6 +271,8 @@
 <script src="js/calendar.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/rewards.js"></script>
+<script src="js/notion.js"></script>
+<script src="js/theme.js"></script>
 <script src="js/app.js"></script>
 
 <!-- Firebase + Auth loaded last as ES module -->

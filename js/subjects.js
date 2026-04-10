@@ -1,4 +1,4 @@
-/* subjects.js — Subject management: add, delete, toggle, render */
+/* subjects.js — Subject management: add, delete, toggle, inline duration edit */
 
 const EMOJIS = ['📚','✏️','🔢','🐍','🎨','🎵','⚽','🌍','🔬','💻','📖','🗣️',
                  '🇬🇧','🇯🇵','🇨🇳','🧮','🎸','🏊','🧠','🌱','🎯','🔭'];
@@ -17,15 +17,20 @@ const Subjects = {
       const div = document.createElement('div');
       div.className = 'subject-item';
       if (s.enabled) {
-        div.style.background    = s.bg;
-        div.style.borderColor   = s.color;
+        div.style.background  = s.bg;
+        div.style.borderColor = s.color;
       }
       div.innerHTML = `
         <div class="s-left">
           <div class="s-icon" style="background:${s.bg}">${s.icon}</div>
           <div>
             <div class="s-name">${nm}</div>
-            <div class="s-detail">${t('dur_lbl')} ${s.duration} ${t('dur_min')}</div>
+            <div class="s-dur-row">
+              <button class="dur-adj" onclick="Subjects.adjDur('${s.id}',-5)">−</button>
+              <span class="dur-val" id="durVal_${s.id}">${s.duration}</span>
+              <span class="dur-unit">${t('dur_min')}</span>
+              <button class="dur-adj" onclick="Subjects.adjDur('${s.id}',+5)">＋</button>
+            </div>
           </div>
         </div>
         <div class="s-right">
@@ -37,6 +42,16 @@ const Subjects = {
         </div>`;
       el.appendChild(div);
     });
+  },
+
+  // Adjust duration by delta, clamp 5–300, auto-save
+  adjDur(id, delta) {
+    const s = S.subjects.find(x => x.id === id);
+    if (!s) return;
+    s.duration = Math.min(300, Math.max(5, (s.duration || 30) + delta));
+    const el = document.getElementById('durVal_' + id);
+    if (el) el.textContent = s.duration;
+    saveLocal();
   },
 
   toggle(id) {
@@ -63,9 +78,7 @@ const Subjects = {
     document.getElementById('addModal').classList.add('open');
   },
 
-  closeAdd() {
-    document.getElementById('addModal').classList.remove('open');
-  },
+  closeAdd() { document.getElementById('addModal').classList.remove('open'); },
 
   bgClose(e) {
     if (e.target === document.getElementById('addModal')) this.closeAdd();
@@ -73,7 +86,8 @@ const Subjects = {
 
   _renderEmojiGrid() {
     document.getElementById('emojiGrid').innerHTML = EMOJIS.map(em =>
-      `<div class="eo ${em === _addState.emoji ? 'sel' : ''}" onclick="Subjects._pickEmoji('${em}')">${em}</div>`
+      `<div class="eo ${em === _addState.emoji ? 'sel' : ''}"
+            onclick="Subjects._pickEmoji('${em}')">${em}</div>`
     ).join('');
   },
 
@@ -93,13 +107,10 @@ const Subjects = {
     const dur = parseInt(document.getElementById('newDur').value) || 30;
     const bg  = _addState.color + '22';
     S.subjects.push({
-      id:      's' + Date.now(),
-      name:    nm, nameJa: nm, nameEn: nm,
-      icon:    _addState.emoji,
-      color:   _addState.color,
-      bg,
-      enabled: true,
-      duration: dur,
+      id: 's' + Date.now(),
+      name: nm, nameJa: nm, nameEn: nm,
+      icon: _addState.emoji, color: _addState.color, bg,
+      enabled: true, duration: dur,
     });
     saveLocal();
     this.closeAdd();

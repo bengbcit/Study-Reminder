@@ -1,4 +1,7 @@
-/* i18n.js — Internationalization module (zh / ja / en) — FULL VERSION */
+/* i18n.js — Internationalization module (zh / ja / en)
+   KEY FIX: I18n.set() now calls window._refreshAuthGate() so the login
+   form re-renders in the new language immediately when user switches language.
+*/
 
 const I18N = {
   zh: {
@@ -22,7 +25,7 @@ const I18N = {
     discord_step3: '点击 <b>Copy Webhook URL</b>，贴到下方',
     discord_step4: '点测试按钮，Discord 频道会收到消息 ✅',
     discord_test_btn: '🎮 发送测试消息',
-    discord_note: '✅ 优点：完全免费 · 无需 Bot · 一个 URL 搞定 · 支持富文本消息',
+    discord_note: '✅ 完全免费 · 无需 Bot · 一个 URL 搞定 · 支持富文本消息',
     t_start: '开始时间', t_ontime: '准时',
     rep_email_lbl: '发送到邮箱',
     btn_submit_all: '✉️ 提交今日简报',
@@ -80,7 +83,15 @@ const I18N = {
     notion_synced: '✅ 已同步到 Notion！',
     notion_sync_fail: '同步失败',
     notion_no_config: '请先填写 Notion Token 和数据库 ID',
-    // Theme / background
+    notion_edit_tasks: '编辑任务',
+    notion_add_task: '＋ 添加任务',
+    notion_task_ph: '任务内容…',
+    notion_time_all: '全部',
+    notion_time_morning: '晨间',
+    notion_time_am: '上午',
+    notion_time_pm: '下午',
+    notion_time_evening: '晚间',
+    // Theme
     theme_btn: '🎨',
     theme_title: '背景主题',
     theme_default: '默认',
@@ -101,10 +112,10 @@ const I18N = {
     push_lbl: '🔔 事前通知',
     push_note: 'ページが開いている間バナーと音で通知',
     push_preview_btn: '👀 通知をプレビュー',
-    discord_title: '🎮 Discord Webhook 設定',
-    discord_step1: 'Discord を開く → チャンネルに入る → ⚙️ 設定',
+    discord_title: '🎮 Discord Webhook 設定（簡単・アカウント不要）',
+    discord_step1: 'Discord を開く → チャンネルに入る → ⚙️ チャンネル設定',
     discord_step2: 'Integrations → Webhooks → New Webhook',
-    discord_step3: 'Copy Webhook URL して下に貼り付け',
+    discord_step3: 'Copy Webhook URL をコピーして下に貼り付け',
     discord_step4: 'テストボタンを押す → Discord にメッセージが届く ✅',
     discord_test_btn: '🎮 テストメッセージを送信',
     discord_note: '✅ 完全無料 · Bot不要 · URLのみ · リッチテキスト対応',
@@ -148,7 +159,7 @@ const I18N = {
     // Notion
     notion_btn: '📋 打卡',
     notion_title: 'Notion 学習ログ',
-    notion_setup_label: '⚙️ Notion 設定',
+    notion_setup_label: '⚙️ Notion 連携設定',
     notion_token_ph: 'Notion Integration Token (secret_xxx…)',
     notion_db_ph: 'データベース ID（URLの32文字）',
     notion_hint: 'Notion で Integration 作成 → データベースに共有 → Token と DB ID を貼り付け',
@@ -166,6 +177,14 @@ const I18N = {
     notion_synced: '✅ Notion に同期しました！',
     notion_sync_fail: '同期に失敗しました',
     notion_no_config: 'Notion Token と DB ID を入力してください',
+    notion_edit_tasks: 'タスクを編集',
+    notion_add_task: '＋ タスクを追加',
+    notion_task_ph: 'タスク内容…',
+    notion_time_all: 'すべて',
+    notion_time_morning: '朝',
+    notion_time_am: '午前',
+    notion_time_pm: '午後',
+    notion_time_evening: '夜',
     // Theme
     theme_btn: '🎨',
     theme_title: '背景テーマ',
@@ -186,12 +205,12 @@ const I18N = {
     email_note: 'Reports are auto-emailed here',
     push_lbl: '🔔 Remind Before',
     push_note: 'Shows a banner + sound while the page is open',
-    push_preview_btn: '👀 Preview Reminder',
+    push_preview_btn: '👀 Preview Reminder Now',
     discord_title: '🎮 Discord Webhook Setup (easiest, no account needed)',
-    discord_step1: 'Open Discord → go to your channel → click the ⚙️ Settings gear',
+    discord_step1: 'Open Discord → go to your channel → click the ⚙️ gear icon',
     discord_step2: 'Select Integrations → Webhooks → New Webhook',
-    discord_step3: 'Click Copy Webhook URL and paste below',
-    discord_step4: 'Click the test button — your Discord channel gets a message ✅',
+    discord_step3: 'Click Copy Webhook URL and paste it below',
+    discord_step4: 'Hit the test button — your channel gets a message ✅',
     discord_test_btn: '🎮 Send Test Message',
     discord_note: '✅ Free · No bot needed · One URL · Rich text support',
     t_start: 'Start Time', t_ontime: 'On time',
@@ -237,7 +256,7 @@ const I18N = {
     notion_setup_label: '⚙️ Notion Integration Setup',
     notion_token_ph: 'Notion Integration Token (secret_xxx…)',
     notion_db_ph: 'Database ID (32-char string from URL)',
-    notion_hint: 'Create an Integration in Notion → Share it with your DB → Paste the Token & DB ID',
+    notion_hint: 'Create an Integration in Notion → Share with your DB → Paste Token & DB ID',
     notion_save_cfg: '💾 Save Config',
     notion_tasks_label: "Today's Tasks",
     notion_summary_ph: 'Study summary for today…',
@@ -252,6 +271,14 @@ const I18N = {
     notion_synced: '✅ Synced to Notion!',
     notion_sync_fail: 'Sync failed',
     notion_no_config: 'Please enter your Notion Token and Database ID',
+    notion_edit_tasks: 'Edit Tasks',
+    notion_add_task: '＋ Add Task',
+    notion_task_ph: 'Task description…',
+    notion_time_all: 'All',
+    notion_time_morning: 'Morning',
+    notion_time_am: 'AM',
+    notion_time_pm: 'PM',
+    notion_time_evening: 'Evening',
     // Theme
     theme_btn: '🎨',
     theme_title: 'Background Theme',
@@ -266,46 +293,46 @@ const I18n = {
   set(l) {
     this.lang = l;
 
-    // Language toggle buttons
+    // ── Language toggle buttons ────────────────────────────
     document.querySelectorAll('.lb').forEach(b => {
       const map = { zh:'中', ja:'日', en:'EN' };
       b.classList.toggle('active', b.textContent.trim() === map[l]);
     });
     document.documentElement.lang = l;
 
-    // All data-i18n static elements
+    // ── All static data-i18n elements ─────────────────────
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const k = el.getAttribute('data-i18n');
-      if (I18N[l][k] !== undefined) el.textContent = I18N[l][k];
+      if (I18N[l]?.[k] !== undefined) el.textContent = I18N[l][k];
     });
 
-    // data-i18n-html (for elements with HTML content)
+    // ── data-i18n-html (for HTML content like bold tags) ──
     document.querySelectorAll('[data-i18n-html]').forEach(el => {
       const k = el.getAttribute('data-i18n-html');
-      if (I18N[l][k] !== undefined) el.innerHTML = I18N[l][k];
+      if (I18N[l]?.[k] !== undefined) el.innerHTML = I18N[l][k];
     });
 
-    // App title
+    // ── App title ──────────────────────────────────────────
     const appTitle = document.getElementById('appTitle');
     if (appTitle) appTitle.textContent = this.t('appTitle');
 
-    // Nav tab labels
+    // ── Nav tab labels ─────────────────────────────────────
     document.querySelectorAll('.tabs .tab').forEach(btn => {
       const key = btn.getAttribute('data-i18n');
-      if (key && I18N[l][key]) btn.textContent = I18N[l][key];
+      if (key && I18N[l]?.[key]) btn.textContent = I18N[l][key];
     });
 
-    // Auth gate tabs
-    const tabLogin    = document.getElementById('tabLogin');
-    const tabRegister = document.getElementById('tabRegister');
-    if (tabLogin)    tabLogin.textContent    = this.t('login');
-    if (tabRegister) tabRegister.textContent = this.t('register');
+    // ── AUTH GATE: re-render login form in new language ────
+    // This is the KEY fix — always refresh auth gate on lang switch
+    if (typeof window._refreshAuthGate === 'function') {
+      window._refreshAuthGate();
+    }
 
-    // Notion button
+    // ── Notion tab button text ─────────────────────────────
     const notionBtn = document.getElementById('notionTabBtn');
     if (notionBtn) notionBtn.textContent = this.t('notion_btn');
 
-    // Re-render all dynamic views
+    // ── Re-render all dynamic page views ──────────────────
     if (window.Subjects) Subjects.render();
     if (window.Report)   Report.render();
     if (window.Rewards)  Rewards.render();
@@ -313,17 +340,23 @@ const I18n = {
     if (window.Stats)    Stats.render();
     if (window.Timer)    Timer.render();
 
-    // Re-apply data-i18n in remind page (dynamic HTML in some places)
+    // ── Re-apply data-i18n in remind page ─────────────────
     document.querySelectorAll('#page-remind [data-i18n]').forEach(el => {
       const k = el.getAttribute('data-i18n');
-      if (I18N[l][k] !== undefined) el.textContent = I18N[l][k];
+      if (I18N[l]?.[k] !== undefined) el.textContent = I18N[l][k];
+    });
+    document.querySelectorAll('#page-remind [data-i18n-html]').forEach(el => {
+      const k = el.getAttribute('data-i18n-html');
+      if (I18N[l]?.[k] !== undefined) el.innerHTML = I18N[l][k];
     });
 
+    // ── Select dropdowns ───────────────────────────────────
     this.updateSelects();
   },
 
   t(k, vars) {
-    let s = (I18N[this.lang] && I18N[this.lang][k]) || (I18N.zh[k]) || k;
+    // Fallback chain: current lang → zh → key itself
+    let s = (I18N[this.lang]?.[k]) ?? (I18N.zh?.[k]) ?? k;
     if (vars) Object.keys(vars).forEach(v => { s = s.replace('{' + v + '}', vars[v]); });
     return s;
   },

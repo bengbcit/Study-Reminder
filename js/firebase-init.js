@@ -1,8 +1,10 @@
-/* firebase-init.js — ES module loaded last.
+/* firebase-init.js — Firebase Auth + Firestore
    Fixes:
-   - Google popup login (signInWithRedirect fallback for mobile/popup-blocked)
-   - i18n error messages (language-aware)
-   - All UI strings use t() helper
+   1. Sets window.Auth._firebased = true so app.js knows Firebase is active
+   2. showLogin/showRegister use t() — re-renders correctly when lang changes
+   3. Google login: popup first, redirect fallback if blocked
+   4. All error messages are language-aware via _friendlyError()
+   5. _refreshAuthGate() is called from i18n.js on lang switch
 */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -15,15 +17,14 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import FIREBASE_CONFIG from './firebase-config.js';
 
-// If config still has placeholder values, do nothing (local fallback takes over)
 if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
-  console.info('Firebase not configured — local mode will activate.');
+  console.info('Firebase not configured — local mode active.');
 } else {
   let _auth, _db;
   try {
     const app = initializeApp(FIREBASE_CONFIG);
     _auth = getAuth(app);
-    _db = getFirestore(app);
+    _db   = getFirestore(app);
   } catch (e) {
     console.warn('Firebase init error:', e.message);
   }
@@ -32,12 +33,13 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
 
     const FirebaseAuth = {
       user: null,
+      _firebased: true, // ← marker so app.js knows Firebase is active
 
       async _onSignIn(user) {
         this.user = user;
         await this._loadUserData(user.uid);
         document.getElementById('authGate').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('mainApp').style.display  = 'block';
         this._updateAvatar();
         App.init();
       },
@@ -49,31 +51,33 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         this.showLogin();
       },
 
-      // ── Auth Gate UI ─────────────────────────────────────────
+      // ── Auth gate UI — uses t() so language switching works ──
       showLogin() {
-        document.getElementById('tabLogin').classList.add('active');
-        document.getElementById('tabRegister').classList.remove('active');
-        document.getElementById('authErr').textContent = '';
-        document.getElementById('tabLogin').textContent = t('login');
-        document.getElementById('tabRegister').textContent = t('register');
+        const el = document.getElementById('tabLogin');
+        const er = document.getElementById('tabRegister');
+        if (el) { el.classList.add('active');    el.textContent = t('login'); }
+        if (er) { er.classList.remove('active'); er.textContent = t('register'); }
+        _setErr('');
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiEmail" type="email"
                  placeholder="${t('email_field')}" autocomplete="email">
           <input class="auth-input" id="aiPass" type="password"
                  placeholder="${t('password_field')}" autocomplete="current-password">
-          <button class="auth-btn" id="loginBtn" onclick="window.Auth._login()">${t('login')}</button>
+          <button class="auth-btn" id="loginBtn"
+                  onclick="window.Auth._login()">${t('login')}</button>
           <div class="auth-divider">or</div>
-          <button class="auth-google" id="googleBtn" onclick="window.Auth._googleLogin()">
+          <button class="auth-google" id="googleBtn"
+                  onclick="window.Auth._googleLogin()">
             ${_gIcon()} ${t('google_login')}
           </button>`;
       },
 
       showRegister() {
-        document.getElementById('tabRegister').classList.add('active');
-        document.getElementById('tabLogin').classList.remove('active');
-        document.getElementById('authErr').textContent = '';
-        document.getElementById('tabLogin').textContent = t('login');
-        document.getElementById('tabRegister').textContent = t('register');
+        const el = document.getElementById('tabLogin');
+        const er = document.getElementById('tabRegister');
+        if (el) { el.classList.remove('active'); el.textContent = t('login'); }
+        if (er) { er.classList.add('active');    er.textContent = t('register'); }
+        _setErr('');
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiName" type="text"
                  placeholder="${t('name_field')}" autocomplete="nickname">
@@ -81,28 +85,27 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
                  placeholder="${t('email_field')}" autocomplete="email">
           <input class="auth-input" id="aiPass" type="password"
                  placeholder="${t('password_field')}" autocomplete="new-password">
-          <button class="auth-btn" id="registerBtn" onclick="window.Auth._register()">${t('register')}</button>
+          <button class="auth-btn" id="registerBtn"
+                  onclick="window.Auth._register()">${t('register')}</button>
           <div class="auth-divider">or</div>
-          <button class="auth-google" id="googleBtn" onclick="window.Auth._googleLogin()">
+          <button class="auth-google" id="googleBtn"
+                  onclick="window.Auth._googleLogin()">
             ${_gIcon()} ${t('google_login')}
           </button>`;
       },
 
-      // ── Sign-in actions ───────────────────────────────────────
+      // ── Sign-in actions ──────────────────────────────────
       async _login() {
         const email = document.getElementById('aiEmail')?.value.trim();
         const pass  = document.getElementById('aiPass')?.value;
-        if (!email || !pass) {
-          _setErr(t('auth_fill_both'));
-          return;
-        }
+        if (!email || !pass) { _setErr(t('auth_fill_both')); return; }
         _setErr('');
-        _setLoading('loginBtn', true);
+        _setBusy('loginBtn', true);
         try {
           await signInWithEmailAndPassword(_auth, email, pass);
         } catch (e) {
           _setErr(_friendlyError(e.code));
-          _setLoading('loginBtn', false);
+          _setBusy('loginBtn', false);
         }
       },
 
@@ -110,97 +113,81 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         const name  = document.getElementById('aiName')?.value.trim() || '';
         const email = document.getElementById('aiEmail')?.value.trim();
         const pass  = document.getElementById('aiPass')?.value;
-        if (!email || !pass) {
-          _setErr(t('auth_fill_both'));
-          return;
-        }
-        if (pass.length < 6) {
-          _setErr(t('auth_pw_short'));
-          return;
-        }
+        if (!email || !pass) { _setErr(t('auth_fill_both')); return; }
+        if (pass.length < 6) { _setErr(t('auth_pw_short')); return; }
         _setErr('');
-        _setLoading('registerBtn', true);
+        _setBusy('registerBtn', true);
         try {
           const cred = await createUserWithEmailAndPassword(_auth, email, pass);
           if (name) await updateProfile(cred.user, { displayName: name });
           await this._createUserDoc(cred.user, name || email);
+          // onAuthStateChanged → _onSignIn
         } catch (e) {
           _setErr(_friendlyError(e.code));
-          _setLoading('registerBtn', false);
+          _setBusy('registerBtn', false);
         }
       },
 
       async _googleLogin() {
         _setErr('');
-        _setLoading('googleBtn', true);
+        _setBusy('googleBtn', true);
         const provider = new GoogleAuthProvider();
         provider.addScope('email');
         provider.addScope('profile');
         try {
-          // Try popup first; fall back to redirect on mobile / popup-blocked
           const cred = await signInWithPopup(_auth, provider);
-          await this._afterGoogle(cred);
+          await this._handleGoogleCred(cred);
         } catch (e) {
           if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
-            // Redirect fallback
-            try {
-              await signInWithRedirect(_auth, provider);
-              // Result handled in onAuthStateChanged after redirect
-            } catch (e2) {
-              _setErr(_friendlyError(e2.code));
-              _setLoading('googleBtn', false);
-            }
+            // Redirect fallback for mobile / strict browsers
+            _setErr(_friendlyError('auth/popup-blocked'));
+            try { await signInWithRedirect(_auth, provider); } catch (_) {}
           } else {
             _setErr(_friendlyError(e.code));
-            _setLoading('googleBtn', false);
+            _setBusy('googleBtn', false);
           }
         }
       },
 
-      async _afterGoogle(cred) {
-        try {
-          const ref  = doc(_db, 'users', cred.user.uid);
-          const snap = await getDoc(ref);
-          if (!snap.exists()) {
-            await this._createUserDoc(cred.user, cred.user.displayName || cred.user.email);
-          }
-          // onAuthStateChanged will call _onSignIn
-        } catch (e) {
-          console.warn('afterGoogle error:', e.message);
+      async _handleGoogleCred(cred) {
+        const ref  = doc(_db, 'users', cred.user.uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          await this._createUserDoc(cred.user, cred.user.displayName || cred.user.email);
         }
+        // onAuthStateChanged will call _onSignIn
       },
 
       async _createUserDoc(user, displayName) {
         await setDoc(doc(_db, 'users', user.uid), {
           displayName: displayName || user.email,
-          email: user.email,
-          points: 0,
-          streak: 0,
-          coupons: [],
+          email:    user.email,
+          points:   0,
+          streak:   0,
+          coupons:  [],
           subjects: JSON.parse(JSON.stringify(DEFAULT_SUBJECTS)),
-          history: {},
+          history:  {},
           settings: {},
           notionToken: '',
-          notionDbId: '',
+          notionDbId:  '',
           createdAt: new Date().toISOString(),
         });
       },
 
-      // ── Firestore ─────────────────────────────────────────────
+      // ── Firestore ──────────────────────────────────────────
       async _loadUserData(uid) {
         try {
           const snap = await getDoc(doc(_db, 'users', uid));
           if (!snap.exists()) return;
           const d = snap.data();
-          if (d.subjects?.length) S.subjects = d.subjects;
-          if (d.points != null)   S.points   = d.points;
-          if (d.streak != null)   S.streak   = d.streak;
-          if (d.history)          S.history  = d.history;
-          if (d.coupons)          S.coupons  = d.coupons;
+          if (d.subjects?.length) S.subjects    = d.subjects;
+          if (d.points   != null) S.points      = d.points;
+          if (d.streak   != null) S.streak      = d.streak;
+          if (d.history)          S.history     = d.history;
+          if (d.coupons)          S.coupons     = d.coupons;
           if (d.settings)         Object.assign(S, d.settings);
-          // Notion settings
-          if (d.notionToken)  S.notionToken  = d.notionToken;
-          if (d.notionDbId)   S.notionDbId   = d.notionDbId;
+          if (d.notionToken)      S.notionToken = d.notionToken;
+          if (d.notionDbId)       S.notionDbId  = d.notionDbId;
           saveLocal();
         } catch (e) { console.warn('Firestore load:', e.message); }
       },
@@ -209,13 +196,13 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         if (!this.user) return;
         try {
           await updateDoc(doc(_db, 'users', this.user.uid), {
-            subjects:     S.subjects,
-            points:       S.points,
-            streak:       S.streak,
-            history:      S.history,
-            coupons:      S.coupons,
-            notionToken:  S.notionToken || '',
-            notionDbId:   S.notionDbId  || '',
+            subjects:    S.subjects,
+            points:      S.points,
+            streak:      S.streak,
+            history:     S.history,
+            coupons:     S.coupons,
+            notionToken: S.notionToken || '',
+            notionDbId:  S.notionDbId  || '',
             settings: {
               notify:         S.notify,
               startTime:      S.startTime,
@@ -228,7 +215,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         } catch (e) { console.warn('Firestore save:', e.message); }
       },
 
-      // ── Avatar ────────────────────────────────────────────────
+      // ── Avatar + Profile ────────────────────────────────────
       _updateAvatar() {
         const btn  = document.getElementById('userAvatar');
         const name = this.user?.displayName || this.user?.email || '?';
@@ -273,38 +260,44 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       },
     };
 
-    // Expose globally
     window.Auth = FirebaseAuth;
 
-    // Handle redirect result (Google login redirect fallback)
-    getRedirectResult(_auth).then(result => {
-      if (result?.user) FirebaseAuth._afterGoogle(result);
-    }).catch(() => {});
+    // Register _refreshAuthGate for i18n.js to call on lang switch
+    window._refreshAuthGate = function() {
+      if (document.getElementById('authGate')?.style.display !== 'none') {
+        const isReg = document.getElementById('tabRegister')?.classList.contains('active');
+        isReg ? FirebaseAuth.showRegister() : FirebaseAuth.showLogin();
+      }
+    };
 
-    // Auth state listener
+    // Handle Google redirect result (for mobile / popup-blocked fallback)
+    getRedirectResult(_auth)
+      .then(result => { if (result?.user) FirebaseAuth._handleGoogleCred(result); })
+      .catch(() => {});
+
+    // Auth state observer
     onAuthStateChanged(_auth, user => {
       if (user) FirebaseAuth._onSignIn(user);
       else      FirebaseAuth._onSignOut();
     });
 
-    // Show login form immediately
+    // Show login immediately (don't wait for auth state)
     FirebaseAuth.showLogin();
 
   } // end if (_auth && _db)
 } // end if config is real
 
-// ── Private helpers ───────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────
 function _setErr(msg) {
   const el = document.getElementById('authErr');
   if (el) el.textContent = msg;
 }
 
-function _setLoading(btnId, loading) {
-  const btn = document.getElementById(btnId);
+function _setBusy(id, busy) {
+  const btn = document.getElementById(id);
   if (!btn) return;
-  btn.disabled = loading;
-  if (loading) btn.style.opacity = '0.6';
-  else         btn.style.opacity = '';
+  btn.disabled    = busy;
+  btn.style.opacity = busy ? '0.6' : '';
 }
 
 function _gIcon() {
@@ -316,42 +309,20 @@ function _gIcon() {
   </svg>`;
 }
 
-// Language-aware error messages
 function _friendlyError(code) {
-  const lang = (window.I18n?.lang) || 'zh';
+  const l = window.I18n?.lang || 'zh';
   const msgs = {
-    'auth/invalid-email': {
-      zh: '邮箱格式不正确', ja: 'メール形式が正しくありません', en: 'Invalid email format'
-    },
-    'auth/user-not-found': {
-      zh: '账号不存在，请先注册', ja: 'アカウントが見つかりません。先に登録してください', en: 'Account not found, please register first'
-    },
-    'auth/wrong-password': {
-      zh: '密码错误，请重试', ja: 'パスワードが間違っています', en: 'Incorrect password, please try again'
-    },
-    'auth/invalid-credential': {
-      zh: '邮箱或密码错误', ja: 'メールまたはパスワードが違います', en: 'Invalid email or password'
-    },
-    'auth/email-already-in-use': {
-      zh: '该邮箱已注册，请直接登录', ja: 'このメールはすでに登録されています', en: 'Email already registered, please log in'
-    },
-    'auth/weak-password': {
-      zh: '密码至少需要6位', ja: 'パスワードは6文字以上にしてください', en: 'Password must be at least 6 characters'
-    },
-    'auth/popup-closed-by-user': {
-      zh: '登录窗口已关闭，请重试', ja: 'ログインウィンドウが閉じられました', en: 'Login window closed, please try again'
-    },
-    'auth/popup-blocked': {
-      zh: '弹窗被拦截，正在尝试跳转登录…', ja: 'ポップアップがブロックされました。リダイレクト中…', en: 'Popup blocked, trying redirect login…'
-    },
-    'auth/network-request-failed': {
-      zh: '网络错误，请检查连接', ja: 'ネットワークエラー。接続を確認してください', en: 'Network error, check your connection'
-    },
-    'auth/too-many-requests': {
-      zh: '尝试次数过多，请稍后再试', ja: 'ログイン試行回数超過。後でもう一度お試しください', en: 'Too many attempts, please try again later'
-    },
+    'auth/invalid-email':         { zh:'邮箱格式不正确',          ja:'メール形式エラー',           en:'Invalid email format' },
+    'auth/user-not-found':        { zh:'账号不存在，请先注册',     ja:'アカウントが見つかりません', en:'Account not found, register first' },
+    'auth/wrong-password':        { zh:'密码错误，请重试',          ja:'パスワードが違います',       en:'Incorrect password' },
+    'auth/invalid-credential':    { zh:'邮箱或密码错误',            ja:'メールまたはパスワードが違います', en:'Invalid email or password' },
+    'auth/email-already-in-use':  { zh:'该邮箱已注册，请直接登录', ja:'すでに登録済みのメールです', en:'Email already registered, please log in' },
+    'auth/weak-password':         { zh:'密码至少需要6位',           ja:'パスワードは6文字以上',      en:'Password must be 6+ characters' },
+    'auth/popup-closed-by-user':  { zh:'登录窗口已关闭，请重试',   ja:'ウィンドウが閉じられました', en:'Popup closed, please try again' },
+    'auth/popup-blocked':         { zh:'弹窗被拦截，正在跳转登录…', ja:'ポップアップブロック。リダイレクト中…', en:'Popup blocked — trying redirect login…' },
+    'auth/network-request-failed':{ zh:'网络错误，请检查连接',      ja:'ネットワークエラー',         en:'Network error, check connection' },
+    'auth/too-many-requests':     { zh:'尝试次数过多，请稍后再试', ja:'試行回数超過。後でお試しください', en:'Too many attempts, try later' },
   };
   const entry = msgs[code];
-  if (entry) return entry[lang] || entry.en;
-  return `${code}`;
+  return entry ? (entry[l] || entry.en) : code;
 }

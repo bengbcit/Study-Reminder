@@ -1,9 +1,13 @@
-/* app.js — Main entry point, local-mode Auth stub, page routing */
+/* app.js — Main entry point, local-mode Auth stub, page routing
+   Key fix: _localAuthUI() now uses t() for all strings — fully language-aware.
+   Language switching on the auth gate instantly re-renders the form in new lang.
+*/
 
-// ── Auth stub (overwritten by firebase-init.js if Firebase is configured) ───
 const PRESET_AVATARS = ['🐱','🐶','🐼','🦊','🐸','🐯','🦁','🐨','🐻','🐰',
                         '🦄','🐙','🦋','🐬','🌟','🚀'];
 
+// ── Local-mode Auth stub ──────────────────────────────────────
+// (overwritten by firebase-init.js when Firebase is configured)
 const Auth = {
   user: null,
   showLogin()    { _localAuthUI('login'); },
@@ -37,7 +41,7 @@ const Auth = {
         const canvas = document.createElement('canvas');
         canvas.width = canvas.height = 200;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, (img.width-size)/2, (img.height-size)/2,
+        ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2,
                       size, size, 0, 0, 200, 200);
         Auth._setAvatar(canvas.toDataURL('image/jpeg', 0.8));
       };
@@ -52,10 +56,8 @@ function _updateLocalAvatar() {
   const btn = document.getElementById('userAvatar');
   if (!btn) return;
   if (S.avatar && S.avatar.length > 2) {
-    // base64 image
     btn.innerHTML = `<img src="${S.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
   } else if (S.avatar) {
-    // emoji
     btn.textContent = S.avatar;
     btn.style.fontSize = '20px';
   } else {
@@ -64,25 +66,83 @@ function _updateLocalAvatar() {
   }
 }
 
+// ── Local auth UI — FULLY i18n: all strings use t() ──────────
 function _localAuthUI(mode) {
   document.getElementById('authErr').textContent = '';
   const isReg = mode === 'register';
-  ['tabLogin','tabRegister'].forEach(id => {
-    document.getElementById(id)?.classList.toggle('active',
-      id === (isReg ? 'tabRegister' : 'tabLogin'));
-  });
+
+  // Update tab active state
+  document.getElementById('tabLogin')?.classList.toggle('active', !isReg);
+  document.getElementById('tabRegister')?.classList.toggle('active', isReg);
+
+  // Update tab text in current language
+  const tabLogin    = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  if (tabLogin)    tabLogin.textContent    = t('login');
+  if (tabRegister) tabRegister.textContent = t('register');
+
+  // Auth title
+  const authTitle = document.getElementById('authTitle');
+  if (authTitle) authTitle.textContent = t('appTitle');
+
+  // Build form in current language
+  const localModeNotice = {
+    zh: '⚠️ Firebase 尚未配置，当前以<b>本地模式</b>运行',
+    ja: '⚠️ Firebase 未設定。<b>ローカルモード</b>で実行中',
+    en: '⚠️ Firebase not configured — running in <b>local mode</b>',
+  };
+  const enterBtnText = {
+    zh: '进入学习星球',
+    ja: 'スタディプラネットへ',
+    en: 'Enter Study Planet',
+  };
+  const logoutLocalText = {
+    zh: '退出本地模式',
+    ja: 'ローカルモードを終了',
+    en: 'Exit Local Mode',
+  };
+
+  const l = (window.I18n?.lang) || 'zh';
+
   document.getElementById('authForm').innerHTML = `
     <div class="auth-local-notice">
-      ⚠️ Firebase 尚未配置，当前以<b>本地模式</b>运行
+      ${localModeNotice[l] || localModeNotice.zh}
     </div>
-    <input class="auth-input" id="aiName" type="text" placeholder="请输入昵称（可选）">
-    <button class="auth-btn" onclick="App.startLocalMode()">进入学习星球</button>`;
+    <input class="auth-input" id="aiName" type="text"
+           placeholder="${t('name_field')}">
+    <button class="auth-btn" onclick="App.startLocalMode()">
+      ${enterBtnText[l] || enterBtnText.zh}
+    </button>`;
 }
+
+// Called when language changes on auth gate
+window._refreshAuthGate = function() {
+  const gate = document.getElementById('authGate');
+  const app  = document.getElementById('mainApp');
+  // Only refresh if auth gate is visible (not logged in yet)
+  if (gate && gate.style.display !== 'none') {
+    // Check which tab is active
+    const isReg = document.getElementById('tabRegister')?.classList.contains('active');
+    // If firebase auth is loaded, use its showLogin/showRegister
+    if (window.Auth && window.Auth._firebased) {
+      isReg ? window.Auth.showRegister() : window.Auth.showLogin();
+    } else {
+      _localAuthUI(isReg ? 'register' : 'login');
+    }
+  }
+};
 
 function _localProfile() {
   const drawer = document.getElementById('profileDrawer');
   drawer.classList.add('open');
-  const name = S._localName || '本地用户';
+  const l    = (window.I18n?.lang) || 'zh';
+  const name = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
+
+  const localModeLabel = { zh:'本地模式', ja:'ローカルモード', en:'Local Mode' }[l];
+  const changeAvatarLabel = { zh:'更换头像', ja:'アバター変更', en:'Change Avatar' }[l];
+  const uploadLabel = { zh:'📷 上传图片', ja:'📷 画像をアップロード', en:'📷 Upload Image' }[l];
+  const logoutLabel = { zh:'退出本地模式', ja:'ローカルモードを終了', en:'Exit Local Mode' }[l];
+
   const avatarHtml = S.avatar
     ? (S.avatar.length > 2
         ? `<img src="${S.avatar}" class="profile-avatar-img">`
@@ -92,17 +152,17 @@ function _localProfile() {
   document.getElementById('profileContent').innerHTML = `
     ${avatarHtml}
     <div class="profile-name">${name}</div>
-    <div class="profile-email" style="margin-bottom:16px;color:var(--text2)">本地模式</div>
+    <div class="profile-email" style="margin-bottom:16px;color:var(--text2)">${localModeLabel}</div>
     <div class="avatar-section">
-      <p class="sec-label">更换头像</p>
+      <p class="sec-label">${changeAvatarLabel}</p>
       <div class="avatar-preset-grid">
         ${PRESET_AVATARS.map(a =>
-          `<div class="avatar-opt ${S.avatar===a?'sel':''}"
+          `<div class="avatar-opt ${S.avatar === a ? 'sel' : ''}"
                 onclick="Auth._setAvatar('${a}')">${a}</div>`
         ).join('')}
       </div>
       <label class="avatar-upload-btn">
-        📷 上传图片
+        ${uploadLabel}
         <input type="file" accept="image/*" style="display:none"
                onchange="Auth._uploadAvatar(this)">
       </label>
@@ -117,9 +177,9 @@ function _localProfile() {
       ${[...Rewards.getEarned()].map(id => {
           const b = Rewards.BADGES.find(x => x.id === id);
           return b ? `<div class="profile-badge">${b.icon}</div>` : '';
-        }).join('') || '<span style="font-size:13px;color:var(--text2)">—</span>'}
+        }).join('') || `<span style="font-size:13px;color:var(--text2)">—</span>`}
     </div>
-    <button class="logout-btn" onclick="Auth._logout()">退出本地模式</button>`;
+    <button class="logout-btn" onclick="Auth._logout()">${logoutLabel}</button>`;
 }
 
 // ── App controller ────────────────────────────────────────────
@@ -134,12 +194,15 @@ const App = {
     document.getElementById('streakNum').textContent = S.streak;
     _updateLocalAvatar();
     Remind.scheduleBanner();
+    // Restore background theme
     if (window.ThemeManager) ThemeManager.restore();
   },
 
   startLocalMode() {
     const nameEl = document.getElementById('aiName');
-    if (nameEl) S._localName = nameEl.value.trim() || '本地用户';
+    const l = (window.I18n?.lang) || 'zh';
+    const defaultName = { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
+    if (nameEl) S._localName = nameEl.value.trim() || defaultName;
     localStorage.setItem('ss_localEntered', '1');
     document.getElementById('authGate').style.display = 'none';
     document.getElementById('mainApp').style.display  = 'block';
@@ -148,7 +211,7 @@ const App = {
 
   showPage(name, btn) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(b  => b.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
     btn.classList.add('active');
     this.currentPage = name;
@@ -168,27 +231,32 @@ const App = {
     if (Auth.user) await Auth.saveUserData();
     showToast(t('save_ok'));
     Remind.scheduleBanner();
-    if (window.ThemeManager) ThemeManager.restore();
   },
 };
 
 // ── Startup ───────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  // If already entered local mode, skip auth gate
   if (localStorage.getItem('ss_localEntered')) {
     document.getElementById('authGate').style.display = 'none';
     document.getElementById('mainApp').style.display  = 'block';
     App.init();
     return;
   }
+  // Show local auth UI immediately (Firebase init will overwrite if configured)
   _localAuthUI('login');
 });
 
-// Safety fallback: if Firebase hasn't signed anyone in after 5s, keep local UI
-// but do NOT auto-enter the app — user must click the button
+// Safety fallback: 5s after load, if still on auth gate, refresh the local UI
+// This handles the case where Firebase takes a moment to determine auth state
 setTimeout(() => {
   const gate = document.getElementById('authGate');
   const app  = document.getElementById('mainApp');
   if (gate?.style.display !== 'none' && app?.style.display === 'none') {
-    _localAuthUI('login');
+    // If firebase auth initialized but no user, it calls showLogin already
+    // Only call _localAuthUI if there's no firebase (stub still active)
+    if (!window.Auth?._firebased) {
+      _localAuthUI('login');
+    }
   }
 }, 5000);

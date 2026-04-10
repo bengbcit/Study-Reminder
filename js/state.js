@@ -21,11 +21,12 @@ const S = {
   todayReport:   {},   // { subjectId: { done, summary, hard, diff } }
   coupons:       [],   // [{ id, icon, name, cost, date, used }]
   avatar:        null, // emoji string or base64 data URL
-  notionToken:   "",
-  notionDbId:    "",
-  notionSyncedPages: [],
-  notionDraftSummary: "",
-  themeBg:       "",    // background theme id
+  notionToken:   '',
+  notionDbId:    '',
+  notionTasks:   [],        // user-editable checkin tasks
+  notionSyncedPages: [],    // [{ date, url }]
+  notionDraftSummary: '',
+  themeBg:       '',        // background theme id
   calMonth:      new Date().getMonth(),
   calYear:       new Date().getFullYear(),
   selectedDay:   null,

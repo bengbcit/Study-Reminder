@@ -561,8 +561,55 @@ body {
 }
 .ps-num { font-size: 20px; font-weight: 900; color: var(--accent); }
 .ps-lbl { font-size: 10px; color: var(--text2); font-weight: 700; }
-.profile-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.profile-badges { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-badge { font-size: 28px; }
+
+/* ── Profile panel buttons (头像 / 徽章) ── */
+.profile-panel-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 12px;
+}
+.profile-panel-btn {
+  padding: 10px 8px; border-radius: 14px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--text); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: border-color .15s, background .15s;
+}
+.profile-panel-btn:hover { border-color: var(--accent); }
+.profile-expand-panel {
+  display: none; margin-bottom: 12px; padding: 12px;
+  background: var(--bg); border-radius: 14px;
+  border: 1.5px solid var(--border);
+}
+.profile-expand-panel.open { display: block; }
+
+/* ── Avatar grid inside expand panel ── */
+.avatar-preset-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 6px; margin-bottom: 10px;
+}
+.avatar-opt {
+  font-size: 24px; text-align: center; padding: 6px; border-radius: 10px;
+  cursor: pointer; border: 2px solid transparent;
+  transition: border-color .15s, background .15s;
+}
+.avatar-opt:hover { background: var(--border); }
+.avatar-opt.sel { border-color: var(--accent); background: #FFF3E0; }
+.avatar-upload-btn {
+  display: block; width: 100%; padding: 9px; border-radius: 12px;
+  border: 1.5px dashed var(--border); background: var(--bg);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--text2); cursor: pointer; text-align: center;
+  transition: border-color .15s;
+}
+.avatar-upload-btn:hover { border-color: var(--accent); color: var(--accent); }
+.profile-avatar-img {
+  width: 72px; height: 72px; border-radius: 50%;
+  object-fit: cover; display: block; margin: 0 auto 12px;
+}
+
 .profile-btn {
   width: 100%; padding: 12px; border-radius: 14px;
   border: 1.5px solid var(--border); background: var(--bg);

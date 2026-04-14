@@ -138,10 +138,11 @@ function _localProfile() {
   const l    = (window.I18n?.lang) || 'zh';
   const name = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
 
-  const localModeLabel = { zh:'本地模式', ja:'ローカルモード', en:'Local Mode' }[l];
-  const changeAvatarLabel = { zh:'更换头像', ja:'アバター変更', en:'Change Avatar' }[l];
-  const uploadLabel = { zh:'📷 上传图片', ja:'📷 画像をアップロード', en:'📷 Upload Image' }[l];
-  const logoutLabel = { zh:'退出本地模式', ja:'ローカルモードを終了', en:'Exit Local Mode' }[l];
+  const localModeLabel = { zh:'本地模式',          ja:'ローカルモード',         en:'Local Mode' }[l];
+  const avatarBtnLabel = { zh:'头像',               ja:'アバター',               en:'Avatar'     }[l];
+  const badgeBtnLabel  = { zh:'徽章',               ja:'バッジ',                 en:'Badges'     }[l];
+  const uploadLabel    = { zh:'📷 上传图片',         ja:'📷 画像をアップロード',   en:'📷 Upload'  }[l];
+  const logoutLabel    = { zh:'退出本地模式',        ja:'ローカルモードを終了',     en:'Exit Local' }[l];
 
   const avatarHtml = S.avatar
     ? (S.avatar.length > 2
@@ -149,12 +150,24 @@ function _localProfile() {
         : `<div class="profile-avatar" style="font-size:40px">${S.avatar}</div>`)
     : `<div class="profile-avatar">${name.charAt(0).toUpperCase()}</div>`;
 
+  const badgesHtml = [...Rewards.getEarned()].map(id => {
+    const b = Rewards.BADGES.find(x => x.id === id);
+    return b ? `<div class="profile-badge" title="${b.name[l]||b.name.zh}">${b.icon}</div>` : '';
+  }).join('') || `<span style="font-size:13px;color:var(--text2)">—</span>`;
+
   document.getElementById('profileContent').innerHTML = `
     ${avatarHtml}
     <div class="profile-name">${name}</div>
     <div class="profile-email" style="margin-bottom:16px;color:var(--text2)">${localModeLabel}</div>
-    <div class="avatar-section">
-      <p class="sec-label">${changeAvatarLabel}</p>
+    <div class="profile-panel-row">
+      <button class="profile-panel-btn" onclick="_toggleProfilePanel('avatarPanel')">
+        🖼 ${avatarBtnLabel}
+      </button>
+      <button class="profile-panel-btn" onclick="_toggleProfilePanel('badgePanel')">
+        🏅 ${badgeBtnLabel}
+      </button>
+    </div>
+    <div id="avatarPanel" class="profile-expand-panel">
       <div class="avatar-preset-grid">
         ${PRESET_AVATARS.map(a =>
           `<div class="avatar-opt ${S.avatar === a ? 'sel' : ''}"
@@ -167,19 +180,31 @@ function _localProfile() {
                onchange="Auth._uploadAvatar(this)">
       </label>
     </div>
+    <div id="badgePanel" class="profile-expand-panel">
+      <div class="profile-badges">${badgesHtml}</div>
+    </div>
     <div class="profile-stat-row">
       <div class="ps-card"><div class="ps-num">${S.points}</div><div class="ps-lbl">${t('pts_lbl')}</div></div>
       <div class="ps-card"><div class="ps-num">${S.streak}</div><div class="ps-lbl">${t('stats_streak')}</div></div>
       <div class="ps-card"><div class="ps-num">${Object.keys(S.history).length}</div><div class="ps-lbl">${t('stats_total_days')}</div></div>
     </div>
-    <p class="sec-label">${t('profile_badges')}</p>
-    <div class="profile-badges">
-      ${[...Rewards.getEarned()].map(id => {
-          const b = Rewards.BADGES.find(x => x.id === id);
-          return b ? `<div class="profile-badge">${b.icon}</div>` : '';
-        }).join('') || `<span style="font-size:13px;color:var(--text2)">—</span>`}
-    </div>
     <button class="logout-btn" onclick="Auth._logout()">${logoutLabel}</button>`;
+}
+
+// Toggle avatar / badge panels in profile drawer (used by both local & Firebase profile)
+function _toggleProfilePanel(id) {
+  const avatarPanel = document.getElementById('avatarPanel');
+  const badgePanel  = document.getElementById('badgePanel');
+  if (!avatarPanel || !badgePanel) return;
+  if (id === 'avatarPanel') {
+    const opening = !avatarPanel.classList.contains('open');
+    avatarPanel.classList.toggle('open', opening);
+    badgePanel.classList.remove('open');
+  } else {
+    const opening = !badgePanel.classList.contains('open');
+    badgePanel.classList.toggle('open', opening);
+    avatarPanel.classList.remove('open');
+  }
 }
 
 // ── App controller ────────────────────────────────────────────

@@ -1,0 +1,9 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash 'I:\\Projects and Coding\\Apps\\study-reminder\\.claude\\statusline-command.sh'"
+  },
+  "enabledPlugins": {
+    "claude-hud@claude-hud": true
+  }
+}

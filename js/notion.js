@@ -257,7 +257,11 @@ const Notion = {
             ? `<a class="notion-archive-btn done"
                   href="${todayArchive.url || '#'}" target="_blank" rel="noopener">
                  ✅ ${{ zh:'今日已归档 ↗', ja:'今日アーカイブ済み ↗', en:'Today archived ↗' }[l]}
-               </a>`
+               </a>
+               <button class="notion-archive-btn" id="notionArchiveBtn"
+                       onclick="Notion._archiveToday()" style="margin-top:8px;opacity:.75;background:linear-gradient(135deg,#777,#999)">
+                 🔄 ${{ zh:'更新归档（覆盖）', ja:'アーカイブを更新', en:'Update archive' }[l]}
+               </button>`
             : `<button class="notion-archive-btn" id="notionArchiveBtn"
                        onclick="Notion._archiveToday()">
                  📤 ${{ zh:'完成今日打卡 → 存档 Notion', ja:'チェックインを Notion に保存', en:"Archive today's checkin to Notion" }[l]}

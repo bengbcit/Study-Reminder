@@ -243,20 +243,19 @@ window.addEventListener('DOMContentLoaded', () => {
     App.init();
     return;
   }
-  // Show local auth UI immediately (Firebase init will overwrite if configured)
-  _localAuthUI('login');
+  // Show a neutral loading state while firebase-init.js (module) downloads the SDK.
+  // firebase-init.js will overwrite this with the real login form once ready.
+  document.getElementById('authForm').innerHTML =
+    '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ 正在连接…</div>';
 });
 
-// Safety fallback: 5s after load, if still on auth gate, refresh the local UI
-// This handles the case where Firebase takes a moment to determine auth state
+// Fallback: if Firebase SDK never loads (e.g. offline / no config), show local mode after 10s
 setTimeout(() => {
   const gate = document.getElementById('authGate');
   const app  = document.getElementById('mainApp');
   if (gate?.style.display !== 'none' && app?.style.display === 'none') {
-    // If firebase auth initialized but no user, it calls showLogin already
-    // Only call _localAuthUI if there's no firebase (stub still active)
     if (!window.Auth?._firebased) {
       _localAuthUI('login');
     }
   }
-}, 5000);
+}, 10000);

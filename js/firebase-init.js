@@ -306,9 +306,10 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         const l    = window.I18n?.lang || 'zh';
         const earned = Rewards.getEarned();
         const badges = Rewards.BADGES.filter(b => earned.has(b.id));
-        const avatarLabel = { zh:'头像', ja:'アバター', en:'Avatar' }[l] || '头像';
-        const badgeLabel  = { zh:'徽章', ja:'バッジ',   en:'Badges' }[l] || '徽章';
-        const uploadLabel = { zh:'📷 上传图片', ja:'📷 画像をアップロード', en:'📷 Upload Image' }[l];
+        const avatarLabel  = { zh:'头像', ja:'アバター', en:'Avatar'  }[l] || '头像';
+        const badgeLabel   = { zh:'徽章', ja:'バッジ',   en:'Badges'  }[l] || '徽章';
+        const couponLabel  = { zh:'奖券', ja:'クーポン', en:'Coupons' }[l] || '奖券';
+        const uploadLabel  = { zh:'📷 上传图片', ja:'📷 画像をアップロード', en:'📷 Upload Image' }[l];
 
         const badgesHtml = badges.map(b =>
           `<div class="profile-badge" title="${b.name[l]||b.name.zh}">${b.icon}</div>`
@@ -324,6 +325,9 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
             </button>
             <button class="profile-panel-btn" onclick="_toggleProfilePanel('badgePanel')">
               🏅 ${badgeLabel}
+            </button>
+            <button class="profile-panel-btn" onclick="_toggleProfilePanel('couponPanel')">
+              🎫 ${couponLabel}
             </button>
           </div>
           <div id="avatarPanel" class="profile-expand-panel">
@@ -341,6 +345,18 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           </div>
           <div id="badgePanel" class="profile-expand-panel">
             <div class="profile-badges">${badgesHtml}</div>
+          </div>
+          <div id="couponPanel" class="profile-expand-panel">
+            ${S.coupons.length === 0
+              ? `<span style="font-size:13px;color:var(--text2)">—</span>`
+              : S.coupons.map((c, idx) => `
+                <div class="profile-coupon-mini" onclick="Rewards.openCoupon(${idx})"
+                     style="background:${c.gradient};color:${c.text}">
+                  <span class="pcm-icon">${c.icon}</span>
+                  <span class="pcm-name">${c.name}</span>
+                  ${c.used ? '<span class="pcm-used">✓ used</span>' : ''}
+                </div>`).join('')
+            }
           </div>
           <div class="profile-stat-row">
             <div class="ps-card"><div class="ps-num">${S.points}</div><div class="ps-lbl">${t('pts_lbl')}</div></div>

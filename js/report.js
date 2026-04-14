@@ -104,9 +104,18 @@ const Report = {
       el.appendChild(div);
     });
 
-    // Sync report email field
+    // Sync report email field from saved state
     const repEmail = document.getElementById('reportEmail');
-    if (repEmail && !repEmail._userEdited) repEmail.value = S.emailAddr || 'takeiteasylyaoi@gmail.com';
+    if (repEmail) repEmail.value = S.emailAddr || '';
+  },
+
+  // Auto-save report email back to S.emailAddr on blur
+  _saveEmail(el) {
+    S.emailAddr = el.value.trim();
+    saveLocal();
+    // Keep remind page email field in sync too
+    const addr = document.getElementById('emailAddr');
+    if (addr) addr.value = S.emailAddr;
   },
 
   _togDone(id, input) {

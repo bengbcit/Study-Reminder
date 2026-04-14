@@ -141,6 +141,7 @@ function _localProfile() {
   const localModeLabel = { zh:'本地模式',          ja:'ローカルモード',         en:'Local Mode' }[l];
   const avatarBtnLabel = { zh:'头像',               ja:'アバター',               en:'Avatar'     }[l];
   const badgeBtnLabel  = { zh:'徽章',               ja:'バッジ',                 en:'Badges'     }[l];
+  const couponBtnLabel = { zh:'奖券',               ja:'クーポン',               en:'Coupons'    }[l];
   const uploadLabel    = { zh:'📷 上传图片',         ja:'📷 画像をアップロード',   en:'📷 Upload'  }[l];
   const logoutLabel    = { zh:'退出本地模式',        ja:'ローカルモードを終了',     en:'Exit Local' }[l];
 
@@ -166,6 +167,9 @@ function _localProfile() {
       <button class="profile-panel-btn" onclick="_toggleProfilePanel('badgePanel')">
         🏅 ${badgeBtnLabel}
       </button>
+      <button class="profile-panel-btn" onclick="_toggleProfilePanel('couponPanel')">
+        🎫 ${couponBtnLabel}
+      </button>
     </div>
     <div id="avatarPanel" class="profile-expand-panel">
       <div class="avatar-preset-grid">
@@ -183,6 +187,18 @@ function _localProfile() {
     <div id="badgePanel" class="profile-expand-panel">
       <div class="profile-badges">${badgesHtml}</div>
     </div>
+    <div id="couponPanel" class="profile-expand-panel">
+      ${S.coupons.length === 0
+        ? `<span style="font-size:13px;color:var(--text2)">—</span>`
+        : S.coupons.map((c, idx) => `
+          <div class="profile-coupon-mini" onclick="Rewards.openCoupon(${idx})"
+               style="background:${c.gradient};color:${c.text}">
+            <span class="pcm-icon">${c.icon}</span>
+            <span class="pcm-name">${c.name}</span>
+            ${c.used ? '<span class="pcm-used">✓ used</span>' : ''}
+          </div>`).join('')
+      }
+    </div>
     <div class="profile-stat-row">
       <div class="ps-card"><div class="ps-num">${S.points}</div><div class="ps-lbl">${t('pts_lbl')}</div></div>
       <div class="ps-card"><div class="ps-num">${S.streak}</div><div class="ps-lbl">${t('stats_streak')}</div></div>
@@ -191,20 +207,15 @@ function _localProfile() {
     <button class="logout-btn" onclick="Auth._logout()">${logoutLabel}</button>`;
 }
 
-// Toggle avatar / badge panels in profile drawer (used by both local & Firebase profile)
+// Toggle avatar / badge / coupon panels in profile drawer
 function _toggleProfilePanel(id) {
-  const avatarPanel = document.getElementById('avatarPanel');
-  const badgePanel  = document.getElementById('badgePanel');
-  if (!avatarPanel || !badgePanel) return;
-  if (id === 'avatarPanel') {
-    const opening = !avatarPanel.classList.contains('open');
-    avatarPanel.classList.toggle('open', opening);
-    badgePanel.classList.remove('open');
-  } else {
-    const opening = !badgePanel.classList.contains('open');
-    badgePanel.classList.toggle('open', opening);
-    avatarPanel.classList.remove('open');
-  }
+  const panels = ['avatarPanel', 'badgePanel', 'couponPanel']
+    .map(pid => document.getElementById(pid)).filter(Boolean);
+  const target  = document.getElementById(id);
+  if (!target) return;
+  const wasOpen = target.classList.contains('open');
+  panels.forEach(p => p.classList.remove('open'));
+  if (!wasOpen) target.classList.add('open');
 }
 
 // ── App controller ────────────────────────────────────────────

@@ -206,6 +206,13 @@ body {
   background: #FFF0EE; color: var(--red); font-size: 15px;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
+.edit-btn {
+  width: 28px; height: 28px; border-radius: 8px; border: none;
+  background: var(--bg); font-size: 14px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.edit-btn:hover { background: var(--border); }
 .add-btn {
   width: 100%; padding: 13px; border-radius: 16px;
   border: 2px dashed var(--border); background: transparent;
@@ -479,6 +486,15 @@ body {
   position: relative; overflow: hidden;
 }
 .pts-hero::after { content:'⭐'; position:absolute; font-size:90px; opacity:.1; right:-8px; top:-8px; }
+.pts-adj-row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.pts-adj-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.5); background: rgba(255,255,255,.15);
+  color: #fff; font-size: 18px; font-weight: 900; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.pts-adj-btn:hover { background: rgba(255,255,255,.3); }
 .pts-big  { font-size: 54px; font-weight: 900; line-height: 1; }
 .pts-sub  { font-size: 14px; font-weight: 700; opacity: .8; margin-top: 4px; }
 .prog-w   { background: rgba(255,255,255,.3); border-radius: 10px; height: 10px; margin-top: 14px; }
@@ -579,10 +595,10 @@ body {
 .profile-badges { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-badge { font-size: 28px; }
 
-/* ── Profile panel buttons (头像 / 徽章) ── */
+/* ── Profile panel buttons (头像 / 徽章 / 奖券) ── */
 .profile-panel-row {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 8px; margin-bottom: 12px;
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px; margin-bottom: 12px;
 }
 .profile-panel-btn {
   padding: 10px 8px; border-radius: 14px;
@@ -624,6 +640,19 @@ body {
   width: 72px; height: 72px; border-radius: 50%;
   object-fit: cover; display: block; margin: 0 auto 12px;
 }
+
+/* ── Mini coupon list in profile drawer ── */
+.profile-coupon-mini {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; border-radius: 12px; margin-bottom: 6px;
+  cursor: pointer; font-weight: 700; font-size: 13px;
+  transition: opacity .15s;
+}
+.profile-coupon-mini:last-child { margin-bottom: 0; }
+.profile-coupon-mini:hover { opacity: .85; }
+.pcm-icon { font-size: 20px; flex-shrink: 0; }
+.pcm-name { flex: 1; }
+.pcm-used { font-size: 11px; opacity: .6; }
 
 .profile-btn {
   width: 100%; padding: 12px; border-radius: 14px;
@@ -682,6 +711,13 @@ body {
   border: 3px solid transparent; transition: all .12s;
 }
 .co.sel { border-color: var(--text); transform: scale(1.15); }
+.bg-color-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.bgco {
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+  border: 2px solid var(--border); transition: all .12s;
+}
+.bgco:hover { border-color: var(--text2); transform: scale(1.1); }
+.bgco.sel { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 0 2px var(--accent); }
 .modal-row { display: flex; gap: 8px; }
 .mconfirm {
   flex: 1; padding: 13px; border-radius: 14px;

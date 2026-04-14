@@ -160,4 +160,13 @@ const Remind = {
     S.emailAddr      = document.getElementById('emailAddr').value.trim();
     S.discordWebhook = (document.getElementById('discordWebhook')?.value || '').trim();
   },
+
+  // ── Auto-save on field blur (no button press needed) ─────
+  autoSave() {
+    this.readUI();
+    saveLocal();
+    // Keep reportEmail in sync
+    const repEl = document.getElementById('reportEmail');
+    if (repEl && !repEl.matches(':focus')) repEl.value = S.emailAddr;
+  },
 };

@@ -57,7 +57,11 @@ const Rewards = {
     el.innerHTML = `
       <!-- Points hero -->
       <div class="pts-hero">
-        <div class="pts-big">${S.points}</div>
+        <div class="pts-adj-row">
+          <button class="pts-adj-btn" onclick="Rewards.adjPoints(-10)">−10</button>
+          <div class="pts-big">${S.points}</div>
+          <button class="pts-adj-btn" onclick="Rewards.adjPoints(+10)">＋10</button>
+        </div>
         <div class="pts-sub">${t('pts_lbl')}</div>
         <div class="prog-w"><div class="prog-f" style="width:${pct}%"></div></div>
         <div class="prog-h">${progHint}</div>
@@ -135,6 +139,14 @@ const Rewards = {
           <div class="coupon-code"># ${c.code}</div>
         </div>`).join('')}
     </div>`;
+  },
+
+  // ── Manually adjust points ───────────────────────────────
+  async adjPoints(delta) {
+    S.points = Math.max(0, S.points + delta);
+    saveLocal();
+    this.render();
+    if (window.Auth?.user) await Auth.saveUserData();
   },
 
   // ── Claim reward → generate coupon ───────────────────────

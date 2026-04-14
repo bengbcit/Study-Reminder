@@ -184,6 +184,7 @@ const Notion = {
       </div>` : '';
 
     // Config section
+    const archiveDbLabel = { zh:'打卡记录数据库 ID（归档用）', ja:'打刻記録 DB ID（アーカイブ用）', en:'Checkin Archive DB ID' }[l];
     const cfgHtml = connected ? `
       <details class="notion-cfg-details">
         <summary class="notion-cfg-summary">
@@ -196,6 +197,9 @@ const Notion = {
           <input class="notion-input" id="notionDbId"
                  placeholder="${t('notion_db_ph')}"
                  value="${S.notionDbId || ''}">
+          <input class="notion-input" id="notionArchiveDbId"
+                 placeholder="${archiveDbLabel}"
+                 value="${S.notionArchiveDbId || ''}">
           <button class="notion-save-cfg-btn" onclick="Notion._saveConfig()">${t('notion_save_cfg')}</button>
         </div>
       </details>` : `
@@ -207,6 +211,9 @@ const Notion = {
         <input class="notion-input" id="notionDbId"
                placeholder="${t('notion_db_ph')}"
                value="${S.notionDbId || ''}">
+        <input class="notion-input" id="notionArchiveDbId"
+               placeholder="${archiveDbLabel}"
+               value="${S.notionArchiveDbId || ''}">
         <p class="notion-cfg-hint">${t('notion_hint')}</p>
         <button class="notion-save-cfg-btn" onclick="Notion._saveConfig()">${t('notion_save_cfg')}</button>
       </div>`;
@@ -250,7 +257,7 @@ const Notion = {
                   oninput="Notion._saveSummary(this.value)">${_esc(S.notionDraftSummary || '')}</textarea>
       </div>
 
-      ${connected ? (() => {
+      ${(S.notionToken && S.notionArchiveDbId) ? (() => {
         const todayArchive = (S.notionSyncedPages || []).find(p => p.date === todayKey());
         return `<div class="notion-archive-row">
           ${todayArchive
@@ -351,7 +358,7 @@ const Notion = {
 
   // ── Archive today's checkin to Notion ────────────────────
   async _archiveToday() {
-    if (!S.notionToken || !S.notionDbId) return;
+    if (!S.notionToken || !S.notionArchiveDbId) return;
 
     const btn = document.getElementById('notionArchiveBtn');
     const l   = I18n.lang;
@@ -373,7 +380,7 @@ const Notion = {
         body: JSON.stringify({
           action:         'archive',
           token:          S.notionToken,
-          dbId:           S.notionDbId,
+          dbId:           S.notionArchiveDbId,
           date:           today,
           tasks,
           summary:        S.notionDraftSummary || '',
@@ -403,8 +410,9 @@ const Notion = {
   },
 
   _saveConfig() {
-    S.notionToken = document.getElementById('notionToken')?.value.trim() || '';
-    S.notionDbId  = document.getElementById('notionDbId')?.value.trim()  || '';
+    S.notionToken       = document.getElementById('notionToken')?.value.trim()       || '';
+    S.notionDbId        = document.getElementById('notionDbId')?.value.trim()        || '';
+    S.notionArchiveDbId = document.getElementById('notionArchiveDbId')?.value.trim() || '';
     saveLocal();
     if (window.Auth?.user) Auth.saveUserData();
     showToast(t('notion_cfg_saved'));

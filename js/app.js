@@ -278,17 +278,29 @@ window.addEventListener('DOMContentLoaded', () => {
     '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ 正在连接…</div>';
 });
 
-// Fallback: if Firebase SDK hasn't loaded after 6s, show the local-mode button
+// Fallback: if Firebase SDK hasn't loaded after 12s, show network error + local mode
 setTimeout(() => {
   const gate = document.getElementById('authGate');
   const app  = document.getElementById('mainApp');
   if (gate?.style.display !== 'none' && app?.style.display === 'none') {
     if (!window.Auth?._firebased) {
-      // Firebase never loaded (offline / misconfigured) — show local mode entry
-      _localAuthUI('login');
+      // Firebase never loaded — show error with retry and local mode option
+      const l = (window.I18n?.lang) || 'zh';
+      const notice = {
+        zh: '⚠️ 连接服务器失败，请检查网络后刷新页面，或以本地模式继续。',
+        ja: '⚠️ サーバーに接続できません。ネットワークを確認してリロードするか、ローカルモードで続行してください。',
+        en: '⚠️ Could not connect to server. Check your network and refresh, or continue in local mode.',
+      }[l];
+      const reloadBtn = { zh:'🔄 刷新重试', ja:'🔄 再読み込み', en:'🔄 Refresh' }[l];
+      const localBtn  = { zh:'👤 本地模式', ja:'👤 ローカルモード', en:'👤 Local Mode' }[l];
+      document.getElementById('authForm').innerHTML = `
+        <div class="auth-local-notice">${notice}</div>
+        <button class="auth-btn" onclick="location.reload()">${reloadBtn}</button>
+        <div class="auth-divider">or</div>
+        <button class="auth-local-btn" onclick="App.startLocalMode()">${localBtn}</button>`;
     }
   }
-}, 6000);
+}, 12000);
 
 // Quick-enter local mode (called from the button in Firebase login form)
 App.enterLocalMode = function() {

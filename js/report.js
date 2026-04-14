@@ -104,9 +104,9 @@ const Report = {
       el.appendChild(div);
     });
 
-    // Sync report email field from saved state
+    // Sync report email field — fall back to Firebase auth email if none saved
     const repEmail = document.getElementById('reportEmail');
-    if (repEmail) repEmail.value = S.emailAddr || '';
+    if (repEmail) repEmail.value = S.emailAddr || window.Auth?.user?.email || '';
   },
 
   // Auto-save report email back to S.emailAddr on blur
@@ -137,7 +137,8 @@ const Report = {
   async submitAll() {
     const enabled = S.subjects.filter(s => s.enabled);
     const toEmail = document.getElementById('reportEmail').value.trim()
-      || S.emailAddr || 'takeiteasylyaoi@gmail.com';
+      || S.emailAddr || window.Auth?.user?.email || '';
+    if (!toEmail) { showToast('📧 请先填写收件邮箱'); return; }
 
     // Collect current textarea values into state
     enabled.forEach(s => {

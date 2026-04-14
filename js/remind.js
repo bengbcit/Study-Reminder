@@ -139,7 +139,12 @@ const Remind = {
     };
     Object.entries(fields).forEach(([stateKey, elId]) => {
       const el = document.getElementById(elId);
-      if (el) el.value = S[stateKey] || '';
+      if (!el) return;
+      if (stateKey === 'emailAddr') {
+        el.value = S.emailAddr || window.Auth?.user?.email || '';
+      } else {
+        el.value = S[stateKey] || '';
+      }
     });
     const rb = document.getElementById('remindBefore');
     if (rb) rb.value = S.remindBefore || 15;

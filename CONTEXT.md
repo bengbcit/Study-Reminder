@@ -257,3 +257,33 @@ git push
 | 背景色与 accent 色分开 | 原来 bg = color + '22'，现在用户可独立选背景色，更灵活 |
 | 面板互斥逻辑 | 收集所有 panel → 全部 remove('open') → 再选择性 add('open') |
 
+---
+
+### 2026-04-15 — 秒进本地模式 & 邮件地址 & 积分按钮
+
+#### 问题 1：进入网站立即跳到本地模式，没机会登录
+- **原因**：Firebase SDK CDN 加载慢时，`app.js` 的 6 秒超时会触发 `_localAuthUI()` 把 authForm 替换为纯本地模式界面
+- **修复**：
+  - 超时从 **6s → 12s**，给 Firebase 更多加载时间
+  - 超时后不再直接显示本地模式表单，改为显示「网络错误 + 🔄 刷新重试 + 👤 本地模式（备选）」
+  - 这样用户能看清楚是网络问题，不会误以为只能用本地模式
+
+#### 问题 2：简报邮件收不到（发到错误地址）
+- **根本原因**：`state.js` 的默认 `emailAddr` 硬编码为 `'takeiteasylyaoi@gmail.com'`，用户未手动改时邮件发到错误地址
+- **修复**：
+  - `state.js` 默认改为 `emailAddr: ''`（空）
+  - `report.js` `render()` 和 `submitAll()` 改为 `S.emailAddr || window.Auth?.user?.email || ''`，自动从 Firebase 登录账号读取邮箱
+  - `remind.js` `syncUI()` 也同步从 Firebase 账号填充邮箱字段
+  - 若无邮箱则 toast 提示"请先填写收件邮箱"，不再静默发到错误地址
+- **⚠️ 还需在 EmailJS 后台操作**：Email Templates → 模板 → "To Email" 字段改为 `{{to_email}}`，否则动态收件人无效
+
+#### 问题 3：奖励页 −10 / +10 积分调整按钮不需要
+- **修复**：`rewards.js` `render()` 删除 `pts-adj-row` 整个 div，积分数字直接显示，无调整按钮
+
+#### 📌 关键经验
+| 经验 | 说明 |
+|------|------|
+| Firebase CDN 超时 fallback | fallback 要给用户"刷新重试"选项，不能只显示本地模式（用户会误以为无法登录） |
+| 动态邮件收件人 | EmailJS 代码传 `to_email` 参数还不够，模板 "To Email" 字段也必须设为 `{{to_email}}` |
+| 默认邮箱不要硬编码 | 默认应为空，让用户填或从 Firebase auth 自动读取 |
+

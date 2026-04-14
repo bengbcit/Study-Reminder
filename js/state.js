@@ -13,7 +13,7 @@ const S = {
   notify:        { email: true, discord: false, push: false },
   startTime:     '09:00',
   remindBefore:  15,
-  emailAddr:     'takeiteasylyaoi@gmail.com',
+  emailAddr:     '',
   discordWebhook: '',
   points:        0,
   streak:        0,

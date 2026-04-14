@@ -1,14 +1,11 @@
-/* notion.js — 📋 Notion-style study checkin panel
-   Features:
-   - Editable task list (add/remove/rename tasks with time-of-day labels)
-   - Time filter tabs: All / Morning / AM / PM / Evening
-   - Working checkboxes that save state locally
-   - Summary input
-   - Sync to Notion database via /api/notion serverless endpoint
-   - Fully i18n (zh/ja/en)
+/* js/notion.js — 📋 Notion to-do integration + local checkin panel
+   When Notion token + database ID are configured:
+     - Fetches real tasks from your Notion database on open
+     - Toggling a checkbox syncs back to Notion immediately
+     - Refresh button re-fetches from Notion
+   When not configured: falls back to a local editable task list.
 */
 
-// Default custom tasks (separate from subjects — user can freely edit)
 const DEFAULT_NOTION_TASKS = [
   { id: 'nt1', text: '日语单词：晨间快速过 20 个新词', time: 'morning', done: false },
   { id: 'nt2', text: '运动：有氧 / 力量训练 (30-60min)', time: 'morning', done: false },
@@ -24,20 +21,29 @@ const TIME_FILTERS = ['all', 'morning', 'am', 'pm', 'evening'];
 const Notion = {
   _activeFilter: 'all',
   _editMode:     false,
+  _loading:      false,
+  _error:        '',
+  _cbKey:        null,   // Notion checkbox property name (auto-detected)
+  _selKey:       null,   // Notion select property name (auto-detected)
 
-  // ── Entry point ───────────────────────────────────────────
+  // ── Open modal ───────────────────────────────────────────
   open() {
     const modal = document.getElementById('notionModal');
     if (!modal) return;
-    // Init tasks from state if not set
     if (!S.notionTasks || !S.notionTasks.length) {
       S.notionTasks = JSON.parse(JSON.stringify(DEFAULT_NOTION_TASKS));
       saveLocal();
     }
     this._activeFilter = 'all';
     this._editMode     = false;
+    this._error        = '';
     modal.classList.add('open');
-    this._render();
+
+    if (S.notionToken && S.notionDbId) {
+      this._fetchFromNotion();
+    } else {
+      this._render();
+    }
   },
 
   close(e) {
@@ -48,16 +54,60 @@ const Notion = {
     }
   },
 
-  // ── Main render ───────────────────────────────────────────
+  // ── Fetch tasks from Notion database via serverless proxy ─
+  async _fetchFromNotion() {
+    this._loading = true;
+    this._error   = '';
+    this._render();
+    try {
+      const res = await fetch('/api/notion', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'query', token: S.notionToken, dbId: S.notionDbId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+
+      this._cbKey  = data.cbKey  || null;
+      this._selKey = data.selKey || null;
+
+      S.notionTasks = (data.tasks || []).map(tk => ({
+        id:        '_n_' + tk.id,
+        text:      tk.text,
+        time:      this._normTime(tk.time),
+        done:      tk.done,
+        _notionId: tk.id,
+      }));
+      saveLocal();
+    } catch (e) {
+      this._error = e.message;
+      console.warn('[Notion fetch]', e.message);
+    }
+    this._loading = false;
+    this._render();
+  },
+
+  // Map Notion select values → internal time categories
+  _normTime(val) {
+    if (!val) return '';
+    const v = val.toLowerCase();
+    if (v.includes('morning') || v.includes('晨') || v.includes('早')) return 'morning';
+    if (v.includes('am')      || v.includes('上午'))                    return 'am';
+    if (v.includes('pm')      || v.includes('下午'))                    return 'pm';
+    if (v.includes('evening') || v.includes('晚')  || v.includes('夜')) return 'evening';
+    return '';
+  },
+
+  // ── Main render ──────────────────────────────────────────
   _render() {
     const box = document.getElementById('notionBox');
     if (!box) return;
 
-    const l          = I18n.lang;
-    const hasConfig  = !!(S.notionToken && S.notionDbId);
-    const tasks      = S.notionTasks || [];
-    const today      = todayKey();
-    const doneCount  = tasks.filter(t => t.done).length;
+    const l         = I18n.lang;
+    const connected = !!(S.notionToken && S.notionDbId);
+    const tasks     = S.notionTasks || [];
+    const doneCount = tasks.filter(tk => tk.done).length;
+    const fromNotion = tasks.some(tk => tk._notionId);
 
     const timeLabels = {
       morning: t('notion_time_morning'),
@@ -66,31 +116,43 @@ const Notion = {
       evening: t('notion_time_evening'),
     };
 
+    // Loading state
+    if (this._loading) {
+      box.innerHTML = `
+        <div class="notion-header">
+          <div class="notion-logo">${_notionIcon()}</div>
+          <div class="notion-header-title">${t('notion_title')}</div>
+          <button class="notion-close-btn" onclick="Notion.close()">&times;</button>
+        </div>
+        <div class="notion-loading-state">
+          <div class="notion-spinner">⏳</div>
+          <div>${{ zh:'正在从 Notion 加载任务…', ja:'Notion からタスクを読み込み中…', en:'Loading tasks from Notion…' }[l] || 'Loading…'}</div>
+        </div>`;
+      return;
+    }
+
     // Filter tabs
     const filterHtml = TIME_FILTERS.map(f => {
-      const label = f === 'all'
-        ? t('notion_time_all')
-        : timeLabels[f];
+      const lbl = f === 'all' ? t('notion_time_all') : (timeLabels[f] || f);
       return `<button class="nf-tab ${this._activeFilter === f ? 'active' : ''}"
-                      onclick="Notion._setFilter('${f}')">${label}</button>`;
+                      onclick="Notion._setFilter('${f}')">${lbl}</button>`;
     }).join('');
 
-    // Task list
+    // Task rows
     const filtered = this._activeFilter === 'all'
       ? tasks
       : tasks.filter(tk => tk.time === this._activeFilter);
 
-    const taskHtml = filtered.map((tk, visIdx) => {
-      // Find real index in full array
+    const taskHtml = filtered.map(tk => {
       const realIdx = tasks.indexOf(tk);
-      const timeLbl = timeLabels[tk.time] || tk.time;
+      const timeLbl = timeLabels[tk.time] || '';
 
-      if (this._editMode) {
+      if (this._editMode && !fromNotion) {
         return `
           <div class="notion-task-row edit-mode">
             <select class="notion-time-sel" onchange="Notion._setTaskTime(${realIdx},this.value)">
               ${['morning','am','pm','evening'].map(tv =>
-                `<option value="${tv}" ${tk.time===tv?'selected':''}>${timeLabels[tv]}</option>`
+                `<option value="${tv}" ${tk.time===tv?'selected':''}>${timeLabels[tv]||tv}</option>`
               ).join('')}
             </select>
             <input class="notion-task-edit-input" value="${_esc(tk.text)}"
@@ -107,74 +169,36 @@ const Notion = {
             ${tk.done ? `<svg width="11" height="9" viewBox="0 0 11 9"><path d="M1 4l3 3 6-6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>` : ''}
           </div>
           <span class="notion-task-name ${tk.done ? 'striked' : ''}">${_esc(tk.text)}</span>
-          <span class="notion-time-badge">${timeLbl}</span>
+          ${timeLbl ? `<span class="notion-time-badge">${timeLbl}</span>` : ''}
+          ${tk._notionId ? `<span class="notion-sync-dot" title="Synced with Notion">⚡</span>` : ''}
         </div>`;
     }).join('') || `<p class="notion-empty">${t('notion_no_subjects')}</p>`;
 
-    // Summary input
-    const summaryHtml = `
-      <div class="notion-summary-row">
-        <textarea class="notion-summary" id="notionSummary"
-                  placeholder="${t('notion_summary_ph')}"
-                  oninput="Notion._saveSummary(this.value)">${_esc(S.notionDraftSummary || '')}</textarea>
-      </div>`;
-
-    // Recent syncs
-    const recentHtml = (S.notionSyncedPages || []).slice(0, 5).map(p => `
-      <div class="notion-synced-row">
-        <span>📄 ${p.date}</span>
-        <a href="${p.url || '#'}" target="_blank" rel="noopener" class="notion-open-link">
-          ${t('notion_open')} ↗
-        </a>
-      </div>`).join('') || `<p class="notion-empty">${t('notion_no_sync')}</p>`;
-
-    box.innerHTML = `
-      <!-- ── Header ─────────────────────────────────────── -->
-      <div class="notion-header">
-        <div class="notion-logo">${_notionIcon()}</div>
-        <div class="notion-header-title">${t('notion_title')}</div>
-        <button class="notion-edit-toggle ${this._editMode ? 'active' : ''}"
-                onclick="Notion._toggleEdit()">
-          ${t('notion_edit_tasks')}
+    // Error banner
+    const errorHtml = this._error ? `
+      <div class="notion-error-banner">
+        ⚠️ ${_esc(this._error)}
+        <button onclick="Notion._fetchFromNotion()">
+          ${{ zh:'重试', ja:'再試行', en:'Retry' }[l]}
         </button>
-        <button class="notion-close-btn" onclick="Notion.close()">&times;</button>
-      </div>
+      </div>` : '';
 
-      <!-- ── Progress bar ──────────────────────────────── -->
-      <div class="notion-progress-wrap">
-        <div class="notion-progress-bar">
-          <div class="notion-progress-fill"
-               style="width:${tasks.length ? Math.round(doneCount/tasks.length*100) : 0}%"></div>
+    // Config section
+    const cfgHtml = connected ? `
+      <details class="notion-cfg-details">
+        <summary class="notion-cfg-summary">
+          ⚙️ ${{ zh:'Notion 连接设置', ja:'Notion 接続設定', en:'Notion Settings' }[l]}
+        </summary>
+        <div class="notion-config-section">
+          <input class="notion-input" id="notionToken" type="password"
+                 placeholder="${t('notion_token_ph')}"
+                 value="${S.notionToken || ''}">
+          <input class="notion-input" id="notionDbId"
+                 placeholder="${t('notion_db_ph')}"
+                 value="${S.notionDbId || ''}">
+          <button class="notion-save-cfg-btn" onclick="Notion._saveConfig()">${t('notion_save_cfg')}</button>
         </div>
-        <span class="notion-progress-lbl">${doneCount} / ${tasks.length}</span>
-      </div>
-
-      <!-- ── Filter tabs ────────────────────────────────── -->
-      <div class="notion-filter-tabs">${filterHtml}</div>
-
-      <!-- ── Task list ──────────────────────────────────── -->
-      <div class="notion-task-list" id="notionTaskList">
-        ${taskHtml}
-      </div>
-
-      <!-- ── Add task (edit mode only) ─────────────────── -->
-      ${this._editMode ? `
-      <button class="notion-add-task-btn" onclick="Notion._addTask()">
-        ${t('notion_add_task')}
-      </button>` : ''}
-
-      <!-- ── Summary ────────────────────────────────────── -->
-      ${summaryHtml}
-
-      <!-- ── Sync to Notion ─────────────────────────────── -->
-      ${hasConfig ? `
-      <div class="notion-sync-section">
-        <button class="notion-sync-btn" id="notionSyncBtn" onclick="Notion.syncToNotion()">
-          <span id="notionSyncIcon">📤</span> ${t('notion_sync_btn')}
-        </button>
-        <div class="notion-synced-list">${recentHtml}</div>
-      </div>
-      ` : `
+      </details>` : `
       <div class="notion-config-section">
         <div class="notion-cfg-label">${t('notion_setup_label')}</div>
         <input class="notion-input" id="notionToken" type="password"
@@ -185,26 +209,84 @@ const Notion = {
                value="${S.notionDbId || ''}">
         <p class="notion-cfg-hint">${t('notion_hint')}</p>
         <button class="notion-save-cfg-btn" onclick="Notion._saveConfig()">${t('notion_save_cfg')}</button>
+      </div>`;
+
+    box.innerHTML = `
+      <div class="notion-header">
+        <div class="notion-logo">${_notionIcon()}</div>
+        <div class="notion-header-title">${t('notion_title')}</div>
+        ${connected
+          ? `<button class="notion-edit-toggle"
+                     onclick="Notion._fetchFromNotion()"
+                     title="${{ zh:'刷新 Notion 任务', ja:'Notion タスクを更新', en:'Refresh from Notion' }[l]}">🔄</button>`
+          : `<button class="notion-edit-toggle ${this._editMode ? 'active' : ''}"
+                     onclick="Notion._toggleEdit()">${t('notion_edit_tasks')}</button>`
+        }
+        <button class="notion-close-btn" onclick="Notion.close()">&times;</button>
       </div>
-      `}
+
+      ${errorHtml}
+
+      <div class="notion-progress-wrap">
+        <div class="notion-progress-bar">
+          <div class="notion-progress-fill"
+               style="width:${tasks.length ? Math.round(doneCount/tasks.length*100) : 0}%"></div>
+        </div>
+        <span class="notion-progress-lbl">${doneCount} / ${tasks.length}</span>
+      </div>
+
+      <div class="notion-filter-tabs">${filterHtml}</div>
+
+      <div class="notion-task-list" id="notionTaskList">${taskHtml}</div>
+
+      ${this._editMode && !fromNotion ? `
+      <button class="notion-add-task-btn" onclick="Notion._addTask()">
+        ${t('notion_add_task')}
+      </button>` : ''}
+
+      <div class="notion-summary-row">
+        <textarea class="notion-summary" id="notionSummary"
+                  placeholder="${t('notion_summary_ph')}"
+                  oninput="Notion._saveSummary(this.value)">${_esc(S.notionDraftSummary || '')}</textarea>
+      </div>
+
+      ${cfgHtml}
     `;
   },
 
-  // ── Toggle checkbox ───────────────────────────────────────
-  _toggle(idx) {
-    if (!S.notionTasks[idx]) return;
-    S.notionTasks[idx].done = !S.notionTasks[idx].done;
+  // ── Toggle checkbox (local + immediate Notion sync) ──────
+  async _toggle(idx) {
+    const tasks = S.notionTasks || [];
+    const tk    = tasks[idx];
+    if (!tk) return;
+    tk.done = !tk.done;
     saveLocal();
     this._render();
+
+    if (tk._notionId && S.notionToken && this._cbKey) {
+      try {
+        await fetch('/api/notion', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action:      'toggle',
+            token:       S.notionToken,
+            pageId:      tk._notionId,
+            checkboxKey: this._cbKey,
+            done:        tk.done,
+          }),
+        });
+      } catch (e) {
+        console.warn('[Notion toggle]', e.message);
+      }
+    }
   },
 
-  // ── Filter ────────────────────────────────────────────────
   _setFilter(f) {
     this._activeFilter = f;
     this._render();
   },
 
-  // ── Edit mode ─────────────────────────────────────────────
   _toggleEdit() {
     this._editMode = !this._editMode;
     this._render();
@@ -236,92 +318,41 @@ const Notion = {
     });
     saveLocal();
     this._render();
-    // Focus the new input
     setTimeout(() => {
       const inputs = document.querySelectorAll('.notion-task-edit-input');
       inputs[inputs.length - 1]?.focus();
     }, 50);
   },
 
-  // ── Summary ───────────────────────────────────────────────
   _saveSummary(val) {
     S.notionDraftSummary = val;
     saveLocal();
   },
 
-  // ── Notion config ─────────────────────────────────────────
   _saveConfig() {
     S.notionToken = document.getElementById('notionToken')?.value.trim() || '';
     S.notionDbId  = document.getElementById('notionDbId')?.value.trim()  || '';
     saveLocal();
     if (window.Auth?.user) Auth.saveUserData();
     showToast(t('notion_cfg_saved'));
-    this._render();
-  },
-
-  // ── Sync to Notion via serverless proxy ──────────────────
-  async syncToNotion() {
-    if (!S.notionToken || !S.notionDbId) {
-      showToast(t('notion_no_config'));
-      return;
+    if (S.notionToken && S.notionDbId) {
+      this._fetchFromNotion();
+    } else {
+      this._render();
     }
-    const syncBtn  = document.getElementById('notionSyncBtn');
-    const syncIcon = document.getElementById('notionSyncIcon');
-    if (syncBtn) syncBtn.disabled = true;
-    if (syncIcon) syncIcon.textContent = '⏳';
-
-    const today    = todayKey();
-    const tasks    = S.notionTasks || [];
-    const summary  = S.notionDraftSummary || '';
-    const doneCount = tasks.filter(tk => tk.done).length;
-
-    try {
-      const res = await fetch('/api/notion', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token:      S.notionToken,
-          dbId:       S.notionDbId,
-          date:       today,
-          tasks,
-          summary,
-          doneCount,
-          totalCount: tasks.length,
-          points:     S.points,
-          streak:     S.streak,
-          lang:       I18n.lang,
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'HTTP ' + res.status);
-      }
-      const data = await res.json();
-      if (!S.notionSyncedPages) S.notionSyncedPages = [];
-      S.notionSyncedPages.unshift({ date: today, url: data.url || '#' });
-      S.notionSyncedPages = S.notionSyncedPages.slice(0, 20);
-      saveLocal();
-      if (window.Auth?.user) Auth.saveUserData();
-      showToast(t('notion_synced'));
-      if (syncIcon) syncIcon.textContent = '✅';
-    } catch (e) {
-      console.warn('Notion sync:', e.message);
-      showToast(`${t('notion_sync_fail')}: ${e.message}`);
-      if (syncIcon) syncIcon.textContent = '📤';
-    }
-    if (syncBtn) syncBtn.disabled = false;
   },
 };
 
 window.Notion = Notion;
 
-// ── Helpers ───────────────────────────────────────────────────
 function _esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function _notionIcon() {
-  return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <rect width="24" height="24" rx="5" fill="#000"/>
     <path d="M6 5.5h8.5L18 9v10H6V5.5z" fill="rgba(255,255,255,0.08)"/>
     <text x="4.5" y="17.5" font-size="12" font-weight="900" fill="#fff" font-family="Georgia,serif">N</text>

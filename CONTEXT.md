@@ -227,3 +227,33 @@ git push
 | API fallback 要带语言 | 服务器端 fallback 也要读 `lang`，否则语言切换无效 |
 | EmailJS Template ID 易混淆 | 'b' 和 '5' 视觉近似，一定要去后台对照 |
 
+---
+
+### 2026-04-15 — 科目编辑 + 奖券抽屉 + 积分调整 + 自动保存（commit `fbfa033`）
+
+#### 问题 3：科目不能编辑
+- **方案**：每个科目卡右侧加 ✏️ 按钮，点击打开编辑弹窗
+- **编辑弹窗内容**：科目名 / 图标（emoji 选色格）/ 颜色（accent 色）/ 背景色（15 个预设浅色）
+- **新增**：`BG_COLORS` 数组 + `_editState` 变量 + `openEdit/closeEdit/confirmEdit/_renderEdit*` 方法
+- **HTML**：`index.html` 新增 `#editModal` 弹窗；`i18n.js` 新增 `modal_edit / pick_bg / btn_save2`
+
+#### 问题 4：表单自动记住
+- `#emailAddr` → `onblur="Remind.autoSave()"`
+- `#discordWebhook` → `onblur="Remind.autoSave()"`
+- `#startTime` → `onchange="Remind.autoSave()"`
+- `#reportEmail` → `onblur="Report._saveEmail(this)"`（双向同步到 `S.emailAddr`）
+- `Remind.autoSave()` 新方法：读 UI → saveLocal → 同步 reportEmail
+
+#### 问题 5：积分调整 + 奖券抽屉
+- 奖励页积分显示改为 `pts-adj-row`：`−10 [积分数] ＋10` 排列
+- 个人资料抽屉加第三个面板按钮「🎫 奖券」，展开后显示 mini 奖券列表（可点击打开奖券弹窗）
+- `_toggleProfilePanel()` 改为支持三面板互斥（avatarPanel / badgePanel / couponPanel）
+- `profile-panel-row` 改为 3 列网格
+
+#### 📌 关键经验
+| 经验 | 说明 |
+|------|------|
+| `onblur` vs `onchange` | 文本框用 blur（离开才保存），select/time 用 change（即时保存） |
+| 背景色与 accent 色分开 | 原来 bg = color + '22'，现在用户可独立选背景色，更灵活 |
+| 面板互斥逻辑 | 收集所有 panel → 全部 remove('open') → 再选择性 add('open') |
+

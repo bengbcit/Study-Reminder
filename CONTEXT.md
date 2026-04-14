@@ -201,5 +201,29 @@ git push
 | 异步加载后要刷新 UI | `_loadUserData` 加载完要主动 render，不然用户看到的是本地缓存数据 |
 | 登录反馈要即时 | 弹窗关闭到 `onAuthStateChanged` 有 1-3 秒延迟，这段时间必须有 loading 提示 |
 
+---
 
+### 2026-04-15 — 登录页 + AI语言 + 每日励志语（commit `1ad7678`）
+
+#### 问题 1：秒进本地模式
+- **原因**：`DOMContentLoaded` 发现 `ss_localEntered` 就跳过登录页
+- **修复**：删掉自动跳过；登录/注册表单底部加「👤 以本地模式进入」虚线按钮；offline fallback 从 10s 缩到 6s
+
+#### 问题 2：AI鼓励语言不对
+- **原因**：`api/encourage.js` fallback 写死英文，忽略 `lang` 参数
+- **修复**：改为 `fallback[lang] || fallback.en`，中/日/英各一句
+
+#### 新功能：每日励志语
+- 简报页顶部加每天自动换一句的励志卡片（14 句 × 3 语言，日期取模）
+
+#### 邮件未收到（⚠️ 待用户确认）
+- `emailjs.init()` 已移出 forEach
+- **需要去 EmailJS 后台核对 Template ID**：Email Templates → 模板 → Settings → Template # 那行，代码里是 `template_bp2bmun`，确认是否匹配
+
+#### 📌 关键经验
+| 经验 | 说明 |
+|------|------|
+| 登录页勿自动跳过 | `ss_localEntered` 自动跳是差体验，改为按钮让用户主动选择 |
+| API fallback 要带语言 | 服务器端 fallback 也要读 `lang`，否则语言切换无效 |
+| EmailJS Template ID 易混淆 | 'b' 和 '5' 视觉近似，一定要去后台对照 |
 

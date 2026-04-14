@@ -60,9 +60,11 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         _setErr('');
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiEmail" type="email"
-                 placeholder="${t('email_field')}" autocomplete="email">
+                 placeholder="${t('email_field')}" autocomplete="email"
+                 onkeydown="if(event.key==='Enter')window.Auth._login()">
           <input class="auth-input" id="aiPass" type="password"
-                 placeholder="${t('password_field')}" autocomplete="current-password">
+                 placeholder="${t('password_field')}" autocomplete="current-password"
+                 onkeydown="if(event.key==='Enter')window.Auth._login()">
           <button class="auth-btn" id="loginBtn"
                   onclick="window.Auth._login()">${t('login')}</button>
           <div class="auth-divider">or</div>
@@ -80,11 +82,14 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         _setErr('');
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiName" type="text"
-                 placeholder="${t('name_field')}" autocomplete="nickname">
+                 placeholder="${t('name_field')}" autocomplete="nickname"
+                 onkeydown="if(event.key==='Enter')window.Auth._register()">
           <input class="auth-input" id="aiEmail" type="email"
-                 placeholder="${t('email_field')}" autocomplete="email">
+                 placeholder="${t('email_field')}" autocomplete="email"
+                 onkeydown="if(event.key==='Enter')window.Auth._register()">
           <input class="auth-input" id="aiPass" type="password"
-                 placeholder="${t('password_field')}" autocomplete="new-password">
+                 placeholder="${t('password_field')}" autocomplete="new-password"
+                 onkeydown="if(event.key==='Enter')window.Auth._register()">
           <button class="auth-btn" id="registerBtn"
                   onclick="window.Auth._register()">${t('register')}</button>
           <div class="auth-divider">or</div>

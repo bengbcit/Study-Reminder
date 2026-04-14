@@ -144,15 +144,19 @@ module.exports = async function handler(req, res) {
         children.push(divider(), h('📝 备注', 3), para(summary));
       }
 
-      // ── UPDATE existing page ──────────────────────────────
+      // ── UPDATE existing page (fallback to create if page was deleted) ──
       if (existingPageId) {
-        const existing = await nFetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`);
-        await Promise.all((existing.results || []).map(b =>
-          nFetch(`https://api.notion.com/v1/blocks/${b.id}`, 'DELETE')
-        ));
-        await nFetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`, 'PATCH', { children });
-        const updatedPage = await nFetch(`https://api.notion.com/v1/pages/${existingPageId}`);
-        return res.status(200).json({ url: updatedPage.url || '', pageId: existingPageId });
+        try {
+          const existing = await nFetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`);
+          await Promise.all((existing.results || []).map(b =>
+            nFetch(`https://api.notion.com/v1/blocks/${b.id}`, 'DELETE')
+          ));
+          await nFetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`, 'PATCH', { children });
+          const updatedPage = await nFetch(`https://api.notion.com/v1/pages/${existingPageId}`);
+          return res.status(200).json({ url: updatedPage.url || '', pageId: existingPageId });
+        } catch (_) {
+          // Page was deleted in Notion — fall through to create a new one
+        }
       }
 
       // ── CREATE new page ───────────────────────────────────

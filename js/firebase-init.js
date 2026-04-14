@@ -138,14 +138,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const cred = await signInWithPopup(_auth, provider);
           await this._handleGoogleCred(cred);
         } catch (e) {
-          if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
-            // Redirect fallback for mobile / strict browsers
-            _setErr(_friendlyError('auth/popup-blocked'));
-            try { await signInWithRedirect(_auth, provider); } catch (_) {}
-          } else {
-            _setErr(_friendlyError(e.code));
-            _setBusy('googleBtn', false);
-          }
+          _setErr(_friendlyError(e.code));
+          _setBusy('googleBtn', false);
         }
       },
 
@@ -312,16 +306,20 @@ function _gIcon() {
 function _friendlyError(code) {
   const l = window.I18n?.lang || 'zh';
   const msgs = {
-    'auth/invalid-email':         { zh:'邮箱格式不正确',          ja:'メール形式エラー',           en:'Invalid email format' },
-    'auth/user-not-found':        { zh:'账号不存在，请先注册',     ja:'アカウントが見つかりません', en:'Account not found, register first' },
-    'auth/wrong-password':        { zh:'密码错误，请重试',          ja:'パスワードが違います',       en:'Incorrect password' },
-    'auth/invalid-credential':    { zh:'邮箱或密码错误',            ja:'メールまたはパスワードが違います', en:'Invalid email or password' },
-    'auth/email-already-in-use':  { zh:'该邮箱已注册，请直接登录', ja:'すでに登録済みのメールです', en:'Email already registered, please log in' },
-    'auth/weak-password':         { zh:'密码至少需要6位',           ja:'パスワードは6文字以上',      en:'Password must be 6+ characters' },
-    'auth/popup-closed-by-user':  { zh:'登录窗口已关闭，请重试',   ja:'ウィンドウが閉じられました', en:'Popup closed, please try again' },
-    'auth/popup-blocked':         { zh:'弹窗被拦截，正在跳转登录…', ja:'ポップアップブロック。リダイレクト中…', en:'Popup blocked — trying redirect login…' },
-    'auth/network-request-failed':{ zh:'网络错误，请检查连接',      ja:'ネットワークエラー',         en:'Network error, check connection' },
-    'auth/too-many-requests':     { zh:'尝试次数过多，请稍后再试', ja:'試行回数超過。後でお試しください', en:'Too many attempts, try later' },
+    'auth/invalid-email':         { zh:'邮箱格式不正确',                        ja:'メール形式エラー',                    en:'Invalid email format' },
+    'auth/user-not-found':        { zh:'账号不存在，请先注册',                  ja:'アカウントが見つかりません',          en:'Account not found, register first' },
+    'auth/wrong-password':        { zh:'密码错误，请重试',                       ja:'パスワードが違います',                en:'Incorrect password' },
+    'auth/invalid-credential':    { zh:'邮箱或密码错误',                         ja:'メールまたはパスワードが違います',    en:'Invalid email or password' },
+    'auth/email-already-in-use':  { zh:'该邮箱已注册，请直接登录',              ja:'すでに登録済みのメールです',          en:'Email already registered, please log in' },
+    'auth/weak-password':         { zh:'密码至少需要6位',                        ja:'パスワードは6文字以上',               en:'Password must be 6+ characters' },
+    'auth/popup-closed-by-user':  { zh:'登录窗口已关闭，请重试',                ja:'ウィンドウが閉じられました',          en:'Popup closed, please try again' },
+    'auth/popup-blocked':         { zh:'弹窗被浏览器拦截，请允许弹窗后重试',    ja:'ポップアップをブロック中。許可してください', en:'Popup blocked — please allow popups and try again' },
+    'auth/cancelled-popup-request':{ zh:'登录已取消，请重试',                   ja:'ログインがキャンセルされました',      en:'Login cancelled, please try again' },
+    'auth/network-request-failed':{ zh:'网络错误，请检查连接',                  ja:'ネットワークエラー',                  en:'Network error, check connection' },
+    'auth/too-many-requests':     { zh:'尝试次数过多，请稍后再试',              ja:'試行回数超過。後でお試しください',    en:'Too many attempts, try later' },
+    'auth/operation-not-allowed': { zh:'Google 登录未启用，请联系管理员',       ja:'Google ログインが無効です',           en:'Google login not enabled' },
+    'auth/invalid-action-code':   { zh:'操作无效，请刷新页面重试',              ja:'無効な操作です。リロードしてください', en:'Invalid action — please refresh and try again' },
+    'auth/internal-error':        { zh:'内部错误，请刷新页面重试',              ja:'内部エラー。リロードしてください',    en:'Internal error — please refresh and try again' },
   };
   const entry = msgs[code];
   return entry ? (entry[l] || entry.en) : code;

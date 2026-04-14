@@ -37,11 +37,16 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
 
       async _onSignIn(user) {
         this.user = user;
-        await this._loadUserData(user.uid);
+        // Clear local-mode flag so Firebase auth takes priority on next reload
+        localStorage.removeItem('ss_localEntered');
+        // Show main UI immediately — don't block on Firestore load
         document.getElementById('authGate').style.display = 'none';
         document.getElementById('mainApp').style.display  = 'block';
-        this._updateAvatar();
         App.init();
+        // AFTER App.init() — override the local '👤' with the Firebase avatar
+        this._updateAvatar();
+        // Load Firestore data in background (won't block UI)
+        this._loadUserData(user.uid);
       },
 
       _onSignOut() {
@@ -108,6 +113,11 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         _setBusy('loginBtn', true);
         try {
           await signInWithEmailAndPassword(_auth, email, pass);
+          // Auth succeeded — show loading while onAuthStateChanged fires
+          const l = window.I18n?.lang || 'zh';
+          document.getElementById('authForm').innerHTML =
+            '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ ' +
+            ({zh:'正在登录…', ja:'ログイン中…', en:'Signing in…'}[l]) + '</div>';
         } catch (e) {
           _setErr(_friendlyError(e.code));
           _setBusy('loginBtn', false);
@@ -124,6 +134,11 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         _setBusy('registerBtn', true);
         try {
           const cred = await createUserWithEmailAndPassword(_auth, email, pass);
+          // Show loading while finishing account setup
+          const l = window.I18n?.lang || 'zh';
+          document.getElementById('authForm').innerHTML =
+            '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ ' +
+            ({zh:'正在创建账号…', ja:'アカウント作成中…', en:'Creating account…'}[l]) + '</div>';
           if (name) await updateProfile(cred.user, { displayName: name });
           await this._createUserDoc(cred.user, name || email);
           // onAuthStateChanged → _onSignIn
@@ -141,10 +156,16 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         provider.addScope('profile');
         try {
           const cred = await signInWithPopup(_auth, provider);
+          // Popup completed — show loading while Firebase finalises auth
+          const l = window.I18n?.lang || 'zh';
+          document.getElementById('authForm').innerHTML =
+            '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ ' +
+            ({zh:'正在登录…', ja:'ログイン中…', en:'Signing in…'}[l]) + '</div>';
           await this._handleGoogleCred(cred);
         } catch (e) {
+          // Re-render form so user can try again
+          this.showLogin();
           _setErr(_friendlyError(e.code));
-          _setBusy('googleBtn', false);
         }
       },
 
@@ -188,6 +209,11 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           if (d.notionToken)      S.notionToken = d.notionToken;
           if (d.notionDbId)       S.notionDbId  = d.notionDbId;
           saveLocal();
+          // Refresh UI so Firebase data (subjects, streak) replaces local data
+          Subjects.render();
+          document.getElementById('streakNum').textContent = S.streak;
+          this._updateAvatar(); // keep Firebase avatar after UI refresh
+          if (window.ThemeManager) ThemeManager.restore();
         } catch (e) { console.warn('Firestore load:', e.message); }
       },
 
@@ -214,11 +240,48 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         } catch (e) { console.warn('Firestore save:', e.message); }
       },
 
+      // ── Avatar selection (shared with local mode) ──────────
+      _setAvatar(val) {
+        S.avatar = val;
+        saveLocal();
+        this._updateAvatar();
+        this._renderProfile(); // re-render to update selected state
+      },
+
+      _uploadAvatar(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const size = Math.min(img.width, img.height);
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2,
+                          size, size, 0, 0, 200, 200);
+            this._setAvatar(canvas.toDataURL('image/jpeg', 0.8));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      },
+
       // ── Avatar + Profile ────────────────────────────────────
       _updateAvatar() {
         const btn  = document.getElementById('userAvatar');
-        const name = this.user?.displayName || this.user?.email || '?';
-        if (btn) btn.textContent = name.charAt(0).toUpperCase();
+        if (!btn) return;
+        if (S.avatar && S.avatar.length > 2) {
+          btn.innerHTML = `<img src="${S.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+        } else if (S.avatar) {
+          btn.textContent = S.avatar;
+          btn.style.fontSize = '20px';
+        } else {
+          const name = this.user?.displayName || this.user?.email || '?';
+          btn.textContent = name.charAt(0).toUpperCase();
+          btn.style.fontSize = '';
+        }
       },
 
       openProfile() {
@@ -234,21 +297,49 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       _renderProfile() {
         const u    = this.user;
         const name = u?.displayName || u?.email || 'User';
+        const l    = window.I18n?.lang || 'zh';
         const earned = Rewards.getEarned();
         const badges = Rewards.BADGES.filter(b => earned.has(b.id));
+        const avatarLabel = { zh:'头像', ja:'アバター', en:'Avatar' }[l] || '头像';
+        const badgeLabel  = { zh:'徽章', ja:'バッジ',   en:'Badges' }[l] || '徽章';
+        const uploadLabel = { zh:'📷 上传图片', ja:'📷 画像をアップロード', en:'📷 Upload Image' }[l];
+
+        const badgesHtml = badges.map(b =>
+          `<div class="profile-badge" title="${b.name[l]||b.name.zh}">${b.icon}</div>`
+        ).join('') || `<span style="font-size:13px;color:var(--text2)">—</span>`;
+
         document.getElementById('profileContent').innerHTML = `
           <div class="profile-avatar">${name.charAt(0).toUpperCase()}</div>
           <div class="profile-name">${name}</div>
           <div class="profile-email">${u?.email || ''}</div>
+          <div class="profile-panel-row">
+            <button class="profile-panel-btn" onclick="_toggleProfilePanel('avatarPanel')">
+              🖼 ${avatarLabel}
+            </button>
+            <button class="profile-panel-btn" onclick="_toggleProfilePanel('badgePanel')">
+              🏅 ${badgeLabel}
+            </button>
+          </div>
+          <div id="avatarPanel" class="profile-expand-panel">
+            <div class="avatar-preset-grid">
+              ${PRESET_AVATARS.map(a =>
+                `<div class="avatar-opt ${S.avatar === a ? 'sel' : ''}"
+                      onclick="Auth._setAvatar('${a}')">${a}</div>`
+              ).join('')}
+            </div>
+            <label class="avatar-upload-btn">
+              ${uploadLabel}
+              <input type="file" accept="image/*" style="display:none"
+                     onchange="Auth._uploadAvatar(this)">
+            </label>
+          </div>
+          <div id="badgePanel" class="profile-expand-panel">
+            <div class="profile-badges">${badgesHtml}</div>
+          </div>
           <div class="profile-stat-row">
             <div class="ps-card"><div class="ps-num">${S.points}</div><div class="ps-lbl">${t('pts_lbl')}</div></div>
             <div class="ps-card"><div class="ps-num">${S.streak}</div><div class="ps-lbl">${t('stats_streak')}</div></div>
             <div class="ps-card"><div class="ps-num">${Object.keys(S.history).length}</div><div class="ps-lbl">${t('stats_total_days')}</div></div>
-          </div>
-          <p class="sec-label">${t('profile_badges')}</p>
-          <div class="profile-badges">
-            ${badges.map(b => `<div class="profile-badge" title="${b.name[I18n.lang]||b.name.zh}">${b.icon}</div>`).join('')
-              || `<span style="font-size:13px;color:var(--text2)">—</span>`}
           </div>
           <button class="logout-btn" onclick="window.Auth._logout()">${t('profile_logout')}</button>`;
       },

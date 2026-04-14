@@ -107,9 +107,9 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // ── archive: create a daily checkin record page ──────────
+    // ── archive: create or update a daily checkin record page ──
     if (action === 'archive') {
-      const { dbId, date, tasks, summary, doneCount, totalCount, points, streak } = body;
+      const { dbId, date, tasks, summary, doneCount, totalCount, points, streak, existingPageId } = body;
       if (!dbId || !date) return res.status(400).json({ error: 'Missing dbId or date' });
 
       const donePct   = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
@@ -144,6 +144,18 @@ module.exports = async function handler(req, res) {
         children.push(divider(), h('📝 备注', 3), para(summary));
       }
 
+      // ── UPDATE existing page ──────────────────────────────
+      if (existingPageId) {
+        const existing = await nFetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`);
+        await Promise.all((existing.results || []).map(b =>
+          nFetch(`https://api.notion.com/v1/blocks/${b.id}`, 'DELETE')
+        ));
+        await nFetch(`https://api.notion.com/v1/blocks/${existingPageId}/children`, 'PATCH', { children });
+        const updatedPage = await nFetch(`https://api.notion.com/v1/pages/${existingPageId}`);
+        return res.status(200).json({ url: updatedPage.url || '', pageId: existingPageId });
+      }
+
+      // ── CREATE new page ───────────────────────────────────
       const db       = await nFetch(`https://api.notion.com/v1/databases/${dbId}`);
       const titleKey = findKey(db.properties, 'title') || 'Name';
 
@@ -155,7 +167,7 @@ module.exports = async function handler(req, res) {
         children,
       });
 
-      return res.status(200).json({ url: page.url || '' });
+      return res.status(200).json({ url: page.url || '', pageId: page.id });
     }
 
     return res.status(400).json({ error: 'Unknown action: ' + action });

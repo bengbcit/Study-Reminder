@@ -364,29 +364,33 @@ const Notion = {
     const tasks      = (S.notionTasks || []).map(t => ({ text: t.text, done: t.done }));
     const doneCount  = tasks.filter(t => t.done).length;
     const totalCount = tasks.length;
+    const existing   = (S.notionSyncedPages || []).find(p => p.date === today);
 
     try {
       const res = await fetch('/api/notion', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action:     'archive',
-          token:      S.notionToken,
-          dbId:       S.notionDbId,
-          date:       today,
+          action:         'archive',
+          token:          S.notionToken,
+          dbId:           S.notionDbId,
+          date:           today,
           tasks,
-          summary:    S.notionDraftSummary || '',
+          summary:        S.notionDraftSummary || '',
           doneCount,
           totalCount,
-          points:     S.points,
-          streak:     S.streak,
+          points:         S.points,
+          streak:         S.streak,
+          existingPageId: existing?.pageId || null,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
 
       if (!S.notionSyncedPages) S.notionSyncedPages = [];
-      S.notionSyncedPages.unshift({ date: today, url: data.url || '#' });
+      // Remove any existing entry for today, then prepend updated one
+      S.notionSyncedPages = S.notionSyncedPages.filter(p => p.date !== today);
+      S.notionSyncedPages.unshift({ date: today, url: data.url || '#', pageId: data.pageId || null });
       S.notionSyncedPages = S.notionSyncedPages.slice(0, 30);
       saveLocal();
       if (window.Auth?.user) Auth.saveUserData();

@@ -168,5 +168,38 @@ git push
 | Firestore 不能阻塞登录 | 先显示 UI，再异步加载数据，避免离线时卡住 |
 | `window.Auth` 覆盖顺序 | `app.js` 先设 local stub → `firebase-init.js` 模块加载后覆盖为 FirebaseAuth |
 
+---
+
+### 2026-04-14 — Firebase 登录卡顿 & 头像覆盖 bug 修复（commit `5611bc9`）
+
+#### ❓ 问题：Google / Email 登录后"卡几秒，变回本地用户"
+
+**根本原因（三个叠加）：**
+
+**1 — 登录成功后无反馈，看起来卡住**
+- 表现：Gmail 弹窗关闭后，按钮变灰但没任何提示，用户以为没成功
+- 修复：`_login` / `_register` / `_googleLogin` 成功后立即把 `authForm` 替换为 `⏳ 正在登录…` 提示，等 `onAuthStateChanged` 触发 `_onSignIn` 后 authGate 自动隐藏
+
+**2 — Firebase 头像被 `App.init()` 覆盖**
+- 表现：登录后头像按钮显示 '👤'（本地模式样式），感觉没真正登录
+- 原因：`_onSignIn` 先调 `_updateAvatar()`（设为首字母），再调 `App.init()` → `_updateLocalAvatar()`（覆盖回 '👤'）
+- 修复：把 `_updateAvatar()` 移到 `App.init()` **之后**，确保 Firebase 头像最后写入
+
+**3 — Firestore 数据加载后 UI 不刷新**
+- 表现：登录后显示的是旧本地数据（科目、连续天数等），不是 Firebase 数据
+- 原因：`_loadUserData` 只写入 `S` 并 `saveLocal()`，没有触发重新渲染
+- 修复：`saveLocal()` 后加 `Subjects.render()` + 更新连续天数 + `_updateAvatar()` + `ThemeManager.restore()`
+
+**4 — `_googleLogin` 出错后无法重试**
+- 原因：catch 只调 `_setBusy('googleBtn', false)`，但 form 已被 loading 替换，按钮不存在
+- 修复：catch 改为调 `this.showLogin()` 重新渲染登录表单，再显示错误信息
+
+#### 📌 关键经验
+| 经验 | 说明 |
+|------|------|
+| `_updateAvatar` 调用顺序 | 必须在 `App.init()` 之后调，否则会被 `_updateLocalAvatar()` 覆盖 |
+| 异步加载后要刷新 UI | `_loadUserData` 加载完要主动 render，不然用户看到的是本地缓存数据 |
+| 登录反馈要即时 | 弹窗关闭到 `onAuthStateChanged` 有 1-3 秒延迟，这段时间必须有 loading 提示 |
+
 
 

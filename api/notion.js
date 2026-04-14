@@ -144,10 +144,13 @@ module.exports = async function handler(req, res) {
         children.push(divider(), h('📝 备注', 3), para(summary));
       }
 
+      const db       = await nFetch(`https://api.notion.com/v1/databases/${dbId}`);
+      const titleKey = findKey(db.properties, 'title') || 'Name';
+
       const page = await nFetch('https://api.notion.com/v1/pages', 'POST', {
         parent:     { database_id: dbId },
         properties: {
-          Name: { title: [{ type: 'text', text: { content: `${date} 打卡记录` } }] },
+          [titleKey]: { title: [{ type: 'text', text: { content: `${date} 打卡记录` } }] },
         },
         children,
       });

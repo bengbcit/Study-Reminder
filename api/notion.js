@@ -107,6 +107,54 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    // ── archive: create a daily checkin record page ──────────
+    if (action === 'archive') {
+      const { dbId, date, tasks, summary, doneCount, totalCount, points, streak } = body;
+      if (!dbId || !date) return res.status(400).json({ error: 'Missing dbId or date' });
+
+      const donePct   = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
+      const doneTasks = (tasks || []).filter(t => t.done);
+      const notDone   = (tasks || []).filter(t => !t.done);
+
+      const toDoBlock = (text, checked) => ({
+        object: 'block', type: 'to_do',
+        to_do: { rich_text: [{ type: 'text', text: { content: String(text || '') } }], checked },
+      });
+      const para = (content) => ({
+        object: 'block', type: 'paragraph',
+        paragraph: { rich_text: [{ type: 'text', text: { content: String(content || '') } }] },
+      });
+      const h = (content, level = 2) => ({
+        object: 'block', type: `heading_${level}`,
+        [`heading_${level}`]: { rich_text: [{ type: 'text', text: { content } }] },
+      });
+      const divider = () => ({ object: 'block', type: 'divider', divider: {} });
+
+      const children = [
+        h(`📅 ${date} 打卡记录`),
+        para(`完成率：${donePct}%（${doneCount}/${totalCount}）  ⭐ 积分：${points || 0}  🔥 连续：${streak || 0} 天`),
+        divider(),
+        h('✅ 已完成任务', 3),
+        ...(doneTasks.length ? doneTasks.map(t => toDoBlock(t.text, true))  : [para('（无）')]),
+        h('⬜ 未完成任务', 3),
+        ...(notDone.length  ? notDone.map(t  => toDoBlock(t.text, false)) : [para('（全部完成！🎉）')]),
+      ];
+
+      if (summary) {
+        children.push(divider(), h('📝 备注', 3), para(summary));
+      }
+
+      const page = await nFetch('https://api.notion.com/v1/pages', 'POST', {
+        parent:     { database_id: dbId },
+        properties: {
+          Name: { title: [{ type: 'text', text: { content: `${date} 打卡记录` } }] },
+        },
+        children,
+      });
+
+      return res.status(200).json({ url: page.url || '' });
+    }
+
     return res.status(400).json({ error: 'Unknown action: ' + action });
 
   } catch (e) {

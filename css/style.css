@@ -932,6 +932,22 @@ body {
 .notion-cfg-summary::-webkit-details-marker { display: none; }
 .notion-cfg-details[open] .notion-cfg-summary { color: #333; }
 
+/* ── Notion: archive button ────────────────────────────────── */
+.notion-archive-row { padding: 12px 18px 4px; }
+.notion-archive-btn {
+  display: block; width: 100%; padding: 13px;
+  border: none; border-radius: 14px; cursor: pointer;
+  background: linear-gradient(135deg, #FF6B35, #FFB300);
+  color: #fff; font-size: 14px; font-weight: 700;
+  text-align: center; text-decoration: none;
+  transition: opacity .15s;
+}
+.notion-archive-btn:hover  { opacity: .88; }
+.notion-archive-btn:disabled { opacity: .5; cursor: wait; }
+.notion-archive-btn.done {
+  background: linear-gradient(135deg, #52C97A, #4A90D9);
+}
+
 /* ── Theme modal ───────────────────────────────────────────── */
 .theme-modal-box { max-width: 480px; }
 .theme-grid {

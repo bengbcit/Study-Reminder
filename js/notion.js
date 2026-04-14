@@ -250,6 +250,22 @@ const Notion = {
                   oninput="Notion._saveSummary(this.value)">${_esc(S.notionDraftSummary || '')}</textarea>
       </div>
 
+      ${connected ? (() => {
+        const todayArchive = (S.notionSyncedPages || []).find(p => p.date === todayKey());
+        return `<div class="notion-archive-row">
+          ${todayArchive
+            ? `<a class="notion-archive-btn done"
+                  href="${todayArchive.url || '#'}" target="_blank" rel="noopener">
+                 ✅ ${{ zh:'今日已归档 ↗', ja:'今日アーカイブ済み ↗', en:'Today archived ↗' }[l]}
+               </a>`
+            : `<button class="notion-archive-btn" id="notionArchiveBtn"
+                       onclick="Notion._archiveToday()">
+                 📤 ${{ zh:'完成今日打卡 → 存档 Notion', ja:'チェックインを Notion に保存', en:"Archive today's checkin to Notion" }[l]}
+               </button>`
+          }
+        </div>`;
+      })() : ''}
+
       ${cfgHtml}
     `;
   },
@@ -327,6 +343,55 @@ const Notion = {
   _saveSummary(val) {
     S.notionDraftSummary = val;
     saveLocal();
+  },
+
+  // ── Archive today's checkin to Notion ────────────────────
+  async _archiveToday() {
+    if (!S.notionToken || !S.notionDbId) return;
+
+    const btn = document.getElementById('notionArchiveBtn');
+    const l   = I18n.lang;
+    if (btn) {
+      btn.disabled    = true;
+      btn.textContent = { zh:'⏳ 正在归档…', ja:'⏳ アーカイブ中…', en:'⏳ Archiving…' }[l] || '⏳ Archiving…';
+    }
+
+    const today      = todayKey();
+    const tasks      = (S.notionTasks || []).map(t => ({ text: t.text, done: t.done }));
+    const doneCount  = tasks.filter(t => t.done).length;
+    const totalCount = tasks.length;
+
+    try {
+      const res = await fetch('/api/notion', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action:     'archive',
+          token:      S.notionToken,
+          dbId:       S.notionDbId,
+          date:       today,
+          tasks,
+          summary:    S.notionDraftSummary || '',
+          doneCount,
+          totalCount,
+          points:     S.points,
+          streak:     S.streak,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+
+      if (!S.notionSyncedPages) S.notionSyncedPages = [];
+      S.notionSyncedPages.unshift({ date: today, url: data.url || '#' });
+      S.notionSyncedPages = S.notionSyncedPages.slice(0, 30);
+      saveLocal();
+      if (window.Auth?.user) Auth.saveUserData();
+      showToast({ zh:'✅ 已归档到 Notion', ja:'✅ Notion に保存しました', en:'✅ Archived to Notion' }[l] || '✅ Archived');
+    } catch (e) {
+      console.warn('[Notion archive]', e.message);
+      showToast(({ zh:'归档失败：', ja:'アーカイブ失敗：', en:'Archive failed: ' }[l] || 'Failed: ') + e.message);
+    }
+    this._render();
   },
 
   _saveConfig() {

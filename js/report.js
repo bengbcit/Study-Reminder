@@ -1,10 +1,73 @@
 /* report.js — Daily study report: fill, submit, EmailJS send, AI encouragement */
 
+// ── Daily rotating motivational quote (changes every day, language-aware) ──
+const DAILY_QUOTES = {
+  zh: [
+    '学如逆水行舟，不进则退。今天继续前行！🚀',
+    '每一分努力，都是未来的自己在说谢谢。💛',
+    '不是因为有希望才坚持，而是坚持才有希望。🔥',
+    '今天的你，比昨天更厉害了。⭐',
+    '成功没有捷径，但每一步都算数。👣',
+    '再难也要学，再忙也要看书。📚',
+    '你今天种下的努力，将来都会开花。🌸',
+    '知识是最好的投资，今天也不例外。💎',
+    '相信自己，你比你想象的更强大。💪',
+    '每天进步一点点，积累成就大改变。🌟',
+    '专注当下，今天的任务就是今天的胜利。🏆',
+    '即使慢，只要不停，就一定会到达。🐢',
+    '困难是暂时的，你的成长是永久的。🌱',
+    '今天学的，明天就是你的竞争力。⚡',
+  ],
+  ja: [
+    '学ぶことを止めたら、成長も止まる。今日も前進！🚀',
+    '努力した今日が、未来の自分への贈り物。💛',
+    '継続は力なり。今日も一歩ずつ。🔥',
+    '昨日よりも少しだけ賢くなった今日の自分を褒めよう。⭐',
+    '近道はないけど、歩いた分だけ確実に前へ。👣',
+    '忙しくても、本を開く5分を作ろう。📚',
+    '今日蒔いた努力の種は、必ず花を咲かせる。🌸',
+    '知識こそ最高の投資。今日も積み重ねよう。💎',
+    '自分を信じて。君は思っているよりずっと強い。💪',
+    '毎日少しずつ、気づいたら大きな変化になっている。🌟',
+    '今ここに集中。今日のタスクが今日の勝利。🏆',
+    'ゆっくりでもいい、止まらなければ必ず届く。🐢',
+    '困難は一時的、成長は永遠に残る。🌱',
+    '今日学んだことが、明日の武器になる。⚡',
+  ],
+  en: [
+    "Learning never stops. Keep moving forward today! 🚀",
+    "Every effort you make today is a gift to your future self. 💛",
+    "Progress, not perfection. Every step counts. 🔥",
+    "You're smarter today than you were yesterday — celebrate that! ⭐",
+    "There are no shortcuts, but every step gets you closer. 👣",
+    "No matter how busy, make time for learning. 📚",
+    "The seeds you plant today will bloom in the future. 🌸",
+    "Knowledge is the best investment you'll ever make. 💎",
+    "Believe in yourself — you're stronger than you think. 💪",
+    "Small daily improvements lead to remarkable results. 🌟",
+    "Stay focused. Today's tasks are today's victories. 🏆",
+    "Slow and steady still wins the race. Keep going! 🐢",
+    "Challenges are temporary, but growth is permanent. 🌱",
+    "What you learn today becomes your edge tomorrow. ⚡",
+  ],
+};
+
+function _getDailyQuote(lang) {
+  const quotes = DAILY_QUOTES[lang] || DAILY_QUOTES.en;
+  // Use date string as a seed to pick the same quote all day, different each day
+  const seed = parseInt(todayKey().replace(/-/g, '')) % quotes.length;
+  return quotes[seed];
+}
+
 const Report = {
   render() {
     const el = document.getElementById('reportList');
     if (!el) return;
     el.innerHTML = '';
+
+    // Daily motivational quote — changes every day, matches current language
+    const quoteEl = document.getElementById('reportDailyQuote');
+    if (quoteEl) quoteEl.textContent = _getDailyQuote(I18n.lang);
 
     const enabled = S.subjects.filter(s => s.enabled);
     if (!enabled.length) {
@@ -135,16 +198,16 @@ const Report = {
   //   3. Replace the two YOUR_* values below and save
   //
   _sendEmail(toEmail, doneSubjects, totalPts, today) {
-    const PUBLIC_KEY = '1o0k8Wov1W7HtYneq';  // ← Account → API Keys
-    const SERVICE_ID = 'service_mvd09ib';           // ← already correct from your screenshot
-    const TEMPLATE_ID = 'template_bp2bmun';          // ← Email Templates → ID column
+    const PUBLIC_KEY  = '1o0k8Wov1W7HtYneq';   // ← Account → API Keys
+    const SERVICE_ID  = 'service_mvd09ib';      // ← Email Services → Service ID
+    // ⚠️ VERIFY: go to EmailJS → Email Templates → your template → check the "Template ID"
+    //    shown at the top of the Settings tab. Update this value if it doesn't match.
+    const TEMPLATE_ID = 'template_bp2bmun';     // ← Email Templates → Template ID
 
-    // Keys are configured — proceeding with send
-
-    // Initialize EmailJS once
+    // Initialise EmailJS once (idempotent, safe to call here)
     emailjs.init({ publicKey: PUBLIC_KEY });
 
-    // Send one email per completed subject (one template call each)
+    // Send one email per completed subject
     doneSubjects.forEach(s => {
       const r = S.todayReport[s.id] || {};
       const name = S._localName || window.Auth?.user?.displayName || 'Student';

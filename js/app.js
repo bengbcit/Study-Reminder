@@ -261,26 +261,33 @@ const App = {
 
 // ── Startup ───────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  // If already entered local mode, skip auth gate
-  if (localStorage.getItem('ss_localEntered')) {
-    document.getElementById('authGate').style.display = 'none';
-    document.getElementById('mainApp').style.display  = 'block';
-    App.init();
-    return;
-  }
-  // Show a neutral loading state while firebase-init.js (module) downloads the SDK.
-  // firebase-init.js will overwrite this with the real login form once ready.
+  // Always show auth gate — never auto-skip.
+  // firebase-init.js will overwrite authForm with the real login UI once ready.
   document.getElementById('authForm').innerHTML =
     '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ 正在连接…</div>';
 });
 
-// Fallback: if Firebase SDK never loads (e.g. offline / no config), show local mode after 10s
+// Fallback: if Firebase SDK hasn't loaded after 6s, show the local-mode button
 setTimeout(() => {
   const gate = document.getElementById('authGate');
   const app  = document.getElementById('mainApp');
   if (gate?.style.display !== 'none' && app?.style.display === 'none') {
     if (!window.Auth?._firebased) {
+      // Firebase never loaded (offline / misconfigured) — show local mode entry
       _localAuthUI('login');
     }
   }
-}, 10000);
+}, 6000);
+
+// Quick-enter local mode (called from the button in Firebase login form)
+App.enterLocalMode = function() {
+  const l = (window.I18n?.lang) || 'zh';
+  if (!S._localName) {
+    loadLocal();
+    if (!S._localName) S._localName = { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
+  }
+  localStorage.setItem('ss_localEntered', '1');
+  document.getElementById('authGate').style.display = 'none';
+  document.getElementById('mainApp').style.display  = 'block';
+  App.init();
+};

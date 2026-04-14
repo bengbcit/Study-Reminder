@@ -63,6 +63,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         if (el) { el.classList.add('active');    el.textContent = t('login'); }
         if (er) { er.classList.remove('active'); er.textContent = t('register'); }
         _setErr('');
+        const l = window.I18n?.lang || 'zh';
+        const localLabel = { zh:'以本地模式进入（无需账号）', ja:'ローカルモードで入る', en:'Continue without account' }[l];
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiEmail" type="email"
                  placeholder="${t('email_field')}" autocomplete="email"
@@ -76,7 +78,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           <button class="auth-google" id="googleBtn"
                   onclick="window.Auth._googleLogin()">
             ${_gIcon()} ${t('google_login')}
-          </button>`;
+          </button>
+          <button class="auth-local-btn" onclick="App.enterLocalMode()">👤 ${localLabel}</button>`;
       },
 
       showRegister() {
@@ -85,6 +88,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         if (el) { el.classList.remove('active'); el.textContent = t('login'); }
         if (er) { er.classList.add('active');    er.textContent = t('register'); }
         _setErr('');
+        const l = window.I18n?.lang || 'zh';
+        const localLabel = { zh:'以本地模式进入（无需账号）', ja:'ローカルモードで入る', en:'Continue without account' }[l];
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiName" type="text"
                  placeholder="${t('name_field')}" autocomplete="nickname"
@@ -101,7 +106,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           <button class="auth-google" id="googleBtn"
                   onclick="window.Auth._googleLogin()">
             ${_gIcon()} ${t('google_login')}
-          </button>`;
+          </button>
+          <button class="auth-local-btn" onclick="App.enterLocalMode()">👤 ${localLabel}</button>`;
       },
 
       // ── Sign-in actions ──────────────────────────────────

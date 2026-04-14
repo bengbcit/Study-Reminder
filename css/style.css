@@ -73,6 +73,13 @@ body {
   font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
   cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
+.auth-local-btn {
+  width: 100%; padding: 10px; border-radius: 14px; margin-top: 8px;
+  border: 1.5px dashed var(--border); background: transparent; color: var(--text2);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: border-color .15s, color .15s;
+}
+.auth-local-btn:hover { border-color: var(--accent); color: var(--accent); }
 .auth-err { font-size: 12px; color: var(--red); min-height: 18px; margin-top: 4px; }
 .auth-divider {
   font-size: 12px; color: var(--text2); margin: 10px 0;
@@ -368,6 +375,14 @@ body {
   margin-bottom: 14px; transition: opacity .15s;
 }
 .submit-all-btn:hover { opacity: .9; }
+.daily-quote-card {
+  background: linear-gradient(135deg, #FFB30011, #FF6B3511);
+  border: 1.5px solid #FFB30044;
+  border-radius: 16px; padding: 12px 16px; margin-bottom: 14px;
+  font-size: 13px; font-weight: 700; color: var(--text);
+  text-align: center; line-height: 1.5;
+  min-height: 20px;
+}
 .ai-card {
   background: linear-gradient(135deg, #667eea22, #764ba222);
   border: 1.5px solid #9B6DFF44;

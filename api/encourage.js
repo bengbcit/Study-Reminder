@@ -13,15 +13,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const { subjectList, lang } = req.body || {};
+
+  // Language-aware fallback (used when no API key or on error)
+  const fallback = {
+    zh: `🌟 太棒了！今天完成了学习，你真的很努力！每一天的坚持都让你变得更强，明天继续加油！💪`,
+    ja: `🌟 すごい！今日も学習を頑張りました！毎日の積み重ねが大きな力になります。明日も一緒に頑張ろう！💪`,
+    en: `🌟 Great job completing your studies today! Every session brings you one step closer to your goals. Keep up the amazing work! 💪`,
+  };
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    // Return a friendly fallback instead of an error
-    return res.status(200).json({
-      text: '🌟 Great job completing your studies today! Every session brings you one step closer to your goals. Keep up the amazing work!'
-    });
+    return res.status(200).json({ text: fallback[lang] || fallback.en });
   }
-
-  const { subjectList, lang } = req.body || {};
 
   const prompts = {
     zh: `一个孩子刚完成了今天的学习：${subjectList}。请用温暖鼓励的语气写2-3句中文鼓励话语，要具体提到学习的科目，让孩子感到被肯定和有动力继续。只输出鼓励的话，不要任何前缀或解释。`,
@@ -54,8 +58,6 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error('AI encouragement error:', err.message);
-    return res.status(200).json({
-      text: '🌟 You did it! Completing your studies today is a real achievement. Every day you show up is a step forward — be proud of yourself!'
-    });
+    return res.status(200).json({ text: fallback[lang] || fallback.en });
   }
 }

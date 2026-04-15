@@ -376,3 +376,53 @@ git push
 | auth.js 不在 index.html 里 = 无效 | 写了代码不等于生效，要检查 `<script>` 加载顺序 |
 | Firebase 自动登录 = 正常行为 | `onAuthStateChanged` 会在有 session 时自动触发，这是设计如此，非 bug |
 
+---
+
+### 2026-04-16（续）— 头像点击无反应 + 退出本地模式瞬间重登
+
+#### ❓ 问题 4：点击本地用户头像无反应
+- **根本原因**：Firebase 已配置时，`window.Auth` 被 `firebase-init.js` 的 `FirebaseAuth` 对象覆盖
+  - `FirebaseAuth.openProfile()` 原本判断 `if (!this.user) return;` — 本地模式下 `this.user = null`，直接返回，什么都不做
+- **修复**：在 `firebase-init.js` 的 `openProfile()` 中添加 fallback：
+  ```js
+  openProfile() {
+    if (!this.user) {
+      if (typeof window._localProfile === 'function') window._localProfile();
+      return;
+    }
+    // Firebase user path...
+  }
+  ```
+
+#### ❓ 问题 5：退出本地模式后瞬间重登
+- **根本原因**：本地模式绕过了 Firebase（`ss_localEntered` 标记），没有真实 Firebase session
+  - `Auth._logout()` 调用 `signOut(_auth)`，但当前无 Firebase session → `signOut()` 是 no-op
+  - `onAuthStateChanged` 不会再次触发（状态本来就是 null），`_onSignOut()` 不执行
+  - `mainApp` 不会隐藏，页面看起来仍在登录状态
+- **修复**：新增 `App.exitLocalMode()` 方法，处理三种情况：
+  ```js
+  exitLocalMode() {
+    localStorage.removeItem('ss_localEntered');
+    if (window.Auth?._firebased && window.Auth.user) {
+      window.Auth._logout(); // 真实 Firebase session → signOut → onAuthStateChanged
+      return;
+    }
+    // 本地模式绕过 → 手动切换 UI
+    document.getElementById('mainApp').style.display  = 'none';
+    document.getElementById('authGate').style.display = 'flex';
+    window.Auth?._firebased ? window.Auth.showLogin() : _localAuthUI('login');
+  }
+  ```
+- 退出按钮改为调用 `App.exitLocalMode()` 而非 `Auth._logout()`
+
+#### ✅ 同步修复
+- 新增 `.psa-btn` CSS（切换账号按钮，之前无样式定义）
+- `_localProfile()` 的退出按钮：`onclick="Auth._logout()"` → `onclick="App.exitLocalMode()"`
+
+#### 📌 关键经验（续）
+| 经验 | 说明 |
+|------|------|
+| `signOut()` 在无 session 时是 no-op | Firebase 已签出状态下调 `signOut()` 不触发 `onAuthStateChanged`，UI 不更新 |
+| 本地模式绕过 ≠ Firebase session | `ss_localEntered` 只是本地标记，不存在对应的 Firebase auth 状态 |
+| `FirebaseAuth` 覆盖了 `window.Auth` | firebase-init.js 加载后 `window.Auth` 变成 FirebaseAuth 对象，本地 stub 的行为会被改变 |
+

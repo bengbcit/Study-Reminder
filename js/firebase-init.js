@@ -291,6 +291,11 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       },
 
       openProfile() {
+        if (!this.user) {
+          // No Firebase session — user is in local mode, show local profile
+          if (typeof window._localProfile === 'function') window._localProfile();
+          return;
+        }
         document.getElementById('profileDrawer').classList.add('open');
         this._renderProfile();
       },

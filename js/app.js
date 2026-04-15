@@ -212,7 +212,7 @@ function _localProfile() {
       <div class="ps-card"><div class="ps-num">${S.streak}</div><div class="ps-lbl">${t('stats_streak')}</div></div>
       <div class="ps-card"><div class="ps-num">${Object.keys(S.history).length}</div><div class="ps-lbl">${t('stats_total_days')}</div></div>
     </div>
-    <button class="logout-btn" onclick="Auth._logout()">${logoutLabel}</button>`;
+    <button class="logout-btn" onclick="App.exitLocalMode()">${logoutLabel}</button>`;
 }
 
 // Toggle avatar / badge / coupon panels in profile drawer
@@ -300,6 +300,26 @@ const App = {
     document.getElementById('mainApp').style.display  = 'none';
     document.getElementById('authGate').style.display = 'flex';
     window.Auth.showRegister();
+  },
+
+  // ── Exit local mode (handles all cases) ──────────────────
+  exitLocalMode() {
+    document.getElementById('profileDrawer').classList.remove('open');
+    localStorage.removeItem('ss_localEntered');
+    // If Firebase is active with a real session, sign out properly
+    // signOut → onAuthStateChanged → _onSignOut hides mainApp automatically
+    if (window.Auth?._firebased && window.Auth.user) {
+      window.Auth._logout();
+      return;
+    }
+    // No Firebase session (local mode bypass) — manually show auth gate
+    document.getElementById('mainApp').style.display  = 'none';
+    document.getElementById('authGate').style.display = 'flex';
+    if (window.Auth?._firebased) {
+      window.Auth.showLogin();
+    } else {
+      _localAuthUI('login');
+    }
   },
 };
 

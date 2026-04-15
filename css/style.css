@@ -661,6 +661,14 @@ body {
   color: var(--text); cursor: pointer; margin-bottom: 8px;
   display: flex; align-items: center; gap: 8px;
 }
+.psa-btn {
+  width: 100%; padding: 9px 12px; border-radius: 12px;
+  border: 1.5px solid var(--accent); background: var(--bg);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--accent); cursor: pointer; text-align: center;
+  transition: background .15s, color .15s;
+}
+.psa-btn:hover { background: var(--accent); color: #fff; }
 .logout-btn {
   width: 100%; padding: 12px; border-radius: 14px;
   border: none; background: #FFF0EE; color: var(--red);

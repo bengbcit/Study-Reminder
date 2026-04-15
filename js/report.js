@@ -166,14 +166,13 @@ const Report = {
     saveLocal();
     document.getElementById('streakNum').textContent = S.streak;
 
-    // Send email via EmailJS
-    this._sendEmail(toEmail, doneSubjects, totalPts, today);
-
     // Send Discord notification
     Remind.sendDiscord(this._buildTextBody(doneSubjects, totalPts, today));
 
     confetti();
-    showToast(t('send_ok'));
+
+    // Send email via EmailJS — show result toast after attempt
+    this._sendEmail(toEmail, doneSubjects, totalPts, today);
 
     // AI encouragement — pass current UI language explicitly
     this._fetchAI(doneSubjects, I18n.lang);
@@ -210,40 +209,39 @@ const Report = {
   _sendEmail(toEmail, doneSubjects, totalPts, today) {
     const PUBLIC_KEY  = '1o0k8Wov1W7HtYneq';   // ← Account → API Keys
     const SERVICE_ID  = 'service_mvd09ib';      // ← Email Services → Service ID
-    // ⚠️ VERIFY: go to EmailJS → Email Templates → your template → check the "Template ID"
-    //    shown at the top of the Settings tab. Update this value if it doesn't match.
     const TEMPLATE_ID = 'template_bp2bmun';     // ← Email Templates → Template ID
 
     // Initialise EmailJS once (idempotent, safe to call here)
     emailjs.init({ publicKey: PUBLIC_KEY });
 
-    // Send one email per completed subject
-    doneSubjects.forEach(s => {
-      const r = S.todayReport[s.id] || {};
-      const name = S._localName || window.Auth?.user?.displayName || 'Student';
+    const name = S._localName || window.Auth?.user?.displayName || 'Student';
 
-      emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-        // ── Core fields (match your template exactly) ──
-        name: name,
-        subject_name: subjName(s),           // {{subject_name}}
-        date: today,                 // {{date}}
-        time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
-        done: r.done ? '✅ Completed / 完了 / 完成' : '❌ Incomplete',
-        duration: s.duration + ' min',   // {{duration}}
-        difficulty: '⭐'.repeat(r.diff || 0) || 'N/A',  // {{difficulty}}
-        summary: r.summary || '—',      // {{summary}}
-        // Extra fields (add to template if you want them)
-        hard_points: r.hard || '—',
-        points: '+' + (s.duration >= 30 ? 20 : 10) + ' pts',
+    // Send all subjects as one combined email to avoid multiple toasts
+    const sends = doneSubjects.map(s => {
+      const r = S.todayReport[s.id] || {};
+      return emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+        name:         name,
+        subject_name: subjName(s),
+        date:         today,
+        time:         new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+        done:         r.done ? '✅ Completed / 完了 / 完成' : '❌ Incomplete',
+        duration:     s.duration + ' min',
+        difficulty:   '⭐'.repeat(r.diff || 0) || 'N/A',
+        summary:      r.summary || '—',
+        hard_points:  r.hard || '—',
+        points:       '+' + (s.duration >= 30 ? 20 : 10) + ' pts',
         total_points: String(S.points),
-        streak: S.streak + ' days 🔥',
-        to_email: toEmail,               // only used if your template has {{to_email}}
-      }).then(() => {
-        console.info('EmailJS sent for', s.name);
-      }).catch(err => {
-        console.warn('EmailJS error:', err);
-        showToast('📧 邮件发送失败：' + (err.text || err.message || '请检查配置'));
+        streak:       S.streak + ' days 🔥',
+        to_email:     toEmail,
       });
+    });
+
+    // Show a single toast after all emails resolve
+    Promise.all(sends).then(() => {
+      showToast(t('send_ok'));
+    }).catch(err => {
+      console.warn('EmailJS error:', err);
+      showToast('📧 邮件发送失败：' + (err.text || err.message || '请检查配置'));
     });
   },
 

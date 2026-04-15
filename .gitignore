@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Firebase keys
 js/keys.js
+
+#screenshots
+screenshots

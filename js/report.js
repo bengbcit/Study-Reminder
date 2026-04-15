@@ -60,6 +60,9 @@ function _getDailyQuote(lang) {
 }
 
 const Report = {
+  _lastDoneSubjects: null,  // remembered for AI re-fetch on language switch
+  _aiCache: {},             // cached AI text per language { zh: '...', ja: '...', en: '...' }
+
   render() {
     const el = document.getElementById('reportList');
     if (!el) return;
@@ -71,7 +74,7 @@ const Report = {
 
     const enabled = S.subjects.filter(s => s.enabled);
     if (!enabled.length) {
-      el.innerHTML = `<div class="info-card">请先在「课程设置」中启用科目</div>`;
+      el.innerHTML = `<div class="info-card">${t('no_subjects_enabled')}</div>`;
       return;
     }
 
@@ -85,7 +88,7 @@ const Report = {
         <div class="rc-head">
           <div class="rc-subj">
             <span>${s.icon}</span><span>${nm}</span>
-            ${r.timerDone ? '<span style="font-size:11px;color:var(--green);margin-left:4px">⏱ 计时完成</span>' : ''}
+            ${r.timerDone ? `<span style="font-size:11px;color:var(--green);margin-left:4px">${t('timer_done_badge')}</span>` : ''}
           </div>
           <div class="rc-pts">⭐ +${pts}</div>
         </div>
@@ -107,6 +110,21 @@ const Report = {
     // Sync report email field — fall back to Firebase auth email if none saved
     const repEmail = document.getElementById('reportEmail');
     if (repEmail) repEmail.value = S.emailAddr || window.Auth?.user?.email || '';
+
+    // Refresh AI encouragement section when language switches
+    const aiEl = document.getElementById('aiEncouragement');
+    if (aiEl && aiEl.style.display !== 'none') {
+      const labelEl = aiEl.querySelector('.ai-label');
+      if (labelEl) labelEl.textContent = t('ai_label');
+      const lang = I18n.lang;
+      if (this._aiCache[lang]) {
+        const textEl = aiEl.querySelector('.ai-text');
+        if (textEl) textEl.textContent = this._aiCache[lang];
+      } else if (this._lastDoneSubjects) {
+        // No cached text for this language yet — fetch it
+        this._fetchAI(this._lastDoneSubjects, lang);
+      }
+    }
   },
 
   // Auto-save report email back to S.emailAddr on blur
@@ -150,6 +168,7 @@ const Report = {
 
     const doneSubjects = enabled.filter(s => S.todayReport[s.id]?.done);
     if (!doneSubjects.length) { showToast(t('no_done')); return; }
+    this._lastDoneSubjects = doneSubjects;
 
     // Award points and save history
     const today = todayKey();
@@ -207,37 +226,36 @@ const Report = {
   //   3. Replace the two YOUR_* values below and save
   //
   _sendEmail(toEmail, doneSubjects, totalPts, today) {
-    const PUBLIC_KEY  = '1o0k8Wov1W7HtYneq';   // ← Account → API Keys
-    const SERVICE_ID  = 'service_mvd09ib';      // ← Email Services → Service ID
-    const TEMPLATE_ID = 'template_bp2bmun';     // ← Email Templates → Template ID
+    const PUBLIC_KEY  = '1o0k8Wov1W7HtYneq';
+    const SERVICE_ID  = 'service_mvd09ib';
+    const TEMPLATE_ID = 'template_bp2bmun';
 
-    // Initialise EmailJS once (idempotent, safe to call here)
     emailjs.init({ publicKey: PUBLIC_KEY });
 
     const name = S._localName || window.Auth?.user?.displayName || 'Student';
 
-    // Send all subjects as one combined email to avoid multiple toasts
-    const sends = doneSubjects.map(s => {
+    // Build one combined report body — one email regardless of subject count
+    const subjectLines = doneSubjects.map(s => {
       const r = S.todayReport[s.id] || {};
-      return emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-        name:         name,
-        subject_name: subjName(s),
-        date:         today,
-        time:         new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
-        done:         r.done ? '✅ Completed / 完了 / 完成' : '❌ Incomplete',
-        duration:     s.duration + ' min',
-        difficulty:   '⭐'.repeat(r.diff || 0) || 'N/A',
-        summary:      r.summary || '—',
-        hard_points:  r.hard || '—',
-        points_earned: s.duration >= 30 ? 20 : 10,   // matches {{points_earned}} in template
-        total_points: String(S.points),
-        streak:       S.streak + ' days 🔥',
-        to_email:     toEmail,
-      });
-    });
+      return `${s.icon} ${subjName(s)} · ${s.duration}min · ${'⭐'.repeat(r.diff || 0) || '—'}\n` +
+             `📝 ${r.summary || '—'}\n🤔 ${r.hard || '—'}`;
+    }).join('\n\n');
 
-    // Show a single toast after all emails resolve
-    Promise.all(sends).then(() => {
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+      name,
+      subject_name: doneSubjects.map(s => `${s.icon} ${subjName(s)}`).join(' / '),
+      date:         today,
+      time:         new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+      done:         doneSubjects.map(s => `✅ ${subjName(s)}`).join(', '),
+      duration:     doneSubjects.map(s => s.duration + ' min').join(' + '),
+      difficulty:   doneSubjects.map(s => '⭐'.repeat(S.todayReport[s.id]?.diff || 0) || '—').join(' / '),
+      summary:      subjectLines,
+      hard_points:  '',
+      points_earned: totalPts,
+      total_points: String(S.points),
+      streak:       S.streak + ' days 🔥',
+      to_email:     toEmail,
+    }).then(() => {
       showToast(t('send_ok'));
     }).catch(err => {
       console.warn('EmailJS error:', err);
@@ -245,7 +263,7 @@ const Report = {
     });
   },
 
-  // ── AI encouragement (language-aware) ────────────────────
+  // ── AI encouragement (language-aware, caches result per language) ───
   async _fetchAI(doneSubjects, lang) {
     const aiEl = document.getElementById('aiEncouragement');
     if (!aiEl) return;
@@ -265,6 +283,13 @@ const Report = {
       return `${s.icon} ${nm}`;
     }).join(lang === 'en' ? ', ' : '、');
 
+    const fallback = {
+      zh: `🌟 太棒了！今天完成了 ${subjectList} 的学习，你真的很努力！每一天的坚持都让你变得更强，明天继续加油！💪`,
+      ja: `🌟 すごい！今日も ${subjectList} を頑張りました！毎日の積み重ねが大きな力になります。明日も一緒に頑張ろう！💪`,
+      en: `🌟 Fantastic work today! You completed ${subjectList} — every study session makes you stronger. Keep it up, you're doing amazing! 💪`,
+    };
+
+    let text;
     try {
       const res = await fetch('/api/encourage', {
         method: 'POST',
@@ -273,23 +298,18 @@ const Report = {
       });
       if (!res.ok) throw new Error('status ' + res.status);
       const data = await res.json();
-      aiEl.innerHTML = `
-        <div class="ai-card">
-          <div class="ai-label">${t('ai_label')}</div>
-          <div class="ai-text">${data.text}</div>
-        </div>`;
+      text = data.text;
     } catch (e) {
-      // Friendly fallback in the correct language — no API needed
-      const fallback = {
-        zh: `🌟 太棒了！今天完成了 ${subjectList} 的学习，你真的很努力！每一天的坚持都让你变得更强，明天继续加油！💪`,
-        ja: `🌟 すごい！今日も ${subjectList} を頑張りました！毎日の積み重ねが大きな力になります。明日も一緒に頑張ろう！💪`,
-        en: `🌟 Fantastic work today! You completed ${subjectList} — every study session makes you stronger. Keep it up, you're doing amazing! 💪`,
-      };
-      aiEl.innerHTML = `
-        <div class="ai-card">
-          <div class="ai-label">${t('ai_label')}</div>
-          <div class="ai-text">${fallback[lang] || fallback.en}</div>
-        </div>`;
+      text = fallback[lang] || fallback.en;
     }
+
+    // Cache so language switch can show the right text instantly
+    this._aiCache[lang] = text;
+
+    aiEl.innerHTML = `
+      <div class="ai-card">
+        <div class="ai-label">${t('ai_label')}</div>
+        <div class="ai-text">${text}</div>
+      </div>`;
   },
 };

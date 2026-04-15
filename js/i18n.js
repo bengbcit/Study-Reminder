@@ -91,6 +91,8 @@ const I18N = {
     notion_time_am: '上午',
     notion_time_pm: '下午',
     notion_time_evening: '晚间',
+    no_subjects_enabled: '请先在「课程设置」中启用科目',
+    timer_done_badge: '⏱ 计时完成',
     // Theme
     theme_btn: '🎨',
     theme_title: '背景主题',
@@ -185,6 +187,8 @@ const I18N = {
     notion_time_am: '午前',
     notion_time_pm: '午後',
     notion_time_evening: '夜',
+    no_subjects_enabled: '先に科目設定で科目を有効にしてください',
+    timer_done_badge: '⏱ タイマー完了',
     // Theme
     theme_btn: '🎨',
     theme_title: '背景テーマ',
@@ -279,6 +283,8 @@ const I18N = {
     notion_time_am: 'AM',
     notion_time_pm: 'PM',
     notion_time_evening: 'Evening',
+    no_subjects_enabled: 'Enable subjects in the Subjects tab first',
+    timer_done_badge: '⏱ Timer done',
     // Theme
     theme_btn: '🎨',
     theme_title: 'Background Theme',

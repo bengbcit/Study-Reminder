@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(obsidian create:*)",
-      "Bash(winget install:*)",
-      "Bash(npm --version)"
-    ]
-  }
-}

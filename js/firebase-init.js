@@ -24,7 +24,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
   try {
     const app = initializeApp(FIREBASE_CONFIG);
     _auth = getAuth(app);
-    _db   = getFirestore(app);
+    _db = getFirestore(app);
   } catch (e) {
     console.warn('Firebase init error:', e.message);
   }
@@ -41,7 +41,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         localStorage.removeItem('ss_localEntered');
         // Show main UI immediately — don't block on Firestore load
         document.getElementById('authGate').style.display = 'none';
-        document.getElementById('mainApp').style.display  = 'block';
+        document.getElementById('mainApp').style.display = 'block';
         App.init();
         // AFTER App.init() — override the local '👤' with the Firebase avatar
         this._updateAvatar();
@@ -60,11 +60,11 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       showLogin() {
         const el = document.getElementById('tabLogin');
         const er = document.getElementById('tabRegister');
-        if (el) { el.classList.add('active');    el.textContent = t('login'); }
+        if (el) { el.classList.add('active'); el.textContent = t('login'); }
         if (er) { er.classList.remove('active'); er.textContent = t('register'); }
         _setErr('');
         const l = window.I18n?.lang || 'zh';
-        const localLabel = { zh:'以本地模式进入（无需账号）', ja:'ローカルモードで入る', en:'Continue without account' }[l];
+        const localLabel = { zh: '以本地模式进入（无需账号）', ja: 'ローカルモードで入る', en: 'Continue without account' }[l];
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiEmail" type="email"
                  placeholder="${t('email_field')}" autocomplete="email"
@@ -86,10 +86,10 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         const el = document.getElementById('tabLogin');
         const er = document.getElementById('tabRegister');
         if (el) { el.classList.remove('active'); el.textContent = t('login'); }
-        if (er) { er.classList.add('active');    er.textContent = t('register'); }
+        if (er) { er.classList.add('active'); er.textContent = t('register'); }
         _setErr('');
         const l = window.I18n?.lang || 'zh';
-        const localLabel = { zh:'以本地模式进入（无需账号）', ja:'ローカルモードで入る', en:'Continue without account' }[l];
+        const localLabel = { zh: '以本地模式进入（无需账号）', ja: 'ローカルモードで入る', en: 'Continue without account' }[l];
         document.getElementById('authForm').innerHTML = `
           <input class="auth-input" id="aiName" type="text"
                  placeholder="${t('name_field')}" autocomplete="nickname"
@@ -113,7 +113,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       // ── Sign-in actions ──────────────────────────────────
       async _login() {
         const email = document.getElementById('aiEmail')?.value.trim();
-        const pass  = document.getElementById('aiPass')?.value;
+        const pass = document.getElementById('aiPass')?.value;
         if (!email || !pass) { _setErr(t('auth_fill_both')); return; }
         _setErr('');
         _setBusy('loginBtn', true);
@@ -123,7 +123,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const l = window.I18n?.lang || 'zh';
           document.getElementById('authForm').innerHTML =
             '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ ' +
-            ({zh:'正在登录…', ja:'ログイン中…', en:'Signing in…'}[l]) + '</div>';
+            ({ zh: '正在登录…', ja: 'ログイン中…', en: 'Signing in…' }[l]) + '</div>';
         } catch (e) {
           _setErr(_friendlyError(e.code));
           _setBusy('loginBtn', false);
@@ -131,9 +131,9 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       },
 
       async _register() {
-        const name  = document.getElementById('aiName')?.value.trim() || '';
+        const name = document.getElementById('aiName')?.value.trim() || '';
         const email = document.getElementById('aiEmail')?.value.trim();
-        const pass  = document.getElementById('aiPass')?.value;
+        const pass = document.getElementById('aiPass')?.value;
         if (!email || !pass) { _setErr(t('auth_fill_both')); return; }
         if (pass.length < 6) { _setErr(t('auth_pw_short')); return; }
         _setErr('');
@@ -144,7 +144,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const l = window.I18n?.lang || 'zh';
           document.getElementById('authForm').innerHTML =
             '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ ' +
-            ({zh:'正在创建账号…', ja:'アカウント作成中…', en:'Creating account…'}[l]) + '</div>';
+            ({ zh: '正在创建账号…', ja: 'アカウント作成中…', en: 'Creating account…' }[l]) + '</div>';
           if (name) await updateProfile(cred.user, { displayName: name });
           await this._createUserDoc(cred.user, name || email);
           // onAuthStateChanged → _onSignIn
@@ -166,7 +166,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const l = window.I18n?.lang || 'zh';
           document.getElementById('authForm').innerHTML =
             '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ ' +
-            ({zh:'正在登录…', ja:'ログイン中…', en:'Signing in…'}[l]) + '</div>';
+            ({ zh: '正在登录…', ja: 'ログイン中…', en: 'Signing in…' }[l]) + '</div>';
           await this._handleGoogleCred(cred);
         } catch (e) {
           // Re-render form so user can try again
@@ -176,7 +176,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       },
 
       async _handleGoogleCred(cred) {
-        const ref  = doc(_db, 'users', cred.user.uid);
+        const ref = doc(_db, 'users', cred.user.uid);
         const snap = await getDoc(ref);
         if (!snap.exists()) {
           await this._createUserDoc(cred.user, cred.user.displayName || cred.user.email);
@@ -187,15 +187,15 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       async _createUserDoc(user, displayName) {
         await setDoc(doc(_db, 'users', user.uid), {
           displayName: displayName || user.email,
-          email:    user.email,
-          points:   0,
-          streak:   0,
-          coupons:  [],
+          email: user.email,
+          points: 0,
+          streak: 0,
+          coupons: [],
           subjects: JSON.parse(JSON.stringify(DEFAULT_SUBJECTS)),
-          history:  {},
+          history: {},
           settings: {},
           notionToken: '',
-          notionDbId:  '',
+          notionDbId: '',
           createdAt: new Date().toISOString(),
         });
       },
@@ -206,14 +206,14 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const snap = await getDoc(doc(_db, 'users', uid));
           if (!snap.exists()) return;
           const d = snap.data();
-          if (d.subjects?.length) S.subjects    = d.subjects;
-          if (d.points   != null) S.points      = d.points;
-          if (d.streak   != null) S.streak      = d.streak;
-          if (d.history)          S.history     = d.history;
-          if (d.coupons)          S.coupons     = d.coupons;
-          if (d.settings)         Object.assign(S, d.settings);
-          if (d.notionToken)      S.notionToken = d.notionToken;
-          if (d.notionDbId)       S.notionDbId  = d.notionDbId;
+          if (d.subjects?.length) S.subjects = d.subjects;
+          if (d.points != null) S.points = d.points;
+          if (d.streak != null) S.streak = d.streak;
+          if (d.history) S.history = d.history;
+          if (d.coupons) S.coupons = d.coupons;
+          if (d.settings) Object.assign(S, d.settings);
+          if (d.notionToken) S.notionToken = d.notionToken;
+          if (d.notionDbId) S.notionDbId = d.notionDbId;
           saveLocal();
           // Refresh UI so Firebase data (subjects, streak) replaces local data
           Subjects.render();
@@ -227,20 +227,20 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         if (!this.user) return;
         try {
           await updateDoc(doc(_db, 'users', this.user.uid), {
-            subjects:    S.subjects,
-            points:      S.points,
-            streak:      S.streak,
-            history:     S.history,
-            coupons:     S.coupons,
+            subjects: S.subjects,
+            points: S.points,
+            streak: S.streak,
+            history: S.history,
+            coupons: S.coupons,
             notionToken: S.notionToken || '',
-            notionDbId:  S.notionDbId  || '',
+            notionDbId: S.notionDbId || '',
             settings: {
-              notify:         S.notify,
-              startTime:      S.startTime,
-              remindBefore:   S.remindBefore,
-              emailAddr:      S.emailAddr,
+              notify: S.notify,
+              startTime: S.startTime,
+              remindBefore: S.remindBefore,
+              emailAddr: S.emailAddr,
               discordWebhook: S.discordWebhook,
-              themeBg:        S.themeBg || '',
+              themeBg: S.themeBg || '',
             },
           });
         } catch (e) { console.warn('Firestore save:', e.message); }
@@ -266,7 +266,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
             canvas.width = canvas.height = 200;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2,
-                          size, size, 0, 0, 200, 200);
+              size, size, 0, 0, 200, 200);
             this._setAvatar(canvas.toDataURL('image/jpeg', 0.8));
           };
           img.src = e.target.result;
@@ -276,7 +276,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
 
       // ── Avatar + Profile ────────────────────────────────────
       _updateAvatar() {
-        const btn  = document.getElementById('userAvatar');
+        const btn = document.getElementById('userAvatar');
         if (!btn) return;
         if (S.avatar && S.avatar.length > 2) {
           btn.innerHTML = `<img src="${S.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
@@ -301,22 +301,29 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       },
 
       _renderProfile() {
-        const u    = this.user;
+        const u = this.user;
         const name = u?.displayName || u?.email || 'User';
-        const l    = window.I18n?.lang || 'zh';
+        const l = window.I18n?.lang || 'zh';
         const earned = Rewards.getEarned();
         const badges = Rewards.BADGES.filter(b => earned.has(b.id));
-        const avatarLabel  = { zh:'头像', ja:'アバター', en:'Avatar'  }[l] || '头像';
-        const badgeLabel   = { zh:'徽章', ja:'バッジ',   en:'Badges'  }[l] || '徽章';
-        const couponLabel  = { zh:'奖券', ja:'クーポン', en:'Coupons' }[l] || '奖券';
-        const uploadLabel  = { zh:'📷 上传图片', ja:'📷 画像をアップロード', en:'📷 Upload Image' }[l];
+        const avatarLabel = { zh: '头像', ja: 'アバター', en: 'Avatar' }[l] || '头像';
+        const badgeLabel = { zh: '徽章', ja: 'バッジ', en: 'Badges' }[l] || '徽章';
+        const couponLabel = { zh: '奖券', ja: 'クーポン', en: 'Coupons' }[l] || '奖券';
+        const uploadLabel = { zh: '📷 上传图片', ja: '📷 画像をアップロード', en: '📷 Upload Image' }[l];
 
         const badgesHtml = badges.map(b =>
-          `<div class="profile-badge" title="${b.name[l]||b.name.zh}">${b.icon}</div>`
+          `<div class="profile-badge" title="${b.name[l] || b.name.zh}">${b.icon}</div>`
         ).join('') || `<span style="font-size:13px;color:var(--text2)">—</span>`;
 
+        // Show selected avatar (emoji or uploaded image), fall back to initial letter
+        const avatarHtml = S.avatar && S.avatar.length > 2
+          ? `<img src="${S.avatar}" class="profile-avatar-img">`
+          : S.avatar
+            ? `<div class="profile-avatar" style="font-size:40px">${S.avatar}</div>`
+            : `<div class="profile-avatar">${name.charAt(0).toUpperCase()}</div>`;
+
         document.getElementById('profileContent').innerHTML = `
-          <div class="profile-avatar">${name.charAt(0).toUpperCase()}</div>
+          ${avatarHtml}
           <div class="profile-name">${name}</div>
           <div class="profile-email">${u?.email || ''}</div>
           <div class="profile-panel-row">
@@ -333,9 +340,9 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           <div id="avatarPanel" class="profile-expand-panel">
             <div class="avatar-preset-grid">
               ${PRESET_AVATARS.map(a =>
-                `<div class="avatar-opt ${S.avatar === a ? 'sel' : ''}"
+          `<div class="avatar-opt ${S.avatar === a ? 'sel' : ''}"
                       onclick="Auth._setAvatar('${a}')">${a}</div>`
-              ).join('')}
+        ).join('')}
             </div>
             <label class="avatar-upload-btn">
               ${uploadLabel}
@@ -348,15 +355,15 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           </div>
           <div id="couponPanel" class="profile-expand-panel">
             ${S.coupons.length === 0
-              ? `<span style="font-size:13px;color:var(--text2)">—</span>`
-              : S.coupons.map((c, idx) => `
+            ? `<span style="font-size:13px;color:var(--text2)">—</span>`
+            : S.coupons.map((c, idx) => `
                 <div class="profile-coupon-mini" onclick="Rewards.openCoupon(${idx})"
                      style="background:${c.gradient};color:${c.text}">
                   <span class="pcm-icon">${c.icon}</span>
                   <span class="pcm-name">${c.name}</span>
                   ${c.used ? '<span class="pcm-used">✓ used</span>' : ''}
                 </div>`).join('')
-            }
+          }
           </div>
           <div class="profile-stat-row">
             <div class="ps-card"><div class="ps-num">${S.points}</div><div class="ps-lbl">${t('pts_lbl')}</div></div>
@@ -375,7 +382,7 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
     window.Auth = FirebaseAuth;
 
     // Register _refreshAuthGate for i18n.js to call on lang switch
-    window._refreshAuthGate = function() {
+    window._refreshAuthGate = function () {
       if (document.getElementById('authGate')?.style.display !== 'none') {
         const isReg = document.getElementById('tabRegister')?.classList.contains('active');
         isReg ? FirebaseAuth.showRegister() : FirebaseAuth.showLogin();
@@ -385,12 +392,12 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
     // Handle Google redirect result (for mobile / popup-blocked fallback)
     getRedirectResult(_auth)
       .then(result => { if (result?.user) FirebaseAuth._handleGoogleCred(result); })
-      .catch(() => {});
+      .catch(() => { });
 
     // Auth state observer
     onAuthStateChanged(_auth, user => {
       if (user) FirebaseAuth._onSignIn(user);
-      else      FirebaseAuth._onSignOut();
+      else FirebaseAuth._onSignOut();
     });
 
     // Show login immediately (don't wait for auth state)
@@ -408,7 +415,7 @@ function _setErr(msg) {
 function _setBusy(id, busy) {
   const btn = document.getElementById(id);
   if (!btn) return;
-  btn.disabled    = busy;
+  btn.disabled = busy;
   btn.style.opacity = busy ? '0.6' : '';
 }
 
@@ -424,20 +431,20 @@ function _gIcon() {
 function _friendlyError(code) {
   const l = window.I18n?.lang || 'zh';
   const msgs = {
-    'auth/invalid-email':         { zh:'邮箱格式不正确',                        ja:'メール形式エラー',                    en:'Invalid email format' },
-    'auth/user-not-found':        { zh:'账号不存在，请先注册',                  ja:'アカウントが見つかりません',          en:'Account not found, register first' },
-    'auth/wrong-password':        { zh:'密码错误，请重试',                       ja:'パスワードが違います',                en:'Incorrect password' },
-    'auth/invalid-credential':    { zh:'邮箱或密码错误',                         ja:'メールまたはパスワードが違います',    en:'Invalid email or password' },
-    'auth/email-already-in-use':  { zh:'该邮箱已注册，请直接登录',              ja:'すでに登録済みのメールです',          en:'Email already registered, please log in' },
-    'auth/weak-password':         { zh:'密码至少需要6位',                        ja:'パスワードは6文字以上',               en:'Password must be 6+ characters' },
-    'auth/popup-closed-by-user':  { zh:'登录窗口已关闭，请重试',                ja:'ウィンドウが閉じられました',          en:'Popup closed, please try again' },
-    'auth/popup-blocked':         { zh:'弹窗被浏览器拦截，请允许弹窗后重试',    ja:'ポップアップをブロック中。許可してください', en:'Popup blocked — please allow popups and try again' },
-    'auth/cancelled-popup-request':{ zh:'登录已取消，请重试',                   ja:'ログインがキャンセルされました',      en:'Login cancelled, please try again' },
-    'auth/network-request-failed':{ zh:'网络错误，请检查连接',                  ja:'ネットワークエラー',                  en:'Network error, check connection' },
-    'auth/too-many-requests':     { zh:'尝试次数过多，请稍后再试',              ja:'試行回数超過。後でお試しください',    en:'Too many attempts, try later' },
-    'auth/operation-not-allowed': { zh:'Google 登录未启用，请联系管理员',       ja:'Google ログインが無効です',           en:'Google login not enabled' },
-    'auth/invalid-action-code':   { zh:'操作无效，请刷新页面重试',              ja:'無効な操作です。リロードしてください', en:'Invalid action — please refresh and try again' },
-    'auth/internal-error':        { zh:'内部错误，请刷新页面重试',              ja:'内部エラー。リロードしてください',    en:'Internal error — please refresh and try again' },
+    'auth/invalid-email': { zh: '邮箱格式不正确', ja: 'メール形式エラー', en: 'Invalid email format' },
+    'auth/user-not-found': { zh: '账号不存在，请先注册', ja: 'アカウントが見つかりません', en: 'Account not found, register first' },
+    'auth/wrong-password': { zh: '密码错误，请重试', ja: 'パスワードが違います', en: 'Incorrect password' },
+    'auth/invalid-credential': { zh: '邮箱或密码错误', ja: 'メールまたはパスワードが違います', en: 'Invalid email or password' },
+    'auth/email-already-in-use': { zh: '该邮箱已注册，请直接登录', ja: 'すでに登録済みのメールです', en: 'Email already registered, please log in' },
+    'auth/weak-password': { zh: '密码至少需要6位', ja: 'パスワードは6文字以上', en: 'Password must be 6+ characters' },
+    'auth/popup-closed-by-user': { zh: '登录窗口已关闭，请重试', ja: 'ウィンドウが閉じられました', en: 'Popup closed, please try again' },
+    'auth/popup-blocked': { zh: '弹窗被浏览器拦截，请允许弹窗后重试', ja: 'ポップアップをブロック中。許可してください', en: 'Popup blocked — please allow popups and try again' },
+    'auth/cancelled-popup-request': { zh: '登录已取消，请重试', ja: 'ログインがキャンセルされました', en: 'Login cancelled, please try again' },
+    'auth/network-request-failed': { zh: '网络错误，请检查连接', ja: 'ネットワークエラー', en: 'Network error, check connection' },
+    'auth/too-many-requests': { zh: '尝试次数过多，请稍后再试', ja: '試行回数超過。後でお試しください', en: 'Too many attempts, try later' },
+    'auth/operation-not-allowed': { zh: 'Google 登录未启用，请联系管理员', ja: 'Google ログインが無効です', en: 'Google login not enabled' },
+    'auth/invalid-action-code': { zh: '操作无效，请刷新页面重试', ja: '無効な操作です。リロードしてください', en: 'Invalid action — please refresh and try again' },
+    'auth/internal-error': { zh: '内部错误，请刷新页面重试', ja: '内部エラー。リロードしてください', en: 'Internal error — please refresh and try again' },
   };
   const entry = msgs[code];
   return entry ? (entry[l] || entry.en) : code;

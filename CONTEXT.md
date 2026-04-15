@@ -2,28 +2,30 @@
 > 每次换电脑或开新对话时，把这个文件内容发给 Claude，它就能快速了解你的情况。
 
 ---
-
 ## 我是谁 / 项目目标
-- 用户：DanL
-- 项目名称：**Study Stars / スタディスター**
-- 目标：一个学习提醒 Web App，帮助记录学习计划、发送提醒、追踪统计
-- 部署平台：Vercel
-- 同步方式：GitHub + git push/pull（台机 & 笔记本双端同步）
-
+- **用户**: DanL
+- **项目名称**: **Study Stars / スタディスター**
+- **目标**: 一个学习提醒 Web App，帮助记录学习计划、发送提醒、追踪统计
+- **部署平台**: Vercel
+- **同步方式**: GitHub + git push/pull（台机 & 笔记本双端同步）
+  
 ---
-
 ## 技术栈
-- 前端：HTML / CSS / Vanilla JavaScript（无框架）
-- 认证：Firebase Auth（Email/Password + Google 登录）
-- 数据库：Firebase Firestore
-- 图表：Chart.js
-- 邮件：EmailJS
-- 通知：Telegram Bot / Browser Banner
-- AI 功能：Anthropic Claude API（学习报告后生成鼓励语）
-- 笔记同步：Notion API（每日打卡归档）
+- **前端**: HTML / CSS / Vanilla JavaScript（无框架）
+- **认证**: Firebase Auth（Email/Password + Google 登录）
+- **数据库**: Firebase Firestore
+- **图表**: Chart.js
+- **邮件**: EmailJS
+- **通知**: Discord Bot / Browser Banner
+- **笔记同步**:Notion API（每日打卡归档）
+- **AI 功能**: Anthropic Claude API（学习报告后生成鼓励语）
+  ### AI 功能 - Claude 鼓励语
+  - **触发条件**: 每次 `report.js` 生成学习报告后。
+  - **Prompt 模板**: {{report_data}}
+  - **输出语言**: 中文，英文，日文。
+  - **风格**: 温馨激励。
 
 ---
-
 ## 文件结构
 ```
 Study-Reminder/
@@ -35,9 +37,33 @@ Study-Reminder/
 │   └── style.css           ← 所有样式
 ├── js/
 │   ├── app.js              ← 主入口，页面路由，本地 Auth stub
+│   │   ```javascript
+│   │   // app.js - _onSignIn 函数核心逻辑
+│   │   // 作用：根据 Firebase 登录状态，决定是渲染主界面还是登录页
+│   │   async function _onSignIn(user) {
+│   │     if (user) {
+│   │       // ... 加载用户数据，渲染主界面 ...
+│   │     } else {
+│   │       // ... 显示登录页 ...
+│   │     }
+│   │   }
+│   │   ```
 │   ├── auth.js             ← Firebase 登录/注册
 │   ├── firebase-config.js  ← Firebase 配置（敏感，勿提交明文密钥）
 │   ├── firebase-init.js    ← Firebase 初始化
+│   │   ```javascript
+│   │   // firebase-init.js - _onSignIn 阻塞问题修复
+│   │   // 原因：原代码先 await _loadUserData()（请求 Firestore），再显示主界面；
+│   │   // Firestore 超时时界面永远不出现。
+│   │   // 修复：先显示主界面，再异步加载 Firestore 数据（不阻塞 UI）
+│   │   async function _onSignIn(user) {
+│   │     // ... (其他代码) ...
+│   │     App.init(); // 先渲染 UI
+│   │     await _loadUserData(); // 后异步加载数据
+│   │     _updateAvatar(); // 最后更新头像
+│   │     ThemeManager.restore(); // 恢复主题
+│   │   }
+│   │   ```
 │   ├── i18n.js             ← 多语言包（中文 / 日文 / 英文）
 │   ├── state.js            ← 全局状态 + localStorage
 │   ├── subjects.js         ← 科目增删改
@@ -56,46 +82,74 @@ Study-Reminder/
 ```
 
 ---
-
 ## 当前进度（最近 git 记录）
-- [x] Firebase 登录 / Google 登录
-- [x] 多语言切换（中 / 日 / 英）
-- [x] 专注计时器、学习统计图表
-- [x] 积分奖励 / 优惠券系统
-- [x] Notion 每日打卡归档（含重复检测 + 更新逻辑）
-- [x] 登录输入框支持 Enter 键提交
+- **已完成**：
+  - [x] 多语言切换（中 / 日 / 英）
+  - [x] 专注计时器、学习统计图表
+  - [x] 积分奖励 / 优惠券系统
+  - [x] Notion 每日打卡归档（含重复检测 + 更新逻辑）
+  - [x] 登录输入框支持 Enter 键提交
+  - [x] 科目编辑功能（弹窗编辑，支持 emoji、颜色选择）
+  - [x] 表单自动保存（onblur, onchange 事件触发）
+  - [x] AI 鼓励语言（支持中 / 日 / 英，使用 Prompt 模板）
+  - [x] 邮件收件人逻辑（从 Firebase Auth 读取，不再硬编码）
+- **未完成**：
+  - [] 登录页优化（超时处理、本地模式入口）
+  - [] Firebase 登录 / Google 登录 有问题
+  - [] 设置双电脑同步工作流（已建立 CONTEXT.md 模板，下一步是具体功能需求）
+  - [] 个人资料页 UI 优化：头像选择（emoji + 上传）和徽章合并，点击展开。
+
 
 ---
-
 ## 重要规则 / 偏好
 - 回复语言：**中文**
 - 代码注释：**英文 + 日文**（方便面试，绝不出现韩文）
 - 界面语言：**只支持中文 / 英文 / 日文**，不添加韩文或其他语言
-- 修改时：只改需要改的部分，不要重写整个文件
-- API 密钥：不要把真实密钥写进回复或提交到 git
+- 每次修改前，先理解现有代码逻辑
+- 修改时：只改需要改的部分，保留原有功能，不要重写整个文件
+- 遇到不确定的，直接提问，不要自己推断
+- 输出时：先说明修改点 → 再贴完整代码
+- **API 密钥**：不要把真实密钥写进回复或提交到 git
 - **CONTEXT.md 触发词**：每当我说「总结到context.md」或「context.md summary so far」，Claude 就把本次对话的提问与解答要点追加到下方「学习笔记 / Q&A 归档」章节
 
 ---
-
-## 上次未完成的任务
-- 日期：2026-04-14
-- 任务：设置双电脑同步工作流（台机 + 笔记本）
-- 完成：GitHub 同步方案 + CONTEXT.md 模板已建立
-- 下次从这里开始：填写具体的下一个功能需求
+## Git 工作流
+  - **平台**: GitHub
+  - **powershell**: cd C:\...\Study-Reminder
+  - **操作**: git pull (开始) → 修改代码 → git add . → git commit -m "feat: [文件名] 描述改动" → git push (结束)
+  - **冲突处理**: 如果发生 Git 冲突，请提示用户手动解决，不要自动合并。
+  - **提交信息**: 尽量包含 feat: (新功能), fix: (修复 bug), chore: (其他维护) 等类型前缀。
 
 ---
-
 ## 常用命令
-```powershell
 # 开始工作前（拉取最新）
-cd C:\...\Study-Reminder
+cd C:\\...\\Study-Reminder
 git pull
 
 # 改完后同步
 git add .
 git commit -m "描述这次改动"
 git push
-```
+
+---
+##下一步任务 (Next Steps)
+- [ ] **[功能名称]**: 简要描述功能，关联到哪个文件/模块。
+  - 例如：[ ] **完善用户资料页 UI**：优化头像上传和徽章展示的交互，使用户资料页更紧凑。
+- [ ] **[Bug 修复]**: 描述 Bug，关联到哪个文件。
+  - 例如：[ ] **修复邮件发送失败问题**：检查 EmailJS Template ID 是否匹配，确认 `to_email` 参数传递。
+
+---
+## 学习笔记 / Q&A 归档
+> 说「总结到context.md」时，Claude 会把当次对话要点追加到这里。
+### YYYY-MM-DD — [简要问题描述]
+#### ❓ 问题 X: [详细问题描述]
+- **根本原因**: ...
+- **修复方案**: ...
+- **代码修改**: ... (如果涉及)
+#### 📌 关键经验
+| 经验 | 说明 |
+|---|---|
+| ... | ... |
 
 ---
 ## 如何使用这个文件省 Token
@@ -104,12 +158,6 @@ git push
 3. 换电脑后先 git pull，再开 Claude
 
 ---
-
-## 学习笔记 / Q&A 归档
-> 说「总结到context.md」时，Claude 会把当次对话要点追加到这里。
-
----
-
 ### 2026-04-14 — Firebase 登录失败 & 个人资料 UI 重设计
 
 #### ❓ 问题 1：登录不上，Google / Email 都失败，自动跳回本地模式

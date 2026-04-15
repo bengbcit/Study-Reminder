@@ -229,7 +229,7 @@ const Report = {
         difficulty:   '⭐'.repeat(r.diff || 0) || 'N/A',
         summary:      r.summary || '—',
         hard_points:  r.hard || '—',
-        points:       '+' + (s.duration >= 30 ? 20 : 10) + ' pts',
+        points_earned: s.duration >= 30 ? 20 : 10,   // matches {{points_earned}} in template
         total_points: String(S.points),
         streak:       S.streak + ' days 🔥',
         to_email:     toEmail,

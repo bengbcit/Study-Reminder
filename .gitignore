@@ -122,8 +122,6 @@ dist
 # TernJS port file
 .tern-port
 
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
 
 # yarn v3
 .pnp.*
@@ -143,3 +141,18 @@ js/keys.js
 
 #screenshots
 screenshots
+
+# 忽视 graphify 生成的索引
+graphify-out/
+.graphify/
+
+# Editor/IDE files
+.obsidian/
+.claude/
+.vscode/
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+superpowers/
+
+

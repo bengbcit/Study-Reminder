@@ -12,11 +12,34 @@ const Auth = {
   user: null,
   showLogin()    { _localAuthUI('login'); },
   showRegister() { _localAuthUI('register'); },
-  openProfile()  { _localProfile(); },
-  closeProfile(e) {
-    if (e.target === document.getElementById('profileDrawer'))
-      document.getElementById('profileDrawer').classList.remove('open');
+  openProfile()  {
+    const menu = document.getElementById('userMenu');
+    if (!menu) return;
+    if (menu.classList.contains('open')) { menu.classList.remove('open'); return; }
+    const l = window.I18n?.lang || 'zh';
+    const name     = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
+    const subLabel = { zh:'本地模式', ja:'ローカルモード', en:'Local Mode' }[l];
+    const emailLabel   = { zh:'登录邮箱账号', ja:'メールアカウントへ', en:'Sign in with Email' }[l];
+    const logoutLabel  = { zh:'退出本地模式', ja:'ローカル終了', en:'Exit Local Mode' }[l];
+    const profileLabel = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
+    menu.innerHTML = `
+      <div class="um-info">
+        <div class="um-name">${name}</div>
+        <div class="um-sub">${subLabel}</div>
+      </div>
+      <div class="um-divider"></div>
+      <button class="um-item" onclick="window._openProfileDrawer()">
+        🖼 ${profileLabel}
+      </button>
+      <button class="um-item" onclick="App.switchToEmailAccount();document.getElementById('userMenu').classList.remove('open')">
+        📧 ${emailLabel}
+      </button>
+      <button class="um-item um-danger" onclick="App.exitLocalMode()">
+        🚪 ${logoutLabel}
+      </button>`;
+    menu.classList.add('open');
   },
+  closeProfile() {},  // kept for backward compat
   async saveUserData() {},
   _logout() {
     localStorage.removeItem('ss_localEntered');
@@ -214,6 +237,17 @@ function _localProfile() {
     </div>
     <button class="logout-btn" onclick="App.exitLocalMode()">${logoutLabel}</button>`;
 }
+
+// Open the full profile drawer (avatar / badge / coupon detail)
+window._openProfileDrawer = function() {
+  document.getElementById('userMenu')?.classList.remove('open');
+  if (window.Auth?._firebased && window.Auth.user) {
+    document.getElementById('profileDrawer').classList.add('open');
+    window.Auth._renderProfile();
+  } else {
+    _localProfile(); // handles drawer open + render for local mode
+  }
+};
 
 // Toggle avatar / badge / coupon panels in profile drawer
 function _toggleProfilePanel(id) {

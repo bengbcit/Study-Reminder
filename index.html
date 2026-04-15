@@ -48,7 +48,10 @@
     <div class="topbar-right">
       <button class="theme-btn-top" onclick="ThemeManager.open()" title="Theme">🎨</button>
       <div class="streak-pill">🔥<span id="streakNum">0</span></div>
-      <button class="user-btn" onclick="Auth.openProfile()" id="userAvatar">👤</button>
+      <div class="user-wrap">
+        <button class="user-btn" onclick="Auth.openProfile()" id="userAvatar">👤</button>
+        <div class="user-menu" id="userMenu"></div>
+      </div>
     </div>
   </div>
 
@@ -200,8 +203,8 @@
 
 </div><!-- /mainApp -->
 
-<!-- ══ USER PROFILE DRAWER ════════════════════════════════ -->
-<div class="drawer-ov" id="profileDrawer" onclick="Auth.closeProfile(event)">
+<!-- ══ USER PROFILE DRAWER (avatar / badges / coupons) ════ -->
+<div class="drawer-ov" id="profileDrawer" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="drawer-box">
     <div id="profileContent"></div>
   </div>
@@ -304,5 +307,15 @@
 
 <script type="module" src="js/firebase-init.js"></script>
 
+<script>
+// Close user-menu dropdown when clicking outside it
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('userMenu');
+  const wrap = menu?.closest('.user-wrap');
+  if (menu && menu.classList.contains('open') && !wrap?.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+</script>
 </body>
 </html>

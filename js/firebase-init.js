@@ -291,19 +291,57 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       },
 
       openProfile() {
-        if (!this.user) {
-          // No Firebase session — user is in local mode, show local profile
-          if (typeof window._localProfile === 'function') window._localProfile();
-          return;
+        const menu = document.getElementById('userMenu');
+        if (!menu) return;
+        if (menu.classList.contains('open')) { menu.classList.remove('open'); return; }
+
+        const l = window.I18n?.lang || 'zh';
+        if (this.user) {
+          const name = this.user.displayName || this.user.email || 'User';
+          const switchLocalLabel = { zh:'切换到本地账号', ja:'ローカルへ切替', en:'Switch to Local' }[l];
+          const profileLabel     = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
+          menu.innerHTML = `
+            <div class="um-info">
+              <div class="um-name">${name}</div>
+              <div class="um-sub">${this.user.email || ''}</div>
+            </div>
+            <div class="um-divider"></div>
+            <button class="um-item" onclick="window._openProfileDrawer()">
+              🖼 ${profileLabel}
+            </button>
+            <button class="um-item" onclick="App.switchToLocalAccount();document.getElementById('userMenu').classList.remove('open')">
+              🏠 ${switchLocalLabel}
+            </button>
+            <button class="um-item um-danger" onclick="window.Auth._logout()">
+              🚪 ${t('profile_logout')}
+            </button>`;
+        } else {
+          // Local mode
+          const name    = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
+          const subLabel = { zh:'本地模式', ja:'ローカルモード', en:'Local Mode' }[l];
+          const emailLabel  = { zh:'登录邮箱账号', ja:'メールアカウントへ', en:'Sign in with Email' }[l];
+          const logoutLabel = { zh:'退出本地模式', ja:'ローカル終了', en:'Exit Local Mode' }[l];
+          const profileLabel = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
+          menu.innerHTML = `
+            <div class="um-info">
+              <div class="um-name">${name}</div>
+              <div class="um-sub">${subLabel}</div>
+            </div>
+            <div class="um-divider"></div>
+            <button class="um-item" onclick="window._openProfileDrawer()">
+              🖼 ${profileLabel}
+            </button>
+            <button class="um-item" onclick="App.switchToEmailAccount();document.getElementById('userMenu').classList.remove('open')">
+              📧 ${emailLabel}
+            </button>
+            <button class="um-item um-danger" onclick="App.exitLocalMode()">
+              🚪 ${logoutLabel}
+            </button>`;
         }
-        document.getElementById('profileDrawer').classList.add('open');
-        this._renderProfile();
+        menu.classList.add('open');
       },
 
-      closeProfile(e) {
-        if (e.target === document.getElementById('profileDrawer'))
-          document.getElementById('profileDrawer').classList.remove('open');
-      },
+      closeProfile() {},  // kept for backward compat — closing is handled globally
 
       _renderProfile() {
         const u = this.user;

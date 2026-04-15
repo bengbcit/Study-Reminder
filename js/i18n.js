@@ -249,7 +249,7 @@ const I18N = {
     auth_fill_both: 'Please enter both email and password',
     auth_pw_short: 'Password must be at least 6 characters',
     days: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-    months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
     redeem: 'Get', no_rec: 'No records for this day',
     no_coupons: 'No coupons yet — redeem some rewards!',
     cal_tip: '🟠 Has records  🟢 All done  Tap for details',

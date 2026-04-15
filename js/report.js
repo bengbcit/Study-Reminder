@@ -64,6 +64,20 @@ const Report = {
   _aiCache: {},             // cached AI text per language { zh: '...', ja: '...', en: '...' }
 
   render() {
+    // Preserve any typed-but-unsaved content before rebuilding the DOM
+    S.subjects.filter(s => s.enabled).forEach(s => {
+      const sumEl  = document.getElementById('sum_'  + s.id);
+      const hardEl = document.getElementById('hard_' + s.id);
+      if (sumEl  !== null) {
+        if (!S.todayReport[s.id]) S.todayReport[s.id] = {};
+        S.todayReport[s.id].summary = sumEl.value;
+      }
+      if (hardEl !== null) {
+        if (!S.todayReport[s.id]) S.todayReport[s.id] = {};
+        S.todayReport[s.id].hard = hardEl.value;
+      }
+    });
+
     const el = document.getElementById('reportList');
     if (!el) return;
     el.innerHTML = '';

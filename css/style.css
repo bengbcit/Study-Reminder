@@ -109,6 +109,33 @@ body {
 .lb.active { background: var(--accent); color: #fff; }
 .app-title { font-size: 17px; font-weight: 900; color: var(--accent); }
 .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+/* ── User menu dropdown ──────────────────────────────── */
+.user-wrap { position: relative; }
+.user-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--card); border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14); border: 1px solid var(--border);
+  min-width: 200px; z-index: 300; overflow: hidden;
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity .15s, transform .15s;
+}
+.user-menu.open { opacity: 1; transform: translateY(0); pointer-events: all; }
+.um-info { padding: 14px 16px 10px; }
+.um-name { font-weight: 800; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.um-sub  { font-size: 12px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.um-divider { height: 1px; background: var(--border); }
+.um-item {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; padding: 10px 16px; border: none;
+  background: transparent; font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 700; color: var(--text);
+  cursor: pointer; text-align: left; transition: background .1s;
+}
+.um-item:hover { background: var(--bg); }
+.um-item + .um-item { border-top: 1px solid var(--border); }
+.um-danger { color: var(--red); }
+
 .streak-pill {
   display: flex; align-items: center; gap: 4px;
   background: var(--accent2); color: #fff;

@@ -335,3 +335,44 @@ git push
 | 动态邮件收件人 | EmailJS 代码传 `to_email` 参数还不够，模板 "To Email" 字段也必须设为 `{{to_email}}` |
 | 默认邮箱不要硬编码 | 默认应为空，让用户填或从 Firebase auth 自动读取 |
 
+---
+
+### 2026-04-16 — 登录逻辑优化：按钮全部失效 + 切换账号功能
+
+#### ❓ 问题 1：所有按钮（提醒、计时等）全部失效
+- **根本原因**：`app.js` 存在 **SyntaxError**（`var App` + `const App` 双重声明冲突）
+  - 按照登录流程图修改时，在 `const App = {...}` 之前（第 314 行）加了 `if (typeof App === 'undefined') { var App = {}; }`
+  - `var` 会提升到脚本作用域，与同作用域的 `const App` 冲突，导致整个 `app.js` **解析时报错，完全不执行**
+  - 所有 `onclick="App.showPage()"` 都因 `App is not defined` 失效
+- **修复**：删除 `var App = {}` 守卫块；将三个切换账号方法移入 `const App = {...}` 对象内
+
+#### ❓ 问题 2：登录页"秒登入"
+- **原因**：Firebase 记住了上次的 session，`onAuthStateChanged` 触发 `_onSignIn` 自动绕过登录页（正常行为）
+- **说明**：这是 Firebase 的预期行为，不是 bug。若确实不希望自动登录，需在 `_onSignIn` 前调 `signOut()`（但会破坏体验，不建议）
+
+#### ❓ 问题 3：`auth.js` 没有生效（代码写了但不执行）
+- **原因**：`index.html` 的 `<script>` 标签里根本没有加载 `auth.js`，只加载了 `firebase-init.js`
+- **修复**：在文件顶部加注释说明其为备用文件（dead code）；所有 Firebase 认证逻辑集中在 `firebase-init.js`
+
+#### ✅ 新增功能：账号切换（根据登录流程图）
+- **本地模式**：资料抽屉 → 头像面板 → 底部出现「📧 登录邮箱账号」按钮
+  - 点击 → 关闭抽屉 → 清除 `ss_localEntered` → 显示登录页
+- **Firebase 模式**：资料抽屉 → 头像面板 → 底部出现「🏠 切换到本地账号」按钮
+  - 点击 → 调 `Auth._logout()` → `signOut` → `onAuthStateChanged` 触发 → 显示登录页
+
+#### ✅ 显示逻辑（按流程图要求）
+| 登录类型 | 用户名 | 退出按钮 |
+|---|---|---|
+| 本地模式 | 本地用户 | 退出本地模式 |
+| 邮箱链接 / 注册账号 | 邮箱地址 | 退出登录 (`t('profile_logout')`) |
+
+（Firebase 模式由 `firebase-init.js::_renderProfile()` 渲染，已显示 email + 退出登录）
+
+#### 📌 关键经验
+| 经验 | 说明 |
+|------|------|
+| `var` + `const` 同作用域 = SyntaxError | 即使 `var` 在 `if` 块里，也提升到脚本作用域，与 `const` 冲突导致整个文件无法解析 |
+| Switch 方法要在 `const App` 之后 | 用 `App.xxx = function(){}` 添加方法时，必须在 `const App = {...}` 之后，否则是 TDZ 引用错误 |
+| auth.js 不在 index.html 里 = 无效 | 写了代码不等于生效，要检查 `<script>` 加载顺序 |
+| Firebase 自动登录 = 正常行为 | `onAuthStateChanged` 会在有 session 时自动触发，这是设计如此，非 bug |
+

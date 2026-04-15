@@ -55,55 +55,16 @@ window.Auth = Auth;
 function _updateLocalAvatar() {
   const btn = document.getElementById('userAvatar');
   if (!btn) return;
-
-  // Check if we're in Firebase user mode or local mode, and set texts accordingly
-  let userNameText = '';
-  let logoutButtonText = '';
-  let isFirebaseUser = window.Auth && window.Auth.user; // 检查 Firebase 用户是否存在
-
-  if (isFirebaseUser) {
-    // Firebase 用户模式
-    userNameText = window.Auth.user.displayName || window.Auth.user.email || 'User';
-    logoutButtonText = t('profile_logout'); // 使用 Firebase 模式下的退出按钮文字
-  } else {
-    // 本地模式
-    const name = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[window.I18n?.lang || 'zh'];
-    userNameText = name;
-    logoutButtonText = { zh: '退出本地模式', ja: 'ローカルモードを終了', en: 'Exit Local Mode' }[window.I18n?.lang || 'zh'];
-  }
-
-  // 更新用户名显示（假设有一个元素用来显示用户名，比如 'username'）
-  // 如果没有，你可能需要创建一个，或者用 userAvatar 来显示
-  const usernameDisplay = document.getElementById('username'); // 假设有这个元素
-  if (usernameDisplay) {
-    usernameDisplay.textContent = userNameText;
-  } else if (btn) {
-    // 如果没有单独的用户名显示元素，就在头像按钮上显示部分信息
-    btn.textContent = userNameText.charAt(0).toUpperCase(); // 只显示首字母
-    btn.title = userNameText; // 鼠标悬停显示全名
-  }
-
-  // 更新退出按钮的文字（假设有一个 ID 为 'logout-btn' 的按钮）
-  const logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.textContent = logoutButtonText;
-    // 还需要修改点击事件，让它能正确退出 Firebase 或本地模式
-    // 这个我们后面在 auth.js 里统一处理
-  }
-
-  // 头像逻辑保持不变，或者根据 isFirebaseUser 来决定显示什么
+  // Local-mode only — firebase-init.js calls _updateAvatar() to override this for Firebase users
   if (S.avatar && S.avatar.length > 2) {
     btn.innerHTML = `<img src="${S.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
   } else if (S.avatar) {
     btn.textContent = S.avatar;
     btn.style.fontSize = '20px';
-  } else if (!isFirebaseUser) { // 只有本地模式下显示默认头像
+  } else {
     btn.textContent = '👤';
     btn.style.fontSize = '16px';
-  } else if (isFirebaseUser && btn) { // Firebase 用户，显示首字母
-     btn.textContent = userNameText.charAt(0).toUpperCase();
-     btn.style.fontSize = '20px';
-  }  
+  }
 }
 
 // ── Local auth UI — FULLY i18n: all strings use t() ──────────
@@ -173,81 +134,36 @@ window._refreshAuthGate = function() {
 };
 
 function _localProfile() {
+  // Local-mode only — Firebase users use Auth._renderProfile() from firebase-init.js
   const drawer = document.getElementById('profileDrawer');
   drawer.classList.add('open');
   const l    = (window.I18n?.lang) || 'zh';
   const name = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
 
-  const localModeLabel = { zh:'本地模式',          ja:'ローカルモード',         en:'Local Mode' }[l];
-  const avatarBtnLabel = { zh:'头像',               ja:'アバター',               en:'Avatar'     }[l];
-  const badgeBtnLabel  = { zh:'徽章',               ja:'バッジ',                 en:'Badges'     }[l];
-  const couponBtnLabel = { zh:'奖券',               ja:'クーポン',               en:'Coupons'    }[l];
-  const uploadLabel    = { zh:'📷 上传图片',         ja:'📷 画像をアップロード',   en:'📷 Upload'  }[l];
-  const logoutLabel    = { zh:'退出本地模式',        ja:'ローカルモードを終了',     en:'Exit Local' }[l];
+  const localModeLabel = { zh:'本地模式',    ja:'ローカルモード',       en:'Local Mode' }[l];
+  const avatarBtnLabel = { zh:'头像',         ja:'アバター',             en:'Avatar'     }[l];
+  const badgeBtnLabel  = { zh:'徽章',         ja:'バッジ',               en:'Badges'     }[l];
+  const couponBtnLabel = { zh:'奖券',         ja:'クーポン',             en:'Coupons'    }[l];
+  const uploadLabel    = { zh:'📷 上传图片',   ja:'📷 画像をアップロード', en:'📷 Upload'  }[l];
+  const logoutLabel    = { zh:'退出本地模式',  ja:'ローカルモードを終了',   en:'Exit Local' }[l];
+  const switchLabel    = { zh:'切换账号',      ja:'アカウント切替',         en:'Switch Account' }[l];
+  const emailLoginLabel = { zh:'📧 登录邮箱账号', ja:'📧 メールアカウントへ', en:'📧 Sign in with Email' }[l];
 
-  // --- 新增逻辑：根据是否是 Firebase 用户，显示不同的头像和名字 ---
-  let avatarHtml = '';
-  let userNameDisplay = '';
-  let isFirebaseUser = window.Auth && window.Auth.user; // 检查 Firebase 用户是否存在
+  const avatarHtml = S.avatar
+    ? (S.avatar.length > 2
+        ? `<img src="${S.avatar}" class="profile-avatar-img">`
+        : `<div class="profile-avatar" style="font-size:40px">${S.avatar}</div>`)
+    : `<div class="profile-avatar">${name.charAt(0).toUpperCase()}</div>`;
 
-  if (isFirebaseUser) {
-    // Firebase 用户模式
-    const firebaseName = window.Auth.user.displayName || window.Auth.user.email || 'User';
-    userNameDisplay = firebaseName;
-    const initial = firebaseName.charAt(0).toUpperCase();
-    avatarHtml = `<div class="profile-avatar">${initial}</div>`; // Firebase 用户显示首字母头像
-    // 隐藏本地模式的头像/上传/切换按钮相关内容
-    document.getElementById('avatarPanel')?.classList.add('hidden-panel');
-    document.getElementById('badgePanel')?.classList.add('hidden-panel');
-    document.getElementById('couponPanel')?.classList.add('hidden-panel');
-  } else {
-    // 本地模式
-    userNameDisplay = name;
-    avatarHtml = S.avatar
-      ? (S.avatar.length > 2
-          ? `<img src="${S.avatar}" class="profile-avatar-img">`
-          : `<div class="profile-avatar" style="font-size:40px">${S.avatar}</div>`)
-      : `<div class="profile-avatar">${name.charAt(0).toUpperCase()}</div>`;
-    // 显示本地模式的头像/上传/切换按钮相关内容
-    document.getElementById('avatarPanel')?.classList.remove('hidden-panel');
-    document.getElementById('badgePanel')?.classList.remove('hidden-panel');
-    document.getElementById('couponPanel')?.classList.remove('hidden-panel');
-  }
-  // --- 新增逻辑结束 ---
-
-  // 找到用户名显示元素，并添加点击事件
-  const usernameElement = document.getElementById('username'); // 假设有这个元素
-  if (usernameElement) {
-    usernameElement.textContent = userNameDisplay; // 设置用户名
-    usernameElement.onclick = () => {
-      if (!isFirebaseUser) { // 只有在本地模式下才触发切换账号逻辑
-        _toggleProfilePanel('avatarPanel'); // 切换到头像面板，里面包含切换账号的选项
-      } else {
-        // 如果是 Firebase 用户，点击用户名可能不需要做特殊操作，或者跳转到 Firebase 资料页
-        // 这里可以根据需求调整，比如调用 Auth.openProfile()
-        Auth.openProfile(); // 调用 Firebase 模式下的打开资料抽屉
-      }
-    };
-  }
-
-  // 找到退出按钮，并更新文字
-  const logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.textContent = isFirebaseUser ? t('profile_logout') : logoutLabel; // 根据模式显示不同文字
-    // 退出按钮的点击事件应该统一由 Auth._logout() 处理
-  }
-
-  // 渲染徽章，只在本地模式下显示（如果 Firebase 用户也有徽章，需要调整逻辑）
-  const badgesHtml = !isFirebaseUser ? [...Rewards.getEarned()].map(id => {
+  const badgesHtml = [...Rewards.getEarned()].map(id => {
     const b = Rewards.BADGES.find(x => x.id === id);
     return b ? `<div class="profile-badge" title="${b.name[l]||b.name.zh}">${b.icon}</div>` : '';
-  }).join('') || `<span style="font-size:13px;color:var(--text2)">—</span>` : '';
-
+  }).join('') || `<span style="font-size:13px;color:var(--text2)">—</span>`;
 
   document.getElementById('profileContent').innerHTML = `
     ${avatarHtml}
-    <div class="profile-name">${userNameDisplay}</div>
-    <div class="profile-email" style="margin-bottom:16px;color:var(--text2)">${isFirebaseUser ? window.Auth.user.email : localModeLabel}</div>
+    <div class="profile-name">${name}</div>
+    <div class="profile-email" style="margin-bottom:16px;color:var(--text2)">${localModeLabel}</div>
     <div class="profile-panel-row">
       <button class="profile-panel-btn" onclick="_toggleProfilePanel('avatarPanel')">
         🖼 ${avatarBtnLabel}
@@ -259,8 +175,6 @@ function _localProfile() {
         🎫 ${couponBtnLabel}
       </button>
     </div>
-    
-    <!-- 头像、徽章、奖券面板 -->
     <div id="avatarPanel" class="profile-expand-panel">
       <div class="avatar-preset-grid">
         ${PRESET_AVATARS.map(a =>
@@ -273,16 +187,10 @@ function _localProfile() {
         <input type="file" accept="image/*" style="display:none"
                onchange="Auth._uploadAvatar(this)">
       </label>
-      
-      <!-- 新增：本地模式下的切换账号选项 -->
-      ${!isFirebaseUser ? `
-      <div class="profile-switch-account">
-        <div class="psa-label">切换账号</div>
-        <button class="psa-btn" onclick="App.switchToLocalAccount()">切换到本地用户</button>
-        <button class="psa-btn" onclick="App.addNewAccount()">添加新账号</button>
-        <button class="psa-btn" onclick="App.switchToEmailAccount()">切换到邮箱账号</button>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${switchLabel}</div>
+        <button class="psa-btn" onclick="App.switchToEmailAccount()">${emailLoginLabel}</button>
       </div>
-      ` : ''}
     </div>
     <div id="badgePanel" class="profile-expand-panel">
       <div class="profile-badges">${badgesHtml}</div>
@@ -299,63 +207,13 @@ function _localProfile() {
           </div>`).join('')
       }
     </div>
-    
     <div class="profile-stat-row">
       <div class="ps-card"><div class="ps-num">${S.points}</div><div class="ps-lbl">${t('pts_lbl')}</div></div>
       <div class="ps-card"><div class="ps-num">${S.streak}</div><div class="ps-lbl">${t('stats_streak')}</div></div>
       <div class="ps-card"><div class="ps-num">${Object.keys(S.history).length}</div><div class="ps-lbl">${t('stats_total_days')}</div></div>
     </div>
-    <button class="logout-btn" onclick="Auth._logout()">${isFirebaseUser ? t('profile_logout') : logoutLabel}</button>`;
+    <button class="logout-btn" onclick="Auth._logout()">${logoutLabel}</button>`;
 }
-
-// --- 新增：用于切换账号的 App 方法 ---
-// 确保 App 对象已经定义，如果不存在，请在文件顶部定义：const App = { ... };
-if (typeof App === 'undefined') {
-  var App = {}; // 或者使用 let App = {};
-}
-
-App.switchToLocalAccount = function() {
-  console.log("切换到本地用户...");
-  localStorage.removeItem('ss_localEntered'); // 移除 Firebase 登录标记
-  if (window.Auth && window.Auth.user) {
-    Auth._logout(); // 尝试退出 Firebase
-  } else {
-    location.reload(); // 如果没登录 Firebase，直接刷新加载本地模式
-  }
-  document.getElementById('profileDrawer').classList.remove('open'); // 关闭资料抽屉
-};
-
-App.addNewAccount = function() {
-  console.log("添加新账号...");
-  document.getElementById('profileDrawer').classList.remove('open'); // 关闭资料抽屉
-  if (window.Auth && window.Auth._firebased) {
-    Auth.showRegister(); // 显示 Firebase 注册界面
-  } else {
-    // 本地模式下添加账号的逻辑，可能需要跳转到注册页面或弹出注册框
-    // 这里需要根据你的具体实现来添加
-    alert("本地模式下添加新账号的功能待实现！");
-  }
-};
-
-App.switchToEmailAccount = function() {
-  console.log("切换到邮箱账号...");
-  document.getElementById('profileDrawer').classList.remove('open'); // 关闭资料抽屉
-  if (window.Auth && window.Auth._firebased) {
-    Auth.showLogin(); // 显示 Firebase 登录界面
-  } else {
-    // 本地模式下切换到邮箱账号的逻辑，可能需要跳转到登录页面或弹出登录框
-    // 这里需要根据你的具体实现来添加
-    alert("本地模式下切换邮箱账号的功能待实现！");
-  }
-};
-
-// --- 新增：用于隐藏/显示面板的 CSS 类 ---
-// 你需要在你的 CSS 文件中添加这个类：
-/*
-.hidden-panel {
-  display: none !important;
-}
-*/
 
 // Toggle avatar / badge / coupon panels in profile drawer
 function _toggleProfilePanel(id) {
@@ -417,6 +275,31 @@ const App = {
     if (Auth.user) await Auth.saveUserData();
     showToast(t('save_ok'));
     Remind.scheduleBanner();
+  },
+
+  // ── Account switching ────────────────────────────────────
+  switchToLocalAccount() {
+    document.getElementById('profileDrawer').classList.remove('open');
+    if (window.Auth?._firebased && window.Auth.user) {
+      window.Auth._logout(); // signs out Firebase → onAuthStateChanged → shows gate
+    }
+    // Already in local mode — nothing to do
+  },
+
+  switchToEmailAccount() {
+    document.getElementById('profileDrawer').classList.remove('open');
+    localStorage.removeItem('ss_localEntered');
+    document.getElementById('mainApp').style.display  = 'none';
+    document.getElementById('authGate').style.display = 'flex';
+    window.Auth.showLogin();
+  },
+
+  addNewAccount() {
+    document.getElementById('profileDrawer').classList.remove('open');
+    localStorage.removeItem('ss_localEntered');
+    document.getElementById('mainApp').style.display  = 'none';
+    document.getElementById('authGate').style.display = 'flex';
+    window.Auth.showRegister();
   },
 };
 

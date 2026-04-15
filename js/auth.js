@@ -1,5 +1,6 @@
-/* auth.js — Firebase Authentication (Email/Password + Google)
-   This file uses ES modules; loaded as type="module" in index.html */
+/* auth.js — NOT LOADED (index.html uses firebase-init.js instead)
+   This file is kept as a reference but is not included in the app.
+   All Firebase auth logic lives in firebase-init.js. */
 
 import {
   onAuthStateChanged,

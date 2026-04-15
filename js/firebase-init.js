@@ -349,6 +349,14 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
               <input type="file" accept="image/*" style="display:none"
                      onchange="Auth._uploadAvatar(this)">
             </label>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div style="font-size:12px;color:var(--text2);margin-bottom:8px">
+                ${{ zh:'切换账号', ja:'アカウント切替', en:'Switch Account' }[l] || '切换账号'}
+              </div>
+              <button class="psa-btn" onclick="App.switchToLocalAccount()">
+                🏠 ${{ zh:'切换到本地账号', ja:'ローカルアカウントへ', en:'Switch to Local Account' }[l]}
+              </button>
+            </div>
           </div>
           <div id="badgePanel" class="profile-expand-panel">
             <div class="profile-badges">${badgesHtml}</div>

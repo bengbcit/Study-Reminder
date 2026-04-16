@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/((?!css/|js/|api/).*)",
-      "destination": "/index.html"
+      "destination": "/landing.html"
     }
   ],
   "headers": [

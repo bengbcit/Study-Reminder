@@ -610,7 +610,10 @@ try {
   const app = initializeApp(FIREBASE_CONFIG);
   auth = getAuth(app);
   provider = new GoogleAuthProvider();
-  getRedirectResult(auth).then(r => { if (r?.user) _onLoggedIn(r.user); }).catch(() => {});
+  // Google redirect-flow: coming back from signInWithRedirect → mark as explicit login
+  getRedirectResult(auth).then(r => {
+    if (r?.user) { sessionStorage.setItem('ss_login_pending', '1'); _onLoggedIn(r.user); }
+  }).catch(() => {});
 
   onAuthStateChanged(auth, user => {
     if (user) _onLoggedIn(user);
@@ -643,8 +646,11 @@ function _onLoggedIn(user) {
   cta.textContent = labels[lang === 'zh-CN' ? 'zh' : lang] || labels.en;
   cta.dataset.loggedIn = '1';
 
-  // Auto-redirect to Efficient Learning Engine on login
-  window.location.href = '/app';
+  // Only redirect on explicit login action (not on page-load auto-detection)
+  if (sessionStorage.getItem('ss_login_pending')) {
+    sessionStorage.removeItem('ss_login_pending');
+    window.location.href = '/app';
+  }
 }
 
 function _onLoggedOut() {
@@ -659,12 +665,15 @@ function _onLoggedOut() {
 
 window.signInGoogle = async () => {
   if (!auth) return;
+  sessionStorage.setItem('ss_login_pending', '1');
   try {
     const r = await signInWithPopup(auth, provider);
     if (r.user) { closeAuth(); _onLoggedIn(r.user); }
+    else sessionStorage.removeItem('ss_login_pending');
   } catch(e) {
-    if (e.code === 'auth/popup-blocked') signInWithRedirect(auth, provider);
-    else document.getElementById('loginError').textContent = e.message.replace('Firebase: ','');
+    if (e.code === 'auth/popup-blocked') { signInWithRedirect(auth, provider); return; }
+    sessionStorage.removeItem('ss_login_pending');
+    document.getElementById('loginError').textContent = e.message.replace('Firebase: ','');
   }
 };
 
@@ -674,10 +683,14 @@ window.signInEmail = async () => {
   const err   = document.getElementById('loginError');
   err.textContent = '';
   if (!email || !pass) { err.textContent = 'Please fill in all fields.'; return; }
+  sessionStorage.setItem('ss_login_pending', '1');
   try {
     const { user } = await signInWithEmailAndPassword(auth, email, pass);
     closeAuth(); _onLoggedIn(user);
-  } catch(e) { err.textContent = e.message.replace('Firebase: ',''); }
+  } catch(e) {
+    sessionStorage.removeItem('ss_login_pending');
+    err.textContent = e.message.replace('Firebase: ','');
+  }
 };
 
 window.registerEmail = async () => {
@@ -687,11 +700,15 @@ window.registerEmail = async () => {
   const err   = document.getElementById('registerError');
   err.textContent = '';
   if (!name || !email || !pass) { err.textContent = 'Please fill in all fields.'; return; }
+  sessionStorage.setItem('ss_login_pending', '1');
   try {
     const { user } = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(user, { displayName: name });
     closeAuth(); _onLoggedIn(user);
-  } catch(e) { err.textContent = e.message.replace('Firebase: ',''); }
+  } catch(e) {
+    sessionStorage.removeItem('ss_login_pending');
+    err.textContent = e.message.replace('Firebase: ','');
+  }
 };
 
 window.signOutUser = async () => {

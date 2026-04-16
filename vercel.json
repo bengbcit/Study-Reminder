@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/landing.html"
+    },
+    {
       "source": "/app",
       "destination": "/app.html"
     },
@@ -9,7 +13,7 @@
       "destination": "/app.html"
     },
     {
-      "source": "/((?!css/|js/|api/|app\\.html|landing\\.html|design-wizard\\.html).*)",
+      "source": "/((?!css/|js/|api/|images/|screenshots/|app\\.html|landing\\.html|design-wizard\\.html).*)",
       "destination": "/landing.html"
     }
   ],

@@ -75,6 +75,20 @@ const Auth = {
 };
 window.Auth = Auth;
 
+// ── FirebaseSync / State compatibility stubs ──────────────────
+// Some AI-generated or older modules may call these globals.
+// Proxy them safely to Auth.saveUserData() so they never throw.
+window.FirebaseSync = {
+  push:  () => window.Auth?.saveUserData?.(),
+  sync:  () => window.Auth?.saveUserData?.(),
+  save:  () => window.Auth?.saveUserData?.(),
+};
+window.State = {
+  toCloud: () => window.Auth?.saveUserData?.(),
+  save:    () => { saveLocal(); window.Auth?.saveUserData?.(); },
+  get:     () => S,
+};
+
 function _updateLocalAvatar() {
   const btn = document.getElementById('userAvatar');
   if (!btn) return;
@@ -266,9 +280,9 @@ const App = {
 
   init() {
     loadLocal();
-    Subjects.render();
+    // Apply saved language before first render so all text is in the right language
+    I18n.set(I18n.lang);
     Remind.syncUI();
-    I18n.updateSelects();
     document.getElementById('streakNum').textContent = S.streak;
     _updateLocalAvatar();
     Remind.scheduleBanner();
@@ -359,10 +373,23 @@ const App = {
 
 // ── Startup ───────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  // Apply saved language immediately so auth-gate buttons + connecting message
+  // are already in the user's preferred language.
+  const savedLang = localStorage.getItem('ss_lang');
+  if (savedLang && ['zh','ja','en'].includes(savedLang)) {
+    // Update language toggle button active states without triggering a full render
+    document.querySelectorAll('.lb').forEach(b => {
+      const map = { zh:'中', ja:'日', en:'EN' };
+      b.classList.toggle('active', b.textContent.trim() === map[savedLang]);
+    });
+    document.documentElement.lang = savedLang;
+  }
   // Always show auth gate — never auto-skip.
   // firebase-init.js will overwrite authForm with the real login UI once ready.
+  const l = I18n.lang;
+  const connectMsg = { zh:'正在连接…', ja:'接続中…', en:'Connecting…' }[l] || '正在连接…';
   document.getElementById('authForm').innerHTML =
-    '<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ 正在连接…</div>';
+    `<div style="text-align:center;padding:28px 0;color:var(--text2);font-size:15px">⏳ ${connectMsg}</div>`;
 });
 
 // Fallback: if Firebase SDK hasn't loaded after 12s, show network error + local mode

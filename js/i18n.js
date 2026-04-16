@@ -294,10 +294,14 @@ const I18N = {
 };
 
 const I18n = {
-  lang: 'zh',
+  // Restore last-used language from localStorage (default: 'zh')
+  lang: (['zh','ja','en'].includes(localStorage.getItem('ss_lang'))
+         ? localStorage.getItem('ss_lang') : 'zh'),
 
   set(l) {
     this.lang = l;
+    // Persist so language survives page reload
+    localStorage.setItem('ss_lang', l);
 
     // ── Language toggle buttons ────────────────────────────
     document.querySelectorAll('.lb').forEach(b => {
@@ -345,16 +349,12 @@ const I18n = {
     if (window.Cal)      Cal.render();
     if (window.Stats)    Stats.render();
     if (window.Timer)    Timer.render();
-
-    // ── Re-apply data-i18n in remind page ─────────────────
-    document.querySelectorAll('#page-remind [data-i18n]').forEach(el => {
-      const k = el.getAttribute('data-i18n');
-      if (I18N[l]?.[k] !== undefined) el.textContent = I18N[l][k];
-    });
-    document.querySelectorAll('#page-remind [data-i18n-html]').forEach(el => {
-      const k = el.getAttribute('data-i18n-html');
-      if (I18N[l]?.[k] !== undefined) el.innerHTML = I18N[l][k];
-    });
+    // Sync remind page input values so they reflect the correct language context
+    if (window.Remind)   Remind.syncUI();
+    // Re-render Notion modal content if it is currently open
+    if (window.Notion && document.getElementById('notionModal')?.classList.contains('open')) {
+      Notion._render();
+    }
 
     // ── Select dropdowns ───────────────────────────────────
     this.updateSelects();

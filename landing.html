@@ -642,6 +642,9 @@ function _onLoggedIn(user) {
   const labels = { zh:'查看项目 →', ja:'プロジェクトへ →', en:'My Projects →' };
   cta.textContent = labels[lang === 'zh-CN' ? 'zh' : lang] || labels.en;
   cta.dataset.loggedIn = '1';
+
+  // Auto-redirect to Efficient Learning Engine on login
+  window.location.href = '/app';
 }
 
 function _onLoggedOut() {

@@ -22,7 +22,7 @@
 
 body {
   font-family: 'Nunito', sans-serif;
-  background: #06021A url('../screenshots/bg_engine.jpg') center/cover fixed;
+  background: #06021A url('../screenshots/bg_engine_1.jpg') center/cover fixed;
   color: var(--text);
   min-height: 100vh;
 }
@@ -92,10 +92,10 @@ body {
 
 /* ── TOPBAR — pixel-art style, colours driven by CSS vars from ThemeManager ── */
 :root {
-  --topbar-bg:     rgba(8, 4, 30, 0.90);
-  --topbar-border: rgba(120,88,248,0.40);
-  --topbar-accent: #A78BFA;
-  --topbar-glow:   rgba(120,88,248,0.50);
+  --topbar-bg:     rgba(10, 18, 58, 0.90);
+  --topbar-border: rgba(60, 120, 240, 0.40);
+  --topbar-accent: #5B9BFF;
+  --topbar-glow:   rgba(60, 120, 240, 0.50);
 }
 .topbar {
   display: flex; align-items: center; justify-content: space-between;

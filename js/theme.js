@@ -11,7 +11,7 @@ const THEMES = [
     preview:'screenshots/bg_engine_1.jpg',
     previewStyle:'',
     dark: true,
-    topbar:{ bg:'rgba(8,4,30,0.82)', border:'rgba(120,88,248,0.35)', accent:'#A78BFA', glow:'rgba(120,88,248,0.45)' },
+    topbar:{ bg:'rgba(10,18,58,0.90)', border:'rgba(60,120,240,0.40)', accent:'#5B9BFF', glow:'rgba(60,120,240,0.50)' },
     css:`#mainApp{background-image:url('screenshots/bg_engine_1.jpg');background-size:cover;background-attachment:fixed;background-position:center top;}` },
 
   { id:'default',
@@ -183,16 +183,25 @@ const ThemeManager = {
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      // Resize to max 1920px using canvas for manageable data size
       const img = new Image();
       img.onload = () => {
+        // Center-crop to 16:9 (background ratio), then resize to max 1920px
+        const TARGET_RATIO = 16 / 9;
+        let sx = 0, sy = 0, sw = img.width, sh = img.height;
+        const srcRatio = img.width / img.height;
+        if (srcRatio > TARGET_RATIO) {
+          sw = Math.round(img.height * TARGET_RATIO);
+          sx = Math.round((img.width - sw) / 2);
+        } else if (srcRatio < TARGET_RATIO) {
+          sh = Math.round(img.width / TARGET_RATIO);
+          sy = Math.round((img.height - sh) / 2);
+        }
         const MAX = 1920;
-        let w = img.width, h = img.height;
-        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-        if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+        let cw = sw, ch = sh;
+        if (cw > MAX) { ch = Math.round(ch * MAX / cw); cw = MAX; }
         const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.width = cw; canvas.height = ch;
+        canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
         this._previewUpload(dataUrl);
       };

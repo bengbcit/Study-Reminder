@@ -108,7 +108,7 @@ const Report = {
         </div>
         <label class="done-check ${r.done ? 'checked' : ''}" id="doneLabel_${s.id}">
           <input type="checkbox" ${r.done ? 'checked' : ''} onchange="Report._togDone('${s.id}',this)">
-          ${t('done_lbl')}
+          <span class="done-lbl-txt">${t('done_lbl')}</span>
         </label>
         <textarea class="rta" id="sum_${s.id}"  placeholder="${t('sum_ph')}">${r.summary || ''}</textarea>
         <textarea class="rta" id="hard_${s.id}" placeholder="${t('hard_ph')}" style="min-height:52px">${r.hard || ''}</textarea>

@@ -344,7 +344,31 @@ const I18n = {
 
     // ── Re-render all dynamic page views ──────────────────
     if (window.Subjects) Subjects.render();
-    if (window.Report)   Report.render();
+    if (window.Report) {
+      try { Report.render(); } catch(e) { console.warn('Report.render() failed:', e); }
+      // Belt-and-suspenders: directly update report card text & placeholders.
+      // Runs after render() so it covers both the newly rebuilt cards AND
+      // any case where render() couldn't fully rebuild (e.g. silent error).
+      const _sp = this.t('sum_ph'), _hp = this.t('hard_ph'),
+            _dl = this.t('done_lbl'), _dfl = this.t('diff_lbl');
+      document.querySelectorAll('#reportList textarea[id^="sum_"]').forEach(ta => ta.placeholder = _sp);
+      document.querySelectorAll('#reportList textarea[id^="hard_"]').forEach(ta => ta.placeholder = _hp);
+      document.querySelectorAll('#reportList .done-lbl-txt').forEach(el => el.textContent = _dl);
+      document.querySelectorAll('#reportList .diff-lbl').forEach(el => el.textContent = _dfl);
+      // Also update subject names displayed in each card header
+      S.subjects.filter(s => s.enabled).forEach(s => {
+        const card = document.getElementById('doneLabel_' + s.id)?.closest('.rep-card');
+        if (card) {
+          const spans = card.querySelector('.rc-subj')?.querySelectorAll('span');
+          if (spans?.[1]) spans[1].textContent = subjName(s);
+        }
+      });
+      // Update daily quote (outside reportList, but also language-dependent)
+      const _qEl = document.getElementById('reportDailyQuote');
+      if (_qEl && typeof _getDailyQuote === 'function') {
+        _qEl.textContent = _getDailyQuote(l);
+      }
+    }
     if (window.Rewards)  Rewards.render();
     if (window.Cal)      Cal.render();
     if (window.Stats)    Stats.render();

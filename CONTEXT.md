@@ -399,6 +399,40 @@ git push
 
 ---
 
+### 2026-04-16（续）— 云端记录同步 + 跨账号数据隔离 + 本地模式显示名
+
+#### ❓ 问题 1：退出再登入，数据没有从云端恢复；不同账号数据互相污染
+- **根本原因**：`_onSignIn` 调用 `App.init()` → `loadLocal()` 时，localStorage 里可能残留上一个账号的数据，Firestore 数据虽然会覆盖，但顺序不可靠
+- **修复**（`firebase-init.js` `_onSignIn`）：在 `App.init()` 之前，先把 `S` 的账号相关字段全部重置为默认值，再 `saveLocal()`，确保 `loadLocal()` 读到的是干净状态，最后 `_loadUserData(uid)` 从 Firestore 恢复正确数据
+  ```js
+  S.points = 0; S.streak = 0; S.history = {}; S.coupons = [];
+  S.subjects = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
+  S.avatar = null;
+  S._localName = user.displayName || (user.email || '').split('@')[0];
+  saveLocal();
+  // then App.init() → _loadUserData(uid)
+  ```
+
+#### ❓ 问题 2：退出登录后进入本地模式，显示「本地用户」+ 「本地模式」，应该显示 Firebase 账号名和「邮箱链接」
+- **修复**：
+  - `_onSignIn` 里把 Firebase `displayName`（或邮箱前缀）写入 `S._localName` 并 `saveLocal()`
+  - `app.js` `Auth.openProfile()` 和 `_localProfile()`：`S._localName` 有值时 subLabel 显示 `{ zh:'邮箱链接', ... }`，否则显示「本地模式」
+  - 名字已由 `S._localName || defaultName` 逻辑自动显示
+
+#### ❓ 问题 3：`firebase-config.js` 报错 `Failed to resolve module specifier "firebase/app"`
+- **根本原因**：从 Firebase Console 复制的模板代码含有 npm 裸路径导入（`import { initializeApp } from "firebase/app"`），浏览器原生 ES Module 不支持裸路径，需要打包工具才能解析
+- **修复**：`firebase-config.js` 只保留纯配置对象并 `export default`，删掉所有 `import` 和 `initializeApp()`/`getAnalytics()` 调用（这些在 `firebase-init.js` 里已处理）
+
+#### 📌 关键经验
+| 经验 | 说明 |
+|------|------|
+| 登录时先清空 S 再 `loadLocal` | 防止 A 账号的 localStorage 污染 B 账号；Firestore 是 Firebase 用户的唯一可信数据源 |
+| `S._localName` = Firebase 登录的持久化名字 | 登录时存入，退出后本地模式仍可读取，实现「离线记得你是谁」 |
+| `firebase-config.js` 只导出 config 对象 | 浏览器不支持 npm 裸路径，初始化逻辑全部放在 `firebase-init.js` |
+| 裸路径 `"firebase/app"` vs CDN URL | 浏览器需要完整 URL（`https://www.gstatic.com/firebasejs/...`）或相对路径，npm 包名只在有打包工具时有效 |
+
+---
+
 ### 2026-04-16（续）— 头像点击无反应 + 退出本地模式瞬间重登
 
 #### ❓ 问题 4：点击本地用户头像无反应

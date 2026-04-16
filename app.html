@@ -49,18 +49,27 @@
     <button class="sidebar-icon" data-page="notion"   onclick="Notion.open()"     title="打卡 · Checkin">📋</button>
   </nav>
 
-  <!-- TOPBAR -->
+  <!-- TOPBAR — pixel-art style, colours adapt with ThemeManager -->
   <div class="topbar">
+    <!-- Left: pixel logo -->
+    <a class="pixel-logo" href="/" title="Back to home">
+      <span class="pixel-logo-icon">🪐</span>
+      <span class="pixel-logo-text" id="appTitle">学习星球</span>
+    </a>
+
+    <div class="topbar-divider"></div>
+
+    <!-- Centre: language switcher -->
     <div class="lang-sw">
       <button class="lb active" onclick="I18n.set('zh')">中</button>
       <button class="lb"        onclick="I18n.set('ja')">日</button>
       <button class="lb"        onclick="I18n.set('en')">EN</button>
     </div>
-    <div class="app-title" id="appTitle">学习星球</div>
+
+    <!-- Right: streak · theme · avatar -->
     <div class="topbar-right">
-      <button class="theme-btn-top" onclick="ThemeManager.open()" title="Theme">🎨</button>
       <div class="streak-pill">🔥<span id="streakNum">0</span></div>
-      <a class="home-pixel-btn" href="/" title="Back to home">⌂</a>
+      <button class="theme-btn-top" onclick="ThemeManager.open()" title="Theme">🎨</button>
       <div class="user-wrap">
         <button class="user-btn user-btn-lg" onclick="Auth.openProfile()" id="userAvatar">👤</button>
         <div class="user-menu" id="userMenu"></div>

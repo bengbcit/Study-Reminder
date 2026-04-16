@@ -194,3 +194,5 @@ const Timer = {
     }
   },
 };
+
+window.Timer = Timer;

@@ -439,3 +439,5 @@ function _notionIcon() {
     <text x="4.5" y="17.5" font-size="12" font-weight="900" fill="#fff" font-family="Georgia,serif">N</text>
   </svg>`;
 }
+
+window.Notion = Notion;

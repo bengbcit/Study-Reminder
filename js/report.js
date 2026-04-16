@@ -327,3 +327,5 @@ const Report = {
       </div>`;
   },
 };
+
+window.Report = Report;

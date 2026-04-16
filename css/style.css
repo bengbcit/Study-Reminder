@@ -90,13 +90,46 @@ body {
   content:''; flex:1; height:1px; background:var(--border);
 }
 
-/* ── TOPBAR ────────────────────────────────────────────── */
+/* ── TOPBAR — pixel-art style, colours driven by CSS vars from ThemeManager ── */
+:root {
+  --topbar-bg:     rgba(8, 4, 30, 0.82);
+  --topbar-border: rgba(120,88,248,0.35);
+  --topbar-accent: #A78BFA;
+  --topbar-glow:   rgba(120,88,248,0.45);
+}
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px 0; position: sticky; top: 0; z-index: 100;
-  background: rgba(6, 2, 28, 0.80);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(130,100,220,0.22);
+  padding: 0 18px; height: 52px; position: sticky; top: 0; z-index: 100;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--topbar-border);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  transition: background .3s, border-color .3s;
+}
+
+/* ── Pixel logo (left) ── */
+.pixel-logo {
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none; flex-shrink: 0;
+}
+.pixel-logo-icon {
+  font-size: 22px; line-height: 1;
+  filter: drop-shadow(0 0 6px var(--topbar-glow));
+  image-rendering: pixelated;
+}
+.pixel-logo-text {
+  font-size: 14px; font-weight: 900; letter-spacing: 0.5px;
+  color: var(--topbar-accent);
+  text-shadow: 0 0 8px var(--topbar-glow);
+  white-space: nowrap;
+  transition: color .3s, text-shadow .3s;
+}
+
+/* ── Pixel divider between logo and lang ── */
+.topbar-divider {
+  width: 1px; height: 24px;
+  background: var(--topbar-border);
+  margin: 0 4px; flex-shrink: 0;
 }
 .lang-sw {
   display: flex; gap: 2px; background: rgba(16, 8, 46, 0.80);

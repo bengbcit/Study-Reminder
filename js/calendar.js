@@ -194,3 +194,5 @@ const Cal = {
     this.render();
   },
 };
+
+window.Cal = Cal;

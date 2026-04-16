@@ -183,3 +183,5 @@ const Subjects = {
     showToast('✅ 已更新');
   },
 };
+
+window.Subjects = Subjects;

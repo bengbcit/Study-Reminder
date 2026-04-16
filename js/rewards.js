@@ -229,3 +229,5 @@ const Rewards = {
     return e;
   },
 };
+
+window.Rewards = Rewards;

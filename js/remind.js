@@ -175,3 +175,5 @@ const Remind = {
     if (repEl && !repEl.matches(':focus')) repEl.value = S.emailAddr;
   },
 };
+
+window.Remind = Remind;

@@ -156,3 +156,5 @@ const Stats = {
     });
   },
 };
+
+window.Stats = Stats;

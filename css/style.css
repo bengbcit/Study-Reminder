@@ -92,59 +92,93 @@ body {
 
 /* ── TOPBAR — pixel-art style, colours driven by CSS vars from ThemeManager ── */
 :root {
-  --topbar-bg:     rgba(8, 4, 30, 0.82);
-  --topbar-border: rgba(120,88,248,0.35);
+  --topbar-bg:     rgba(8, 4, 30, 0.90);
+  --topbar-border: rgba(120,88,248,0.40);
   --topbar-accent: #A78BFA;
-  --topbar-glow:   rgba(120,88,248,0.45);
+  --topbar-glow:   rgba(120,88,248,0.50);
 }
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 18px; height: 52px; position: sticky; top: 0; z-index: 100;
+  padding: 0 16px; height: 56px; position: sticky; top: 0; z-index: 100;
   background: var(--topbar-bg);
-  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid var(--topbar-border);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 2px solid var(--topbar-border);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(120,88,248,0.08);
   transition: background .3s, border-color .3s;
 }
 
-/* ── Pixel logo (left) ── */
+/* ── Pixel project name (left) ── */
 .pixel-logo {
-  display: flex; align-items: center; gap: 8px;
-  text-decoration: none; flex-shrink: 0;
+  display: flex; align-items: center; gap: 9px;
+  text-decoration: none; flex-shrink: 0; cursor: default;
 }
 .pixel-logo-icon {
-  font-size: 22px; line-height: 1;
-  filter: drop-shadow(0 0 6px var(--topbar-glow));
+  font-size: 20px; line-height: 1;
+  filter: drop-shadow(0 0 8px var(--topbar-glow));
   image-rendering: pixelated;
 }
 .pixel-logo-text {
-  font-size: 14px; font-weight: 900; letter-spacing: 0.5px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px; line-height: 1.4;
   color: var(--topbar-accent);
-  text-shadow: 0 0 8px var(--topbar-glow);
-  white-space: nowrap;
+  text-shadow: 0 0 10px var(--topbar-glow), 0 0 20px var(--topbar-glow);
+  white-space: nowrap; letter-spacing: 0.5px;
   transition: color .3s, text-shadow .3s;
 }
 
-/* ── Pixel divider between logo and lang ── */
-.topbar-divider {
-  width: 1px; height: 24px;
-  background: var(--topbar-border);
-  margin: 0 4px; flex-shrink: 0;
-}
+/* ── Language switcher ── */
 .lang-sw {
-  display: flex; gap: 2px; background: rgba(16, 8, 46, 0.80);
-  border: 1.5px solid rgba(130,100,220,0.35); border-radius: 30px; padding: 3px;
-  box-shadow: var(--shadow);
+  display: flex; gap: 2px;
+  background: rgba(16, 8, 46, 0.75);
+  border: 1.5px solid var(--topbar-border);
+  border-radius: 30px; padding: 3px;
 }
 .lb {
-  padding: 4px 10px; border-radius: 20px; border: none;
-  background: transparent; color: var(--text2);
-  font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; cursor: pointer;
+  padding: 4px 9px; border-radius: 20px; border: none;
+  background: transparent; color: rgba(200,180,255,0.7);
+  font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 800; cursor: pointer;
   transition: all .2s;
 }
-.lb.active { background: var(--accent); color: #fff; }
-.app-title { font-size: 17px; font-weight: 900; color: var(--accent); }
-.topbar-right { display: flex; align-items: center; gap: 8px; }
+.lb.active { background: var(--topbar-accent); color: #fff; box-shadow: 0 0 8px var(--topbar-glow); }
+.lb:hover:not(.active) { color: #fff; background: rgba(120,88,248,0.25); }
+
+/* ── Topbar right group ── */
+.topbar-right { display: flex; align-items: center; gap: 6px; }
+
+/* ── Topbar icon buttons (theme, home) ── */
+.tb-icon-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  background: rgba(16, 8, 50, 0.70);
+  border: 1.5px solid var(--topbar-border);
+  border-radius: 8px; /* pixel-boxy corners */
+  color: var(--topbar-accent); cursor: pointer; text-decoration: none;
+  transition: all .15s;
+  box-shadow: 0 0 6px rgba(120,88,248,0.2), inset 0 0 4px rgba(120,88,248,0.06);
+  image-rendering: pixelated;
+}
+.tb-icon-btn:hover {
+  border-color: var(--topbar-accent);
+  box-shadow: 0 0 12px var(--topbar-glow), inset 0 0 8px rgba(120,88,248,0.15);
+  transform: translateY(-1px);
+}
+.tb-icon-btn svg { display: block; }
+
+/* ── Compact streak pill ── */
+.streak-pill-sm {
+  display: flex; align-items: center; gap: 3px;
+  background: rgba(255,107,53,0.18); border: 1.5px solid rgba(255,107,53,0.4);
+  color: #FFA07A; border-radius: 20px; padding: 4px 9px;
+  font-size: 11px; font-weight: 800; font-family: 'Nunito', sans-serif;
+}
+
+/* ── Legacy .streak-pill kept for compatibility ── */
+.streak-pill {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--accent2); color: #fff;
+  border-radius: 20px; padding: 4px 11px;
+  font-size: 13px; font-weight: 800;
+}
 
 /* ── User menu dropdown ──────────────────────────────── */
 .user-wrap { position: relative; }
@@ -172,26 +206,24 @@ body {
 .um-item + .um-item { border-top: 1px solid var(--border); }
 .um-danger { color: var(--red); }
 
-.streak-pill {
-  display: flex; align-items: center; gap: 4px;
-  background: var(--accent2); color: #fff;
-  border-radius: 20px; padding: 4px 11px;
-  font-size: 13px; font-weight: 800;
-}
+/* ── User avatar button ── */
 .user-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 2px solid rgba(120,88,248,0.75);
+  width: 36px; height: 36px; border-radius: 8px; /* pixel-boxy */
+  border: 1.5px solid var(--topbar-border);
   background: rgba(16, 8, 50, 0.85);
   font-size: 16px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 8px rgba(120,88,248,0.4);
+  box-shadow: 0 0 8px rgba(120,88,248,0.3);
   transition: box-shadow .15s, border-color .15s;
+  overflow: hidden;
 }
 .user-btn:hover {
-  border-color: #C4B5FD;
-  box-shadow: 0 0 14px rgba(167,139,250,0.6);
+  border-color: var(--topbar-accent);
+  box-shadow: 0 0 14px var(--topbar-glow);
 }
-.user-btn-lg { width: 44px; height: 44px; font-size: 20px; }
+.user-btn-lg { width: 38px; height: 38px; font-size: 18px; }
+/* When avatar is an img (AI-generated), make it fill the circle */
+.user-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
 
 /* Pixel-art home button — cosmic neon */
 .home-pixel-btn {
@@ -214,7 +246,7 @@ body {
 
 /* ── APP SIDEBAR ───────────────────────────────────────── */
 .app-sidebar {
-  position: fixed; left: 0; top: 58px; bottom: 0; width: 62px;
+  position: fixed; left: 0; top: 56px; bottom: 0; width: 62px;
   background: rgba(6, 2, 28, 0.85);
   backdrop-filter: blur(14px);
   border-right: 1px solid rgba(130,100,220,0.25);
@@ -1195,9 +1227,15 @@ body {
 }
 
 /* ── Theme modal ───────────────────────────────────────────── */
-.theme-modal-box { max-width: 480px; }
+.theme-modal-box { max-width: 520px; max-height: 88vh; overflow-y: auto; }
+.theme-section-label {
+  font-size: 11px; font-weight: 800; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin: 16px 0 8px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
 .theme-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
 }
 .theme-item {
   border-radius: 14px; border: 2px solid var(--border);
@@ -1217,6 +1255,74 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 900;
 }
+
+/* ── Photo upload area ── */
+.theme-upload-area { display: flex; flex-direction: column; gap: 8px; }
+.theme-upload-preview {
+  width: 100%; height: 120px; border-radius: 14px;
+  border: 2px dashed var(--border);
+  overflow: hidden; position: relative;
+  transition: border-color .2s;
+}
+.theme-upload-preview:hover { border-color: var(--accent); }
+.theme-upload-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; height: 100%; cursor: pointer;
+  color: var(--text2); font-size: 12px; font-weight: 700;
+  transition: color .2s;
+}
+.theme-upload-placeholder:hover { color: var(--accent); }
+.theme-upload-preview img {
+  width: 100%; height: 100%; object-fit: cover; cursor: pointer;
+}
+.theme-upload-actions {
+  display: flex; gap: 8px;
+}
+.theme-upload-btn {
+  flex: 1; padding: 8px 12px; border-radius: 10px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s;
+}
+.theme-upload-btn:hover { border-color: var(--accent); color: var(--accent); }
+.theme-upload-btn-primary {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.theme-upload-btn-primary:hover { background: #ff8a5c; border-color: #ff8a5c; color: #fff; }
+
+/* ── AI generation area ── */
+.theme-ai-area { display: flex; flex-direction: column; gap: 4px; }
+.theme-ai-row { display: flex; gap: 8px; align-items: center; }
+.theme-ai-input {
+  flex: 1; padding: 8px 12px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--card);
+  color: var(--text); font-family: 'Nunito', sans-serif; font-size: 12px;
+  outline: none; transition: border-color .2s;
+}
+.theme-ai-input:focus { border-color: var(--accent); }
+.theme-ai-input::placeholder { color: var(--text2); }
+.theme-ai-btn {
+  flex-shrink: 0; padding: 8px 14px; border-radius: 10px;
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  border: none; color: #fff; font-family: 'Nunito', sans-serif;
+  font-size: 12px; font-weight: 800; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(79,70,229,0.35);
+}
+.theme-ai-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.theme-ai-btn:disabled { opacity: .5; cursor: wait; transform: none; }
+.theme-ai-preview {
+  width: 100%; border-radius: 14px; overflow: hidden;
+  border: 1.5px solid var(--border); margin-top: 8px; position: relative;
+}
+.theme-ai-preview img { width: 100%; height: 130px; object-fit: cover; display: block; }
+.theme-ai-apply-btn {
+  position: absolute; bottom: 8px; right: 8px;
+  padding: 5px 12px; border-radius: 8px;
+  background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.3);
+  color: #fff; font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: 'Nunito', sans-serif; transition: background .15s;
+}
+.theme-ai-apply-btn:hover { background: var(--accent); border-color: var(--accent); }
 
 /* ── dur-adj buttons (subject + timer) ─────────────────────── */
 .dur-adj {

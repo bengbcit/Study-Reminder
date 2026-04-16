@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>学习星球 / Study Planet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -51,25 +51,35 @@
 
   <!-- TOPBAR — pixel-art style, colours adapt with ThemeManager -->
   <div class="topbar">
-    <!-- Left: pixel logo -->
-    <a class="pixel-logo" href="/" title="Back to home">
-      <span class="pixel-logo-icon">🪐</span>
-      <span class="pixel-logo-text" id="appTitle">学习星球</span>
-    </a>
-
-    <div class="topbar-divider"></div>
-
-    <!-- Centre: language switcher -->
-    <div class="lang-sw">
-      <button class="lb active" onclick="I18n.set('zh')">中</button>
-      <button class="lb"        onclick="I18n.set('ja')">日</button>
-      <button class="lb"        onclick="I18n.set('en')">EN</button>
+    <!-- Left: pixel project name -->
+    <div class="pixel-logo" id="topbarProjectName">
+      <span class="pixel-logo-icon">🚀</span>
+      <span class="pixel-logo-text">Efficient Learning Engine</span>
     </div>
 
-    <!-- Right: streak · theme · avatar -->
+    <!-- Right: lang · theme · home · avatar -->
     <div class="topbar-right">
-      <div class="streak-pill">🔥<span id="streakNum">0</span></div>
-      <button class="theme-btn-top" onclick="ThemeManager.open()" title="Theme">🎨</button>
+      <!-- Language switcher -->
+      <div class="lang-sw">
+        <button class="lb active" onclick="I18n.set('zh')">中</button>
+        <button class="lb"        onclick="I18n.set('ja')">日</button>
+        <button class="lb"        onclick="I18n.set('en')">EN</button>
+      </div>
+      <!-- Theme -->
+      <button class="tb-icon-btn" onclick="ThemeManager.open()" title="Background Theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+      </button>
+      <!-- Home -->
+      <a class="tb-icon-btn" href="/" title="Back to Home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+      </a>
+      <!-- Streak pill (compact) -->
+      <div class="streak-pill-sm">🔥<span id="streakNum">0</span></div>
+      <!-- User avatar -->
       <div class="user-wrap">
         <button class="user-btn user-btn-lg" onclick="Auth.openProfile()" id="userAvatar">👤</button>
         <div class="user-menu" id="userMenu"></div>
@@ -282,7 +292,53 @@
 <div class="modal-ov" id="themeModal" onclick="ThemeManager.closeModal(event)">
   <div class="modal-box theme-modal-box">
     <div class="modal-title" data-i18n="theme_title">背景主题</div>
+
+    <!-- Built-in themes grid -->
+    <div class="theme-section-label">🎨 预设主题 / Presets</div>
     <div class="theme-grid" id="themeGrid"></div>
+
+    <!-- ── Custom photo upload ── -->
+    <div class="theme-section-label">📸 上传照片 / Upload Photo</div>
+    <div class="theme-upload-area" id="themeUploadArea">
+      <input type="file" id="themeBgUpload" accept="image/*" style="display:none"
+             onchange="ThemeManager._handleUpload(this)">
+      <div class="theme-upload-preview" id="themeUploadPreview">
+        <div class="theme-upload-placeholder" onclick="document.getElementById('themeBgUpload').click()">
+          <span style="font-size:28px">🖼</span>
+          <span>点击选择图片 / Click to pick image</span>
+          <span style="font-size:11px;opacity:.6">自动裁切为背景尺寸 · Auto-cropped to fit</span>
+        </div>
+      </div>
+      <div class="theme-upload-actions" id="themeUploadActions" style="display:none">
+        <button class="theme-upload-btn" onclick="document.getElementById('themeBgUpload').click()">🔄 换图</button>
+        <button class="theme-upload-btn theme-upload-btn-primary" onclick="ThemeManager._applyUpload()">✓ 应用此图</button>
+      </div>
+    </div>
+
+    <!-- ── AI Generate ── -->
+    <div class="theme-section-label">🤖 AI 生成 / AI Generate</div>
+    <div class="theme-ai-area">
+      <!-- Background -->
+      <div class="theme-ai-row">
+        <input class="theme-ai-input" id="bgPromptInput" type="text"
+               placeholder="描述背景风格… e.g. cosmic library, neon city, zen garden">
+        <button class="theme-ai-btn" onclick="ThemeManager._generateBg()" id="bgGenBtn">
+          <span id="bgGenBtnText">✨ 生成背景</span>
+        </button>
+      </div>
+      <div id="bgGenPreview" class="theme-ai-preview" style="display:none"></div>
+
+      <!-- Avatar -->
+      <div class="theme-ai-row" style="margin-top:10px">
+        <input class="theme-ai-input" id="avatarPromptInput" type="text"
+               placeholder="头像风格… e.g. pixel astronaut, anime student, chibi scientist">
+        <button class="theme-ai-btn" onclick="ThemeManager._generateAvatar()" id="avatarGenBtn">
+          <span id="avatarGenBtnText">🎭 生成头像</span>
+        </button>
+      </div>
+      <div id="avatarGenPreview" class="theme-ai-preview" style="display:none"></div>
+    </div>
+
     <div class="modal-row" style="margin-top:16px">
       <button class="mcancel" onclick="ThemeManager.closeModal()" data-i18n="btn_cancel">取消</button>
     </div>

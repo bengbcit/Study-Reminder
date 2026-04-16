@@ -478,8 +478,10 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
       else FirebaseAuth._onSignOut();
     });
 
-    // Show login immediately (don't wait for auth state)
-    FirebaseAuth.showLogin();
+    // authGate is hidden by default (display:none in HTML).
+    // onAuthStateChanged → _onSignIn shows the app, _onSignOut reveals the gate.
+    // Do NOT call showLogin() here — _auth.currentUser is always null at module
+    // init time even for authenticated users (Firebase hydrates from IndexedDB async).
 
   } // end if (_auth && _db)
 } // end if config is real

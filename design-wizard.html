@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习星球 · 设计方案向导</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #FFF9F2;
+  --card:   #FFFFFF;
+  --accent: #FF6B35;
+  --accent2:#FFB300;
+  --blue:   #4A90D9;
+  --green:  #52C97A;
+  --purple: #9B6DFF;
+  --text:   #1A1A1A;
+  --text2:  #888888;
+  --border: #EDE8E0;
+  --radius: 20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:24px 16px 60px}
+
+/* ── Header ── */
+.header{text-align:center;margin-bottom:32px}
+.header-emoji{font-size:52px;margin-bottom:8px}
+.header h1{font-size:26px;font-weight:900;color:var(--accent)}
+.header p{color:var(--text2);font-size:14px;margin-top:6px}
+
+/* ── Tab nav ── */
+.tab-nav{display:flex;gap:8px;margin-bottom:0;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex:1;min-width:fit-content;padding:10px 16px;border:none;border-radius:14px 14px 0 0;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;
+  background:#EDE8E0;color:var(--text2);transition:all .2s;white-space:nowrap;
+  border-bottom:3px solid transparent;
+}
+.tab-btn.active{background:#fff;color:var(--accent);border-bottom:3px solid var(--accent)}
+.tab-btn .tab-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;background:var(--border);
+  font-size:11px;margin-right:6px;font-weight:900;
+}
+.tab-btn.active .tab-num{background:var(--accent);color:#fff}
+.tab-btn.done .tab-num{background:var(--green);color:#fff}
+
+/* ── Tab panels ── */
+.tab-panels{background:#fff;border-radius:0 var(--radius) var(--radius) var(--radius);
+  box-shadow:0 4px 24px rgba(0,0,0,0.07);padding:28px 24px;margin-bottom:20px}
+.panel{display:none}
+.panel.active{display:block}
+
+.panel-title{font-size:18px;font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.panel-subtitle{color:var(--text2);font-size:13px;margin-bottom:22px}
+
+/* ── Section headings ── */
+.section{margin-bottom:24px}
+.section-label{
+  font-size:13px;font-weight:800;color:var(--text2);text-transform:uppercase;
+  letter-spacing:.6px;margin-bottom:10px;padding-left:2px;
+}
+
+/* ── Checkbox / Radio chips ── */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip input{display:none}
+.chip label{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 14px;
+  border-radius:30px;border:2px solid var(--border);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .18s;background:#fff;user-select:none;
+}
+.chip input:checked + label{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip.blue  input:checked + label{background:var(--blue);border-color:var(--blue)}
+.chip.green input:checked + label{background:var(--green);border-color:var(--green)}
+.chip.purple input:checked + label{background:var(--purple);border-color:var(--purple)}
+.chip.gold  input:checked + label{background:var(--accent2);border-color:var(--accent2);color:#333}
+
+/* ── Color swatch radio ── */
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatch input{display:none}
+.swatch label{
+  width:48px;height:48px;border-radius:50%;cursor:pointer;
+  border:3px solid transparent;transition:all .2s;position:relative;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+.swatch input:checked + label{border-color:var(--text);transform:scale(1.15)}
+.swatch label::after{
+  content:'✓';position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:18px;font-weight:900;opacity:0;
+  text-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+.swatch input:checked + label::after{opacity:1}
+
+/* ── Toggle switch ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:var(--bg);border-radius:12px;margin-bottom:8px}
+.toggle-row span{font-size:14px;font-weight:700}
+.toggle-row .sub{font-size:12px;color:var(--text2);display:block;font-weight:400}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{display:none}
+.toggle-track{
+  position:absolute;inset:0;background:#ddd;border-radius:20px;cursor:pointer;transition:.2s;
+}
+.toggle input:checked + .toggle-track{background:var(--green)}
+.toggle-track::after{
+  content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;
+  background:#fff;border-radius:50%;transition:.2s;
+}
+.toggle input:checked + .toggle-track::after{left:23px}
+
+/* ── Textarea ── */
+.idea-box{
+  width:100%;padding:12px 14px;border-radius:12px;border:2px solid var(--border);
+  font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);background:var(--bg);
+  resize:vertical;min-height:80px;transition:border .2s;
+}
+.idea-box:focus{outline:none;border-color:var(--accent)}
+
+/* ── Nav buttons ── */
+.nav-row{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
+.btn{
+  padding:11px 24px;border-radius:30px;border:none;font-family:'Nunito',sans-serif;
+  font-size:14px;font-weight:800;cursor:pointer;transition:all .18s;
+}
+.btn-outline{background:transparent;border:2px solid var(--border);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(255,107,53,.35)}
+.btn-primary:hover{background:#e85a28;transform:translateY(-1px)}
+.btn-next::after{content:' →'}
+.btn-prev::before{content:'← '}
+
+/* ── Progress bar ── */
+.progress-wrap{margin-bottom:16px}
+.progress-bar{height:5px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:4px;transition:width .4s ease}
+.progress-label{font-size:12px;color:var(--text2);margin-top:5px;text-align:right}
+
+/* ── Submit button ── */
+.submit-section{background:#fff;border-radius:var(--radius);
+  box-shadow:0 4px 24px rgba(0,0,0,.07);padding:28px 24px;text-align:center}
+.submit-section h3{font-size:17px;font-weight:900;margin-bottom:6px}
+.submit-section p{color:var(--text2);font-size:13px;margin-bottom:20px}
+.btn-submit{
+  padding:16px 40px;font-size:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border-radius:30px;border:none;font-family:'Nunito',sans-serif;font-weight:900;
+  cursor:pointer;box-shadow:0 6px 20px rgba(255,107,53,.4);transition:all .2s;letter-spacing:.3px;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,107,53,.5)}
+.btn-submit:active{transform:translateY(0)}
+
+/* ── Result panel ── */
+#result{display:none;margin-top:24px}
+.result-card{
+  background:#fff;border-radius:var(--radius);box-shadow:0 4px 24px rgba(0,0,0,.07);
+  padding:28px 24px;margin-bottom:16px;
+}
+.result-card h2{font-size:19px;font-weight:900;color:var(--accent);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px}
+.result-card h3{font-size:15px;font-weight:800;margin:14px 0 6px;color:var(--text)}
+.result-card p,.result-card li{font-size:13px;line-height:1.7;color:#333}
+.result-card ul,.result-card ol{padding-left:18px}
+.result-card li{margin-bottom:4px}
+.result-card pre{
+  background:var(--bg);border-radius:12px;padding:14px;font-size:12px;
+  line-height:1.6;white-space:pre-wrap;word-break:break-word;border:1px solid var(--border);
+  margin-top:6px;font-family:monospace;
+}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;
+  font-weight:800;margin-right:4px;margin-bottom:4px}
+.tag-orange{background:#FFF0EA;color:var(--accent)}
+.tag-blue{background:#EAF1FB;color:var(--blue)}
+.tag-green{background:#EAFAF1;color:var(--green)}
+.tag-purple{background:#F3EEFF;color:var(--purple)}
+.copy-btn{
+  float:right;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);
+  background:#fff;font-size:11px;font-weight:700;cursor:pointer;color:var(--text2);
+  transition:all .15s;font-family:'Nunito',sans-serif;
+}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+@media(max-width:480px){
+  .tab-btn{font-size:11px;padding:9px 10px}
+  .tab-panels{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-emoji">🌟</div>
+  <h1>学习星球 · 设计向导</h1>
+  <p>填写偏好，一键生成完整设计方案 & Prompts</p>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:25%"></div></div>
+  <div class="progress-label" id="progressLabel">第 1 步 / 共 4 步</div>
+</div>
+
+<!-- Tab nav -->
+<div class="tab-nav" id="tabNav">
+  <button class="tab-btn active" onclick="goTab(0)" id="tab0">
+    <span class="tab-num">1</span>品牌 Branding
+  </button>
+  <button class="tab-btn" onclick="goTab(1)" id="tab1">
+    <span class="tab-num">2</span>功能 Focus
+  </button>
+  <button class="tab-btn" onclick="goTab(2)" id="tab2">
+    <span class="tab-num">3</span>布局 Sections
+  </button>
+  <button class="tab-btn" onclick="goTab(3)" id="tab3">
+    <span class="tab-num">4</span>风格 Palette
+  </button>
+</div>
+
+<!-- ══════════ PANEL 0: Branding ══════════ -->
+<div class="tab-panels">
+<div class="panel active" id="panel0">
+  <div class="panel-title">🎨 品牌设定 Branding</div>
+  <div class="panel-subtitle">定义学习星球的整体品牌方向与视觉识别</div>
+
+  <div class="section">
+    <div class="section-label">🗂 整体风格方向（可多选）</div>
+    <div class="chips">
+      <div class="chip"><input type="checkbox" id="s_modern" name="style" value="现代简约"><label for="s_modern">✨ 现代简约</label></div>
+      <div class="chip blue"><input type="checkbox" id="s_tech" name="style" value="科技感"><label for="s_tech">🚀 科技感</label></div>
+      <div class="chip green"><input type="checkbox" id="s_nature" name="style" value="自然治愈"><label for="s_nature">🌿 自然治愈</label></div>
+      <div class="chip purple"><input type="checkbox" id="s_dream" name="style" value="梦幻宇宙"><label for="s_dream">🌌 梦幻宇宙</label></div>
+      <div class="chip gold"><input type="checkbox" id="s_cute" name="style" value="可爱卡通"><label for="s_cute">🌸 可爱卡通</label></div>
+      <div class="chip"><input type="checkbox" id="s_pro" name="style" value="商务专业"><label for="s_pro">💼 商务专业</label></div>
+      <div class="chip blue"><input type="checkbox" id="s_game" name="style" value="游戏化"><label for="s_game">🎮 游戏化</label></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">🎨 主色调偏好（单选）</div>
+    <div class="swatches">
+      <div class="swatch"><input type="radio" name="color" id="c1" value="橙红渐变"><label for="c1" style="background:linear-gradient(135deg,#FF6B35,#FFB300)" title="橙红渐变（当前）"></label></div>
+      <div class="swatch"><input type="radio" name="color" id="c2" value="宇宙深蓝"><label for="c2" style="background:linear-gradient(135deg,#1a1a4e,#4A90D9)" title="宇宙深蓝"></label></div>
+      <div class="swatch"><input type="radio" name="color" id="c3" value="梦幻紫粉"><label for="c3" style="background:linear-gradient(135deg,#9B6DFF,#FF6B9D)" title="梦幻紫粉"></label></div>
+      <div class="swatch"><input type="radio" name="color" id="c4" value="清新绿薄荷"><label for="c4" style="background:linear-gradient(135deg,#52C97A,#00D2BE)" title="清新绿薄荷"></label></div>
+      <div class="swatch"><input type="radio" name="color" id="c5" value="极简黑白金"><label for="c5" style="background:linear-gradient(135deg,#1A1A1A,#FFB300)" title="极简黑白金"></label></div>
+      <div class="swatch"><input type="radio" name="color" id="c6" value="赛博霓虹"><label for="c6" style="background:linear-gradient(135deg,#0F0F1A,#00F5FF)" title="赛博霓虹"></label></div>
+      <div class="swatch"><input type="radio" name="color" id="c7" value="暖橘奶油"><label for="c7" style="background:linear-gradient(135deg,#FFE0CC,#FF9966)" title="暖橘奶油"></label></div>
+      <div class="swatch"><input type="radio" name="color" id="c8" value="星空深紫"><label for="c8" style="background:linear-gradient(135deg,#2D1B69,#9B6DFF)" title="星空深紫"></label></div>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--text2)">💡 提示：悬停可查看名称，当前应用为 <strong>橙红渐变</strong></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">🖼 Logo & Banner</div>
+    <div class="toggle-row">
+      <div><span>生成新 Logo</span><span class="sub">为学习星球设计新的图标/徽标</span></div>
+      <label class="toggle"><input type="checkbox" id="t_logo"><div class="toggle-track"></div></label>
+    </div>
+    <div class="toggle-row">
+      <div><span>生成 Banner 图片</span><span class="sub">用于页面顶部或分享卡片</span></div>
+      <label class="toggle"><input type="checkbox" id="t_banner"><div class="toggle-track"></div></label>
+    </div>
+    <div class="toggle-row">
+      <div><span>更新 App 图标</span><span class="sub">PWA / 收藏夹图标</span></div>
+      <label class="toggle"><input type="checkbox" id="t_icon"><div class="toggle-track"></div></label>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-primary btn-next" onclick="goTab(1)">下一步</button>
+  </div>
+</div>
+
+<!-- ══════════ PANEL 1: Focus Area ══════════ -->
+<div class="panel" id="panel1">
+  <div class="panel-title">⚡ 核心功能 Focus Area</div>
+  <div class="panel-subtitle">选择本次希望重点优化的功能模块</div>
+
+  <div class="section">
+    <div class="section-label">🔧 重点优化模块（可多选）</div>
+    <div class="chips">
+      <div class="chip blue"><input type="checkbox" id="f_sub" name="focus" value="课程中心"><label for="f_sub">📚 课程中心</label></div>
+      <div class="chip green"><input type="checkbox" id="f_checkin" name="focus" value="打卡系统"><label for="f_checkin">✅ 打卡系统</label></div>
+      <div class="chip"><input type="checkbox" id="f_report" name="focus" value="每日简报"><label for="f_report">📝 每日简报</label></div>
+      <div class="chip purple"><input type="checkbox" id="f_stats" name="focus" value="学习统计"><label for="f_stats">📊 学习统计</label></div>
+      <div class="chip gold"><input type="checkbox" id="f_reward" name="focus" value="奖励系统"><label for="f_reward">⭐ 奖励系统</label></div>
+      <div class="chip blue"><input type="checkbox" id="f_remind" name="focus" value="提醒功能"><label for="f_remind">⏰ 提醒功能</label></div>
+      <div class="chip green"><input type="checkbox" id="f_timer" name="focus" value="学习计时器"><label for="f_timer">⏱ 学习计时器</label></div>
+      <div class="chip purple"><input type="checkbox" id="f_social" name="focus" value="社交分享"><label for="f_social">🤝 社交分享</label></div>
+      <div class="chip"><input type="checkbox" id="f_ai" name="focus" value="AI 激励"><label for="f_ai">🤖 AI 激励</label></div>
+      <div class="chip"><input type="checkbox" id="f_other" name="focus" value="其他"><label for="f_other">➕ 其他</label></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">🎯 优化优先级</div>
+    <div class="chips">
+      <div class="chip"><input type="radio" id="p_ux" name="priority" value="用户体验(UX)"><label for="p_ux">🖐 用户体验 UX</label></div>
+      <div class="chip blue"><input type="radio" id="p_perf" name="priority" value="性能速度"><label for="p_perf">⚡ 性能速度</label></div>
+      <div class="chip green"><input type="radio" id="p_feat" name="priority" value="新功能"><label for="p_feat">✨ 新功能</label></div>
+      <div class="chip purple"><input type="radio" id="p_visual" name="priority" value="视觉升级"><label for="p_visual">🎨 视觉升级</label></div>
+      <div class="chip gold"><input type="radio" id="p_mobile" name="priority" value="移动端适配"><label for="p_mobile">📱 移动端适配</label></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">💭 补充说明（可选）</div>
+    <textarea class="idea-box" id="focus_note" placeholder="例如：想让打卡页面更有仪式感，加入动效和声音反馈…"></textarea>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline btn-prev" onclick="goTab(0)">上一步</button>
+    <button class="btn btn-primary btn-next" onclick="goTab(2)">下一步</button>
+  </div>
+</div>
+
+<!-- ══════════ PANEL 2: Sections ══════════ -->
+<div class="panel" id="panel2">
+  <div class="panel-title">📐 页面布局 Sections</div>
+  <div class="panel-subtitle">规划各页面展示的内容区块</div>
+
+  <div class="section">
+    <div class="section-label">🏠 首页内容区块（可多选）</div>
+    <div class="chips">
+      <div class="chip green"><input type="checkbox" id="h_streak" name="home" value="连续打卡天数"><label for="h_streak">🔥 连续打卡天数</label></div>
+      <div class="chip blue"><input type="checkbox" id="h_today" name="home" value="今日任务卡"><label for="h_today">📋 今日任务卡</label></div>
+      <div class="chip purple"><input type="checkbox" id="h_quote" name="home" value="每日励志语"><label for="h_quote">✨ 每日励志语</label></div>
+      <div class="chip gold"><input type="checkbox" id="h_pts" name="home" value="积分与等级"><label for="h_pts">⭐ 积分与等级</label></div>
+      <div class="chip"><input type="checkbox" id="h_week" name="home" value="本周打卡热力图"><label for="h_week">📅 本周热力图</label></div>
+      <div class="chip blue"><input type="checkbox" id="h_sub" name="home" value="科目进度条"><label for="h_sub">📚 科目进度条</label></div>
+      <div class="chip green"><input type="checkbox" id="h_ai" name="home" value="AI 每日小贴士"><label for="h_ai">🤖 AI 每日贴士</label></div>
+      <div class="chip"><input type="checkbox" id="h_rank" name="home" value="排行榜预览"><label for="h_rank">🏆 排行榜预览</label></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">✅ 打卡页面改进</div>
+    <div class="chips">
+      <div class="chip"><input type="checkbox" id="ci_anim" name="checkin" value="打卡动效（烟花/粒子）"><label for="ci_anim">🎆 打卡动效</label></div>
+      <div class="chip blue"><input type="checkbox" id="ci_sound" name="checkin" value="音效反馈"><label for="ci_sound">🔊 音效反馈</label></div>
+      <div class="chip green"><input type="checkbox" id="ci_calendar" name="checkin" value="月历打卡视图"><label for="ci_calendar">📅 月历视图</label></div>
+      <div class="chip purple"><input type="checkbox" id="ci_badge" name="checkin" value="成就徽章展示"><label for="ci_badge">🏅 成就徽章</label></div>
+      <div class="chip gold"><input type="checkbox" id="ci_share" name="checkin" value="一键生成打卡图分享"><label for="ci_share">📤 生成分享图</label></div>
+      <div class="chip"><input type="checkbox" id="ci_streak" name="checkin" value="连续天数大字展示"><label for="ci_streak">🔥 大字连击展示</label></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">📊 统计页面改进</div>
+    <div class="chips">
+      <div class="chip blue"><input type="checkbox" id="st_chart" name="stats" value="学习时长折线图"><label for="st_chart">📈 时长折线图</label></div>
+      <div class="chip green"><input type="checkbox" id="st_heat" name="stats" value="年度热力图"><label for="st_heat">🗓 年度热力图</label></div>
+      <div class="chip purple"><input type="checkbox" id="st_sub" name="stats" value="科目占比饼图"><label for="st_sub">🥧 科目占比图</label></div>
+      <div class="chip"><input type="checkbox" id="st_rank" name="stats" value="个人排名"><label for="st_rank">🏅 个人排名</label></div>
+      <div class="chip gold"><input type="checkbox" id="st_export" name="stats" value="导出PDF学习报告"><label for="st_export">📄 导出 PDF</label></div>
+      <div class="chip blue"><input type="checkbox" id="st_ai" name="stats" value="AI 学习分析报告"><label for="st_ai">🤖 AI 分析报告</label></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">💡 其他想法（可选）</div>
+    <textarea class="idea-box" id="section_note" placeholder="例如：想在课程页增加「番茄钟」模式，统计页面支持按周/月/年切换…"></textarea>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline btn-prev" onclick="goTab(1)">上一步</button>
+    <button class="btn btn-primary btn-next" onclick="goTab(3)">下一步</button>
+  </div>
+</div>
+
+<!-- ══════════ PANEL 3: Palette & Style ══════════ -->
+<div class="panel" id="panel3">
+  <div class="panel-title">🌈 视觉风格 Palette & Style</div>
+  <div class="panel-subtitle">定义学习星球的视觉语言与氛围</div>
+
+  <div class="section">
+    <div class="section-label">🎭 视觉风格（可多选）</div>
+    <div class="chips">
+      <div class="chip purple"><input type="checkbox" id="vs_cosmic" name="vibe" value="宇宙星空"><label for="vs_cosmic">🌌 宇宙星空</label></div>
+      <div class="chip blue"><input type="checkbox" id="vs_cyber" name="vibe" value="赛博霓虹"><label for="vs_cyber">⚡ 赛博霓虹</label></div>
+      <div class="chip green"><input type="checkbox" id="vs_dream" name="vibe" value="梦幻水彩"><label for="vs_dream">🎨 梦幻水彩</label></div>
+      <div class="chip"><input type="checkbox" id="vs_min" name="vibe" value="极简留白"><label for="vs_min">◻ 极简留白</label></div>
+      <div class="chip gold"><input type="checkbox" id="vs_cute" name="vibe" value="日系可爱"><label for="vs_cute">🌸 日系可爱</label></div>
+      <div class="chip blue"><input type="checkbox" id="vs_flat" name="vibe" value="扁平插画"><label for="vs_flat">🖼 扁平插画</label></div>
+      <div class="chip purple"><input type="checkbox" id="vs_3d" name="vibe" value="3D 立体感"><label for="vs_3d">🧊 3D 立体感</label></div>
+      <div class="chip green"><input type="checkbox" id="vs_nature" name="vibe" value="自然森系"><label for="vs_nature">🍃 自然森系</label></div>
+      <div class="chip"><input type="checkbox" id="vs_retro" name="vibe" value="复古像素"><label for="vs_retro">👾 复古像素</label></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">🌟 整体氛围（单选）</div>
+    <div class="chips">
+      <div class="chip green"><input type="radio" id="m_heal" name="mood" value="治愈放松"><label for="m_heal">🌿 治愈放松</label></div>
+      <div class="chip"><input type="radio" id="m_moti" name="mood" value="激励燃烧"><label for="m_moti">🔥 激励燃烧</label></div>
+      <div class="chip gold"><input type="radio" id="m_fun" name="mood" value="活泼趣味"><label for="m_fun">🎉 活泼趣味</label></div>
+      <div class="chip blue"><input type="radio" id="m_pro" name="mood" value="专业高效"><label for="m_pro">💼 专业高效</label></div>
+      <div class="chip purple"><input type="radio" id="m_magic" name="mood" value="神秘魔幻"><label for="m_magic">✨ 神秘魔幻</label></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">🖼 参考图片</div>
+    <div class="toggle-row">
+      <div>
+        <span>参考「宇宙图书馆」风格</span>
+        <span class="sub">之前生成的深空 + 书架 + 漂浮书本风格</span>
+      </div>
+      <label class="toggle"><input type="checkbox" id="ref_cosmic"><div class="toggle-track"></div></label>
+    </div>
+    <div class="toggle-row">
+      <div>
+        <span>参考当前应用截图风格</span>
+        <span class="sub">在现有橙色系基础上升级</span>
+      </div>
+      <label class="toggle"><input type="checkbox" id="ref_current"><div class="toggle-track"></div></label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">💬 其他灵感或参考（可选）</div>
+    <textarea class="idea-box" id="style_note" placeholder="例如：喜欢 Notion + 宇宙感的混搭，或者类似 Duolingo 那种激励感但更高级…"></textarea>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline btn-prev" onclick="goTab(2)">上一步</button>
+  </div>
+</div>
+</div><!-- end tab-panels -->
+
+<!-- ── Submit ── -->
+<div class="submit-section">
+  <h3>🚀 准备好了吗？</h3>
+  <p>点击下方按钮，根据你的选择生成完整设计方案、AI Prompt 和开发建议</p>
+  <button class="btn-submit" onclick="generate()">✨ 生成完整设计方案</button>
+</div>
+
+<!-- ── Result ── -->
+<div id="result"></div>
+
+<script>
+let currentTab = 0;
+
+function goTab(n) {
+  // Mark previous as done
+  if (n > currentTab) {
+    document.getElementById('tab' + currentTab).classList.add('done');
+  }
+  document.getElementById('panel' + currentTab).classList.remove('active');
+  document.getElementById('tab' + currentTab).classList.remove('active');
+  currentTab = n;
+  document.getElementById('panel' + n).classList.add('active');
+  document.getElementById('tab' + n).classList.add('active');
+  // Progress
+  const pct = [25, 50, 75, 100][n];
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `第 ${n+1} 步 / 共 4 步`;
+  window.scrollTo({top: 0, behavior:'smooth'});
+}
+
+function getChecked(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(e => e.value);
+}
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : '未选择';
+}
+function getToggle(id) { return document.getElementById(id).checked; }
+function getNote(id)   { return document.getElementById(id).value.trim(); }
+
+function generate() {
+  const data = {
+    styles:    getChecked('style'),
+    color:     getRadio('color'),
+    logo:      getToggle('t_logo'),
+    banner:    getToggle('t_banner'),
+    icon:      getToggle('t_icon'),
+    focus:     getChecked('focus'),
+    priority:  getRadio('priority'),
+    focusNote: getNote('focus_note'),
+    home:      getChecked('home'),
+    checkin:   getChecked('checkin'),
+    stats:     getChecked('stats'),
+    sectNote:  getNote('section_note'),
+    vibes:     getChecked('vibe'),
+    mood:      getRadio('mood'),
+    refCosmic: getToggle('ref_cosmic'),
+    refCurrent:getToggle('ref_current'),
+    styleNote: getNote('style_note'),
+  };
+
+  const html = buildResult(data);
+  const el = document.getElementById('result');
+  el.innerHTML = html;
+  el.style.display = 'block';
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function buildResult(d) {
+  const styles  = d.styles.length  ? d.styles.join('、')  : '未选择';
+  const focuses = d.focus.length   ? d.focus.join('、')   : '未选择';
+  const homeBlocks = d.home.length ? d.home.join('、')    : '未选择';
+  const checkinFt  = d.checkin.length ? d.checkin.join('、') : '未选择';
+  const statsFt    = d.stats.length   ? d.stats.join('、')   : '未选择';
+  const vibes      = d.vibes.length   ? d.vibes.join('、')   : '未选择';
+
+  // ── Color scheme details ──
+  const colorMap = {
+    '橙红渐变':    { pri:'#FF6B35', sec:'#FFB300', bg:'#FFF9F2', dark:'#E85A28' },
+    '宇宙深蓝':    { pri:'#4A90D9', sec:'#1a1a4e', bg:'#0A0A1A', dark:'#2563EB' },
+    '梦幻紫粉':    { pri:'#9B6DFF', sec:'#FF6B9D', bg:'#FDF5FF', dark:'#7C3AED' },
+    '清新绿薄荷':  { pri:'#52C97A', sec:'#00D2BE', bg:'#F0FDF4', dark:'#16A34A' },
+    '极简黑白金':  { pri:'#1A1A1A', sec:'#FFB300', bg:'#FAFAFA', dark:'#000000' },
+    '赛博霓虹':    { pri:'#00F5FF', sec:'#FF00FF', bg:'#0A0A12', dark:'#00BFCF' },
+    '暖橘奶油':    { pri:'#FF9966', sec:'#FFD1A4', bg:'#FFFAF5', dark:'#E07040' },
+    '星空深紫':    { pri:'#9B6DFF', sec:'#2D1B69', bg:'#0F0A1E', dark:'#7C3AED' },
+  };
+  const c = colorMap[d.color] || colorMap['橙红渐变'];
+
+  // ── AI image prompt ──
+  const cosmicRef  = d.refCosmic  ? '融合宇宙图书馆美学（深空背景、漂浮书本、星云光晕）,' : '';
+  const moodPrompt = { '治愈放松':'warm soft dreamy healing','激励燃烧':'energetic motivational glowing','活泼趣味':'playful colorful cheerful','专业高效':'clean professional minimal','神秘魔幻':'mystical ethereal magical dark' }[d.mood] || 'inspiring motivational';
+  const vibePrompt = d.vibes.length ? d.vibes.map(v=>({'宇宙星空':'cosmic starfield nebula','赛博霓虹':'cyberpunk neon glowing circuits','梦幻水彩':'dreamy watercolor soft brushstrokes','极简留白':'minimalist white space','日系可爱':'kawaii cute Japanese pastel','扁平插画':'flat design illustration vector','3D 立体感':'3D render glass morphism depth','自然森系':'natural forest botanical green','复古像素':'pixel art retro 8bit'}[v]||v)).join(', ') : 'modern clean';
+
+  const logoPrompt = d.logo ? `\n\n**Logo Prompt（Midjourney / DALL-E）:**\n\`\`\`\nA modern app logo for "Study Planet" learning app, ${vibePrompt}, ${cosmicRef} star/planet motif, primary color ${c.pri}, clean vector style, circular badge design, white background, professional, --ar 1:1 --v 6\n\`\`\`` : '';
+
+  const bannerPrompt = d.banner ? `\n\n**Banner Prompt:**\n\`\`\`\nWide banner illustration for "学习星球" study app, ${vibePrompt}, ${cosmicRef} ${vibePrompt} atmosphere, floating books planets stars galaxies, color palette ${c.pri} to ${c.sec}, Chinese student character studying, dreamy inspiring, ultra detailed, --ar 16:9 --v 6\n\`\`\`` : '';
+
+  // ── CSS variables block ──
+  const cssVars = `/* 学习星球 · 推荐配色方案: ${d.color} */
+:root {
+  --accent:  ${c.pri};
+  --accent2: ${c.sec};
+  --bg:      ${c.bg};
+  --card:    ${c.bg === '#0A0A1A' || c.bg === '#0A0A12' || c.bg === '#0F0A1E' ? '#1A1A2E' : '#FFFFFF'};
+  --text:    ${c.bg.startsWith('#0') ? '#E8E8F0' : '#1A1A1A'};
+  --text2:   ${c.bg.startsWith('#0') ? '#8888AA' : '#888888'};
+  --border:  ${c.bg.startsWith('#0') ? '#2A2A3E' : '#EDE8E0'};
+  --shadow:  0 2px 16px rgba(0,0,0,0.${c.bg.startsWith('#0') ? '25' : '07'});
+  --radius:  20px;
+}`;
+
+  // ── Build sections ──
+  let homeSection = '';
+  if (d.home.length) {
+    homeSection = `<h3>🏠 首页内容模块方案</h3><ul>` + d.home.map(b => {
+      const tips = {
+        '连续打卡天数': '大字数字 + 火焰动效，放置页面最顶部英雄区',
+        '今日任务卡': '卡片列表，显示今天要完成的科目和预计时长',
+        '每日励志语': '每天自动轮换，支持多语言，带柔和背景色块',
+        '积分与等级': '环形进度条 + 等级徽章，升级时有粒子特效',
+        '本周打卡热力图': '7格横向热力图，已打卡=主色填充，未打卡=灰色',
+        '科目进度条': '每个科目一条进度条，显示本周完成/目标比例',
+        'AI 每日贴士': '每天生成一条学习建议，带 AI 发光图标',
+        '排行榜预览': '显示前3名好友学习数据（需账号系统支持）',
+      };
+      return `<li><strong>${b}</strong> — ${tips[b] || '根据偏好定制展示方式'}</li>`;
+    }).join('') + '</ul>';
+  }
+
+  let checkinSection = '';
+  if (d.checkin.length) {
+    checkinSection = `<h3>✅ 打卡页面优化方案</h3><ul>` + d.checkin.map(f => {
+      const tips = {
+        '打卡动效（烟花/粒子）': '使用 Canvas confetti 库，打卡成功触发烟花/彩带特效',
+        '音效反馈': '引入 Web Audio API，打卡时播放轻快音效（可在设置关闭）',
+        '月历打卡视图': '在统计/日历页展示完整月历，每天用色块标注完成度',
+        '成就徽章展示': '在个人主页展示解锁徽章，连续7天/30天/100天各一枚',
+        '一键生成打卡图分享': '使用 html2canvas 截图，自动生成带头像+数据的分享图',
+        '连续天数大字展示': '在打卡页顶部用 72px 大字展示连续天数 + 火焰图标',
+      };
+      return `<li><strong>${f}</strong> — ${tips[f] || '优化视觉和交互反馈'}</li>`;
+    }).join('') + '</ul>';
+  }
+
+  let statsSection = '';
+  if (d.stats.length) {
+    statsSection = `<h3>📊 统计页面优化方案</h3><ul>` + d.stats.map(f => {
+      const tips = {
+        '学习时长折线图': '使用 Chart.js，按天/周/月展示学习时长变化趋势',
+        '年度热力图': '仿 GitHub 贡献图，366格，点击可查看当天详情',
+        '科目占比饼图': '圆环图 + 图例，动画入场，支持点击高亮',
+        '个人排名': '需云端数据，显示在好友圈或全局的学习时长排名',
+        '导出PDF学习报告': '使用 jsPDF 生成月度/年度学习报告 PDF',
+        'AI 学习分析报告': '调用 Claude API 分析学习数据，生成个性化建议',
+      };
+      return `<li><strong>${f}</strong> — ${tips[f] || '增强数据可视化能力'}</li>`;
+    }).join('') + '</ul>';
+  }
+
+  // ── Notes ──
+  const notes = [d.focusNote, d.sectNote, d.styleNote].filter(Boolean);
+  const notesHtml = notes.length ? `<h3>📝 你的补充说明</h3><ul>${notes.map(n=>`<li>${n}</li>`).join('')}</ul>` : '';
+
+  // ── Dev roadmap ──
+  const roadmap = buildRoadmap(d);
+
+  return `
+<div class="result-card">
+  <h2>🎨 你的学习星球设计方案</h2>
+  <p>根据你的选择生成，以下是完整的设计方向、代码方案和 AI Prompt。</p>
+  <br>
+  <div>
+    ${['styles','color','focuses','homeBlocks','checkinFt','statsFt','vibes','mood'].reduce((_,__)=>'','')}
+    <span class="tag tag-orange">风格：${styles}</span>
+    <span class="tag tag-blue">配色：${d.color}</span>
+    <span class="tag tag-green">优化：${focuses}</span>
+    <span class="tag tag-purple">氛围：${d.mood}</span>
+  </div>
+</div>
+
+<div class="result-card">
+  <h2>🎨 一、配色方案 & CSS 变量</h2>
+  <p>推荐将 <code>css/style.css</code> 中的 <code>:root</code> 替换为：</p>
+  <button class="copy-btn" onclick="copyText(this, 'css-block')">复制</button>
+  <pre id="css-block">${cssVars}</pre>
+  <h3>配色说明</h3>
+  <ul>
+    <li><strong>主色 (--accent)</strong>：${c.pri} — 按钮、高亮、交互元素</li>
+    <li><strong>辅色 (--accent2)</strong>：${c.sec} — 渐变终点、次要强调</li>
+    <li><strong>背景 (--bg)</strong>：${c.bg} — 页面底色</li>
+  </ul>
+</div>
+
+<div class="result-card">
+  <h2>🏗 二、页面内容建议</h2>
+  ${homeSection}
+  ${checkinSection}
+  ${statsSection}
+  ${notesHtml}
+  ${d.sectNote ? '' : '<p style="color:var(--text2);font-size:13px">（你没有填写补充说明，以上为标准推荐方案）</p>'}
+</div>
+
+<div class="result-card">
+  <h2>⚡ 三、核心功能开发路线图</h2>
+  ${roadmap}
+</div>
+
+<div class="result-card">
+  <h2>🤖 四、AI Image Prompts</h2>
+  <p>以下 Prompt 可直接用于 Midjourney、DALL-E 3、Stable Diffusion：</p>
+
+  <h3>🖼 整体风格参考图</h3>
+  <button class="copy-btn" onclick="copyText(this, 'prompt-main')">复制</button>
+  <pre id="prompt-main">Digital illustration for "学习星球" learning app UI,
+${vibePrompt}, ${cosmicRef}
+${moodPrompt} atmosphere, floating books and planets,
+students studying surrounded by glowing knowledge particles,
+color scheme ${c.pri} primary with ${c.sec} accents,
+clean modern UI elements, soft glow, depth of field,
+4K ultra detailed, concept art style,
+--ar 16:9 --v 6 --stylize 750</pre>
+  ${logoPrompt}
+  ${bannerPrompt}
+
+  <h3>📱 UI 组件参考图</h3>
+  <button class="copy-btn" onclick="copyText(this, 'prompt-ui')">复制</button>
+  <pre id="prompt-ui">Mobile app UI screenshot mockup for study tracking app,
+${vibePrompt} design language,
+showing streak counter, subject cards, progress bars,
+primary color ${c.pri}, card-based layout, rounded corners,
+${d.mood} aesthetic, Chinese/Japanese text, pixel perfect,
+Figma style, clean shadows, --ar 9:16 --v 6</pre>
+</div>
+
+<div class="result-card">
+  <h2>✅ 五、下一步行动清单</h2>
+  <ol>
+    <li>将上方 CSS 变量复制到 <code>css/style.css</code> 的 <code>:root</code> 中</li>
+    ${d.logo || d.banner ? '<li>使用 AI Image Prompt 生成 Logo / Banner 图片</li>' : ''}
+    ${d.focus.length ? `<li>按优先级开始优化：${d.focus.slice(0,3).join(' → ')}</li>` : ''}
+    ${d.home.length ? `<li>在首页添加内容区块：${d.home.slice(0,3).join('、')} 等</li>` : ''}
+    ${d.checkin.includes('打卡动效（烟花/粒子）') ? '<li>引入 <code>canvas-confetti</code> 库实现打卡动效</li>' : ''}
+    ${d.stats.includes('学习时长折线图') ? '<li>在统计页用 Chart.js 添加学习时长折线图</li>' : ''}
+    <li>在浏览器中预览效果，根据实际视觉微调颜色参数</li>
+    <li>如需进一步帮助，把这份方案发给开发助手（Claude Code）执行</li>
+  </ol>
+</div>`;
+}
+
+function buildRoadmap(d) {
+  const items = [];
+  if (d.focus.includes('打卡系统') || d.checkin.length) {
+    items.push({ phase:'P1 · 立即可做', title:'打卡系统升级', desc:'添加打卡动效（canvas-confetti）、连续天数大字展示、月历视图', effort:'🟢 低难度', file:'js/app.js, css/style.css' });
+  }
+  if (d.focus.includes('每日简报')) {
+    items.push({ phase:'P1 · 立即可做', title:'简报页面语言同步', desc:'确保语言切换时 placeholder 和标签文字即时更新', effort:'🟢 低难度', file:'js/report.js, js/i18n.js' });
+  }
+  if (d.focus.includes('学习统计') || d.stats.length) {
+    items.push({ phase:'P2 · 本周计划', title:'统计可视化升级', desc:'Chart.js 折线图、热力图、科目占比饼图', effort:'🟡 中难度', file:'js/stats.js' });
+  }
+  if (d.focus.includes('奖励系统')) {
+    items.push({ phase:'P2 · 本周计划', title:'奖励系统扩展', desc:'成就徽章系统、等级提升动效、积分商店', effort:'🟡 中难度', file:'js/rewards.js' });
+  }
+  if (d.focus.includes('AI 激励')) {
+    items.push({ phase:'P3 · 未来规划', title:'AI 个性化功能', desc:'接入 Claude API 生成个性化学习报告和每日建议', effort:'🔴 高难度', file:'api/ (新增后端)' });
+  }
+  if (d.checkin.includes('一键生成打卡图分享')) {
+    items.push({ phase:'P3 · 未来规划', title:'打卡分享图生成', desc:'html2canvas 截图 + 自定义分享卡片模板', effort:'🟡 中难度', file:'js/app.js (新增 share 模块)' });
+  }
+  if (!items.length) {
+    items.push({ phase:'P1 · 推荐起点', title:'视觉风格升级', desc:'替换配色方案，调整卡片样式和字体', effort:'🟢 低难度', file:'css/style.css' });
+  }
+
+  return `<table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="background:var(--bg)">
+      <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--text2)">阶段</th>
+      <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--text2)">功能</th>
+      <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--text2)">难度</th>
+      <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--text2)">涉及文件</th>
+    </tr></thead>
+    <tbody>
+    ${items.map((it,i) => `<tr style="border-top:1px solid var(--border);background:${i%2?'var(--bg)':'#fff'}">
+      <td style="padding:8px 10px;font-weight:800;color:var(--accent);font-size:12px">${it.phase}</td>
+      <td style="padding:8px 10px"><strong>${it.title}</strong><br><span style="color:var(--text2)">${it.desc}</span></td>
+      <td style="padding:8px 10px">${it.effort}</td>
+      <td style="padding:8px 10px;font-family:monospace;font-size:11px;color:var(--blue)">${it.file}</td>
+    </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function copyText(btn, id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅ 已复制';
+    setTimeout(() => btn.textContent = orig, 1800);
+  });
+}
+</script>
+</body>
+</html>

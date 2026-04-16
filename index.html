@@ -11,7 +11,7 @@
 <body>
 
 <!-- ══ AUTH GATE ══════════════════════════════════════════ -->
-<div id="authGate" class="auth-gate">
+<div id="authGate" class="auth-gate" style="display:none">
   <div class="auth-box">
     <div class="auth-logo">⭐</div>
     <div class="auth-title" id="authTitle">学习星球</div>
@@ -37,6 +37,18 @@
 <!-- ══ MAIN APP ═══════════════════════════════════════════ -->
 <div id="mainApp" style="display:none">
 
+  <!-- LEFT SIDEBAR -->
+  <nav class="app-sidebar" id="appSidebar">
+    <button class="sidebar-icon active" data-page="subjects" onclick="navTo('subjects')" title="课程 · Courses">📚</button>
+    <button class="sidebar-icon" data-page="remind"   onclick="navTo('remind')"   title="提醒 · Remind">⏰</button>
+    <button class="sidebar-icon" data-page="timer"    onclick="navTo('timer')"    title="计时 · Timer">⏱</button>
+    <button class="sidebar-icon" data-page="report"   onclick="navTo('report')"   title="简报 · Report">📝</button>
+    <button class="sidebar-icon" data-page="calendar" onclick="navTo('calendar')" title="日历 · Calendar">📅</button>
+    <button class="sidebar-icon" data-page="stats"    onclick="navTo('stats')"    title="统计 · Stats">📊</button>
+    <button class="sidebar-icon" data-page="rewards"  onclick="navTo('rewards')"  title="奖励 · Rewards">⭐</button>
+    <button class="sidebar-icon" data-page="notion"   onclick="Notion.open()"     title="打卡 · Checkin">📋</button>
+  </nav>
+
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="lang-sw">
@@ -48,8 +60,9 @@
     <div class="topbar-right">
       <button class="theme-btn-top" onclick="ThemeManager.open()" title="Theme">🎨</button>
       <div class="streak-pill">🔥<span id="streakNum">0</span></div>
+      <a class="home-pixel-btn" href="landing.html" title="Back to home">⌂</a>
       <div class="user-wrap">
-        <button class="user-btn" onclick="Auth.openProfile()" id="userAvatar">👤</button>
+        <button class="user-btn user-btn-lg" onclick="Auth.openProfile()" id="userAvatar">👤</button>
         <div class="user-menu" id="userMenu"></div>
       </div>
     </div>
@@ -57,13 +70,13 @@
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="App.showPage('subjects',this)" data-i18n="tab_sub">📚 课程</button>
-    <button class="tab"        onclick="App.showPage('remind',this)"   data-i18n="tab_rem">⏰ 提醒</button>
-    <button class="tab"        onclick="App.showPage('timer',this)"    data-i18n="tab_timer">⏱ 计时</button>
-    <button class="tab"        onclick="App.showPage('report',this)"   data-i18n="tab_rep">📝 简报</button>
-    <button class="tab"        onclick="App.showPage('calendar',this)" data-i18n="tab_cal">📅 日历</button>
-    <button class="tab"        onclick="App.showPage('stats',this)"    data-i18n="tab_stats">📊 统计</button>
-    <button class="tab"        onclick="App.showPage('rewards',this)"  data-i18n="tab_rew">⭐ 奖励</button>
+    <button class="tab active" data-page="subjects" onclick="navTo('subjects')" data-i18n="tab_sub">📚 课程</button>
+    <button class="tab"        data-page="remind"   onclick="navTo('remind')"   data-i18n="tab_rem">⏰ 提醒</button>
+    <button class="tab"        data-page="timer"    onclick="navTo('timer')"    data-i18n="tab_timer">⏱ 计时</button>
+    <button class="tab"        data-page="report"   onclick="navTo('report')"   data-i18n="tab_rep">📝 简报</button>
+    <button class="tab"        data-page="calendar" onclick="navTo('calendar')" data-i18n="tab_cal">📅 日历</button>
+    <button class="tab"        data-page="stats"    onclick="navTo('stats')"    data-i18n="tab_stats">📊 统计</button>
+    <button class="tab"        data-page="rewards"  onclick="navTo('rewards')"  data-i18n="tab_rew">⭐ 奖励</button>
     <button class="tab notion-tab" id="notionTabBtn" onclick="Notion.open()">📋 打卡</button>
   </div>
 
@@ -316,6 +329,46 @@ document.addEventListener('click', function(e) {
     menu.classList.remove('open');
   }
 });
+
+// ── Sidebar navigation ─────────────────────────────────
+const _PAGE_ORDER = ['subjects','remind','timer','report','calendar','stats','rewards'];
+
+function _syncSidebar(name) {
+  document.querySelectorAll('.sidebar-icon').forEach(i => i.classList.remove('active'));
+  const si = document.querySelector(`.sidebar-icon[data-page="${name}"]`);
+  if (si) si.classList.add('active');
+}
+
+// navTo: sidebar clicks call this; finds the matching tab btn and delegates to App.showPage
+function navTo(name) {
+  const tabBtn = document.querySelector(`.tab[data-page="${name}"]`);
+  if (tabBtn) App.showPage(name, tabBtn);  // App is a global const, NOT on window — use directly
+  _syncSidebar(name);
+}
+
+// Patch App.showPage ONCE so tab clicks also sync the sidebar icons
+(function patchShowPage() {
+  if (typeof App === 'undefined') { setTimeout(patchShowPage, 50); return; }
+  const _orig = App.showPage.bind(App);
+  App.showPage = function(name, btn) {
+    _orig(name, btn);
+    _syncSidebar(name);
+  };
+  // Wheel on sidebar cycles through pages
+  const sidebar = document.getElementById('appSidebar');
+  if (sidebar) {
+    sidebar.addEventListener('wheel', e => {
+      e.preventDefault();
+      const cur = document.querySelector('.sidebar-icon.active')?.dataset.page;
+      const idx = _PAGE_ORDER.indexOf(cur);
+      if (idx === -1) return;
+      const next = e.deltaY > 0
+        ? _PAGE_ORDER[Math.min(idx + 1, _PAGE_ORDER.length - 1)]
+        : _PAGE_ORDER[Math.max(idx - 1, 0)];
+      if (next !== cur) navTo(next);
+    }, { passive: false });
+  }
+})();
 </script>
 </body>
 </html>

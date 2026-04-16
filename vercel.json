@@ -1,7 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/((?!css/|js/|api/).*)",
+      "source": "/app",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/app/(.*)",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/((?!css/|js/|api/|app\\.html|landing\\.html|design-wizard\\.html).*)",
       "destination": "/landing.html"
     }
   ],

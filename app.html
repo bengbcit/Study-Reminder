@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习星球 / Study Planet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══ AUTH GATE ══════════════════════════════════════════ -->
+<div id="authGate" class="auth-gate" style="display:none">
+  <div class="auth-box">
+    <div class="auth-logo">⭐</div>
+    <div class="auth-title" id="authTitle">学习星球</div>
+
+    <!-- Language switcher inside auth gate -->
+    <div class="auth-lang-sw">
+      <button class="lb active" onclick="I18n.set('zh');window._refreshAuthGate&&_refreshAuthGate()">中</button>
+      <button class="lb"        onclick="I18n.set('ja');window._refreshAuthGate&&_refreshAuthGate()">日</button>
+      <button class="lb"        onclick="I18n.set('en');window._refreshAuthGate&&_refreshAuthGate()">EN</button>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin"
+              onclick="window.Auth.showLogin()">登录</button>
+      <button class="auth-tab" id="tabRegister"
+              onclick="window.Auth.showRegister()">注册</button>
+    </div>
+    <div id="authForm"></div>
+    <p class="auth-err" id="authErr"></p>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ═══════════════════════════════════════════ -->
+<div id="mainApp" style="display:none">
+
+  <!-- LEFT SIDEBAR -->
+  <nav class="app-sidebar" id="appSidebar">
+    <button class="sidebar-icon active" data-page="subjects" onclick="navTo('subjects')" title="课程 · Courses">📚</button>
+    <button class="sidebar-icon" data-page="remind"   onclick="navTo('remind')"   title="提醒 · Remind">⏰</button>
+    <button class="sidebar-icon" data-page="timer"    onclick="navTo('timer')"    title="计时 · Timer">⏱</button>
+    <button class="sidebar-icon" data-page="report"   onclick="navTo('report')"   title="简报 · Report">📝</button>
+    <button class="sidebar-icon" data-page="calendar" onclick="navTo('calendar')" title="日历 · Calendar">📅</button>
+    <button class="sidebar-icon" data-page="stats"    onclick="navTo('stats')"    title="统计 · Stats">📊</button>
+    <button class="sidebar-icon" data-page="rewards"  onclick="navTo('rewards')"  title="奖励 · Rewards">⭐</button>
+    <button class="sidebar-icon" data-page="notion"   onclick="Notion.open()"     title="打卡 · Checkin">📋</button>
+  </nav>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="lang-sw">
+      <button class="lb active" onclick="I18n.set('zh')">中</button>
+      <button class="lb"        onclick="I18n.set('ja')">日</button>
+      <button class="lb"        onclick="I18n.set('en')">EN</button>
+    </div>
+    <div class="app-title" id="appTitle">学习星球</div>
+    <div class="topbar-right">
+      <button class="theme-btn-top" onclick="ThemeManager.open()" title="Theme">🎨</button>
+      <div class="streak-pill">🔥<span id="streakNum">0</span></div>
+      <a class="home-pixel-btn" href="/" title="Back to home">⌂</a>
+      <div class="user-wrap">
+        <button class="user-btn user-btn-lg" onclick="Auth.openProfile()" id="userAvatar">👤</button>
+        <div class="user-menu" id="userMenu"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-page="subjects" onclick="navTo('subjects')" data-i18n="tab_sub">📚 课程</button>
+    <button class="tab"        data-page="remind"   onclick="navTo('remind')"   data-i18n="tab_rem">⏰ 提醒</button>
+    <button class="tab"        data-page="timer"    onclick="navTo('timer')"    data-i18n="tab_timer">⏱ 计时</button>
+    <button class="tab"        data-page="report"   onclick="navTo('report')"   data-i18n="tab_rep">📝 简报</button>
+    <button class="tab"        data-page="calendar" onclick="navTo('calendar')" data-i18n="tab_cal">📅 日历</button>
+    <button class="tab"        data-page="stats"    onclick="navTo('stats')"    data-i18n="tab_stats">📊 统计</button>
+    <button class="tab"        data-page="rewards"  onclick="navTo('rewards')"  data-i18n="tab_rew">⭐ 奖励</button>
+    <button class="tab notion-tab" id="notionTabBtn" onclick="Notion.open()">📋 打卡</button>
+  </div>
+
+  <!-- PAGE: SUBJECTS -->
+  <div class="page active" id="page-subjects">
+    <p class="sec-label" data-i18n="lbl_sub">我的学习科目</p>
+    <div id="subjectList"></div>
+    <button class="add-btn" onclick="Subjects.openAdd()">
+      <span>＋</span><span data-i18n="btn_add">添加科目</span>
+    </button>
+    <div class="info-card" style="margin-top:14px" data-i18n="note_sub">
+      开关暂停科目（保留记录）。保存后当天日历自动更新。
+    </div>
+    <div class="save-bar">
+      <button class="save-main" onclick="App.saveSettings()">
+        <span data-i18n="btn_save">💾 保存设置</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE: REMIND -->
+  <div class="page" id="page-remind">
+    <p class="sec-label" data-i18n="lbl_noti">提醒方式</p>
+    <div class="n-grid">
+      <div class="n-btn on" id="nb-email"   onclick="Remind.toggleN('email')">
+        <span class="ni">📧</span><span data-i18n="n_email">邮件</span>
+      </div>
+      <div class="n-btn" id="nb-discord"    onclick="Remind.toggleN('discord')">
+        <span class="ni">🎮</span><span>Discord</span>
+      </div>
+      <div class="n-btn" id="nb-push"       onclick="Remind.toggleN('push')">
+        <span class="ni">🔔</span><span data-i18n="n_push">浏览器</span>
+      </div>
+    </div>
+
+    <!-- Email config -->
+    <div id="emailCfg" class="cfg-panel">
+      <label class="cfg-label" data-i18n="email_lbl">📧 收件邮箱</label>
+      <input type="email" id="emailAddr" class="cfg-input" placeholder="your@email.com"
+             onblur="Remind.autoSave()">
+      <button class="cfg-action-btn" onclick="Remind.addToCalendar()" data-i18n="btn_add_cal">
+        📅 把今天课程加入邮件日历
+      </button>
+      <p class="cfg-note" data-i18n="email_note">简报提交后自动发到此邮箱</p>
+    </div>
+
+    <!-- Discord Webhook config -->
+    <div id="discordCfg" class="cfg-panel" style="display:none">
+      <div class="line-info">
+        <div class="li-title" data-i18n="discord_title">🎮 Discord Webhook 设置</div>
+        <div class="li-step"><span>1</span><span data-i18n-html="discord_step1">打开 Discord → 进入频道 → 齿轮设置</span></div>
+        <div class="li-step"><span>2</span><span data-i18n-html="discord_step2">Integrations → Webhooks → New Webhook</span></div>
+        <div class="li-step"><span>3</span><span data-i18n-html="discord_step3">Copy Webhook URL 贴到下方</span></div>
+        <div class="li-step"><span>4</span><span data-i18n="discord_step4">点测试按钮 ✅</span></div>
+      </div>
+      <input class="cfg-input" id="discordWebhook"
+             placeholder="https://discord.com/api/webhooks/…" style="margin-top:8px"
+             onblur="Remind.autoSave()">
+      <button class="ltest-btn" onclick="Remind.testDiscord()" data-i18n="discord_test_btn">🎮 发送测试消息</button>
+      <p style="font-size:11px;color:#1976D2;margin-top:8px" data-i18n="discord_note">✅ 完全免费 · 无需 Bot</p>
+    </div>
+
+    <!-- Browser push config -->
+    <div id="pushCfg" class="cfg-panel" style="display:none">
+      <label class="cfg-label" data-i18n="push_lbl">🔔 提前提醒时间</label>
+      <select class="cfg-select" id="remindBefore">
+        <option value="0"  data-i18n="t_ontime">准时</option>
+        <option value="5">5 分钟前</option>
+        <option value="10">10 分钟前</option>
+        <option value="15" selected>15 分钟前</option>
+        <option value="30">30 分钟前</option>
+      </select>
+      <p class="cfg-note" data-i18n="push_note">页面打开时生效</p>
+      <button class="ltest-btn" onclick="Remind.previewBanner()" style="margin-top:8px" data-i18n="push_preview_btn">
+        👀 立即预览提醒效果
+      </button>
+    </div>
+
+    <p class="sec-label" data-i18n="lbl_time">每日提醒时间</p>
+    <div class="time-card">
+      <div class="trow">
+        <label data-i18n="t_start">开始时间</label>
+        <input type="time" class="tinput" id="startTime" value="09:00"
+               onchange="Remind.autoSave()">
+      </div>
+    </div>
+    <div class="save-bar">
+      <button class="save-main" onclick="App.saveSettings()">
+        <span data-i18n="btn_save">💾 保存设置</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE: TIMER -->
+  <div class="page" id="page-timer">
+    <div id="timerView"></div>
+  </div>
+
+  <!-- PAGE: REPORT -->
+  <div class="page" id="page-report">
+    <p class="sec-label" data-i18n="lbl_rep">今日学习简报</p>
+    <div class="daily-quote-card" id="reportDailyQuote"></div>
+    <div id="reportList"></div>
+    <div class="report-email-row">
+      <label class="cfg-label" data-i18n="rep_email_lbl">发送到邮箱</label>
+      <input type="email" id="reportEmail" class="cfg-input"
+             onblur="Report._saveEmail(this)">
+    </div>
+    <button class="submit-all-btn" onclick="Report.submitAll()" data-i18n="btn_submit_all">
+      ✉️ 提交今日简报
+    </button>
+    <div id="aiEncouragement" style="display:none"></div>
+  </div>
+
+  <!-- PAGE: CALENDAR -->
+  <div class="page" id="page-calendar">
+    <div class="card">
+      <div class="cal-hd">
+        <button class="cal-nav" onclick="Cal.move(-1)">‹</button>
+        <div class="cal-month" id="calLabel"></div>
+        <button class="cal-nav" onclick="Cal.move(1)">›</button>
+      </div>
+      <div class="cgrid" id="calGrid"></div>
+    </div>
+    <div id="dayPanel"></div>
+  </div>
+
+  <!-- PAGE: STATS -->
+  <div class="page" id="page-stats">
+    <div id="statsView"></div>
+  </div>
+
+  <!-- PAGE: REWARDS -->
+  <div class="page" id="page-rewards">
+    <div id="rewardsView"></div>
+  </div>
+
+</div><!-- /mainApp -->
+
+<!-- ══ USER PROFILE DRAWER (avatar / badges / coupons) ════ -->
+<div class="drawer-ov" id="profileDrawer" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="drawer-box">
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<!-- ══ ADD SUBJECT MODAL ══════════════════════════════════ -->
+<div class="modal-ov" id="addModal" onclick="Subjects.bgClose(event)">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="modal_add">添加新科目</div>
+    <input class="minput" id="newName" placeholder="科目名称…">
+    <div class="dur-row">
+      <label data-i18n="dur_lbl">每天</label>
+      <input class="dinput" type="number" id="newDur" value="30" min="5" max="300">
+      <label data-i18n="dur_min">分钟</label>
+    </div>
+    <p class="pick-label" data-i18n="pick_icon">图标</p>
+    <div class="emoji-grid" id="emojiGrid"></div>
+    <p class="pick-label" data-i18n="pick_color">颜色</p>
+    <div class="color-grid" id="colorGrid"></div>
+    <div class="modal-row">
+      <button class="mcancel"  onclick="Subjects.closeAdd()"   data-i18n="btn_cancel">取消</button>
+      <button class="mconfirm" onclick="Subjects.confirmAdd()" data-i18n="btn_add2">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDIT SUBJECT MODAL ═════════════════════════════════ -->
+<div class="modal-ov" id="editModal" onclick="Subjects.bgCloseEdit(event)">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="modal_edit">编辑科目</div>
+    <input class="minput" id="editName" placeholder="科目名称…">
+    <p class="pick-label" data-i18n="pick_icon">图标</p>
+    <div class="emoji-grid" id="editEmojiGrid"></div>
+    <p class="pick-label" data-i18n="pick_color">颜色</p>
+    <div class="color-grid" id="editColorGrid"></div>
+    <p class="pick-label" data-i18n="pick_bg">背景颜色</p>
+    <div class="bg-color-grid" id="editBgGrid"></div>
+    <div class="modal-row">
+      <button class="mcancel"  onclick="Subjects.closeEdit()"   data-i18n="btn_cancel">取消</button>
+      <button class="mconfirm" onclick="Subjects.confirmEdit()" data-i18n="btn_save2">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NOTION CHECKIN MODAL ═══════════════════════════════ -->
+<div class="notion-modal-ov" id="notionModal" onclick="Notion.close(event)">
+  <div class="notion-modal-box" id="notionBox">
+    <!-- Populated by notion.js -->
+  </div>
+</div>
+
+<!-- ══ THEME SELECTOR MODAL ═══════════════════════════════ -->
+<div class="modal-ov" id="themeModal" onclick="ThemeManager.closeModal(event)">
+  <div class="modal-box theme-modal-box">
+    <div class="modal-title" data-i18n="theme_title">背景主题</div>
+    <div class="theme-grid" id="themeGrid"></div>
+    <div class="modal-row" style="margin-top:16px">
+      <button class="mcancel" onclick="ThemeManager.closeModal()" data-i18n="btn_cancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COUPON MODAL ═══════════════════════════════════════ -->
+<div class="modal-ov" id="couponModal" onclick="Rewards.closeCoupon(event)">
+  <div class="modal-box" id="couponBox"></div>
+</div>
+
+<!-- ══ IN-PAGE PUSH REMINDER BANNER ══════════════════════ -->
+<div class="remind-banner" id="remindBanner" style="display:none">
+  <span id="remindBannerText">📚 该学习啦！</span>
+  <button onclick="document.getElementById('remindBanner').style.display='none'">✕</button>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ SCRIPTS ════════════════════════════════════════════
+     Load order matters:
+     1. CDN libs
+     2. i18n first (t() must exist before other modules)
+     3. state (S must exist)
+     4. All feature modules
+     5. Firebase ES module last
+-->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script src="js/i18n.js"></script>
+<script src="js/state.js"></script>
+<script src="js/subjects.js"></script>
+<script src="js/remind.js"></script>
+<script src="js/timer.js"></script>
+<script src="js/report.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/rewards.js"></script>
+<script src="js/notion.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/app.js"></script>
+
+<script type="module" src="js/firebase-init.js"></script>
+
+<script>
+// Close user-menu dropdown when clicking outside it
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('userMenu');
+  const wrap = menu?.closest('.user-wrap');
+  if (menu && menu.classList.contains('open') && !wrap?.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
+// ── Sidebar navigation ─────────────────────────────────
+const _PAGE_ORDER = ['subjects','remind','timer','report','calendar','stats','rewards'];
+
+function _syncSidebar(name) {
+  document.querySelectorAll('.sidebar-icon').forEach(i => i.classList.remove('active'));
+  const si = document.querySelector(`.sidebar-icon[data-page="${name}"]`);
+  if (si) si.classList.add('active');
+}
+
+// navTo: sidebar clicks call this; finds the matching tab btn and delegates to App.showPage
+function navTo(name) {
+  const tabBtn = document.querySelector(`.tab[data-page="${name}"]`);
+  if (tabBtn) App.showPage(name, tabBtn);  // App is a global const, NOT on window — use directly
+  _syncSidebar(name);
+}
+
+// Patch App.showPage ONCE so tab clicks also sync the sidebar icons
+(function patchShowPage() {
+  if (typeof App === 'undefined') { setTimeout(patchShowPage, 50); return; }
+  const _orig = App.showPage.bind(App);
+  App.showPage = function(name, btn) {
+    _orig(name, btn);
+    _syncSidebar(name);
+  };
+  // Wheel on sidebar cycles through pages
+  const sidebar = document.getElementById('appSidebar');
+  if (sidebar) {
+    sidebar.addEventListener('wheel', e => {
+      e.preventDefault();
+      const cur = document.querySelector('.sidebar-icon.active')?.dataset.page;
+      const idx = _PAGE_ORDER.indexOf(cur);
+      if (idx === -1) return;
+      const next = e.deltaY > 0
+        ? _PAGE_ORDER[Math.min(idx + 1, _PAGE_ORDER.length - 1)]
+        : _PAGE_ORDER[Math.max(idx - 1, 0)];
+      if (next !== cur) navTo(next);
+    }, { passive: false });
+  }
+})();
+</script>
+</body>
+</html>

@@ -8,11 +8,11 @@
 const THEMES = [
   { id:'engine1',
     label:{zh:'宇宙学习室',ja:'コズミックスタジオ',en:'Cosmic Studio'},
-    preview:'screenshots/bg_engine_1.jpg',
+    preview:'images/bg_engine_1.jpg',
     previewStyle:'',
     dark: true,
     topbar:{ bg:'rgba(10,18,58,0.90)', border:'rgba(60,120,240,0.40)', accent:'#5B9BFF', glow:'rgba(60,120,240,0.50)' },
-    css:`#mainApp{background-image:url('screenshots/bg_engine_1.jpg');background-size:cover;background-attachment:fixed;background-position:center top;}` },
+    css:`#mainApp{background-image:url('images/bg_engine_1.jpg');background-size:cover;background-attachment:fixed;background-position:center top;}` },
 
   { id:'default',
     label:{zh:'暖白默认',ja:'デフォルト',en:'Default'},

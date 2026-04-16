@@ -139,8 +139,6 @@ vite.config.ts.timestamp-*
 # Firebase keys
 js/keys.js
 
-#screenshots
-screenshots
 
 # 忽视 graphify 生成的索引
 graphify-out/
@@ -155,4 +153,4 @@ graphify-out/
 
 superpowers/
 temp/
-
+screenshots/

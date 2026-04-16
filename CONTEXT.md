@@ -378,6 +378,27 @@ git push
 
 ---
 
+### 2026-04-16（续）— 邮箱登录右上角显示「邮箱模式」+用户名取 @ 前缀
+
+#### ✅ 需求：邮箱登录后，顶右下拉菜单 um-name 显示 @ 前的名字，um-sub 显示「邮箱模式」
+
+- **修改文件**：`js/firebase-init.js`
+- **判断方式**：`user.providerData?.[0]?.providerId === 'password'`（邮箱注册用户），Google 登录为 `'google.com'`
+- **三处改动**：
+  1. `openProfile()` — `um-name` 改为 `email.split('@')[0]`，`um-sub` 改为 `{ zh:'邮箱模式', ja:'メールモード', en:'Email Mode' }[l]`
+  2. `_renderProfile()` — 个人资料抽屉的显示名同步使用邮箱前缀
+  3. `_updateAvatar()` — 头像按钮首字母也取邮箱前缀的第一个字
+
+- **Google 登录不受影响**：`providerId === 'google.com'` 时仍显示 `displayName` 和 email
+
+#### 📌 关键经验
+| 经验 | 说明 |
+|------|------|
+| `providerData[0].providerId` | Firebase 区分登录方式的正确方法，`'password'` = 邮箱密码，`'google.com'` = Google 登录 |
+| 用户名取邮箱前缀 | `email.split('@')[0]` 简洁可靠，不依赖 `displayName`（注册时可能为空）|
+
+---
+
 ### 2026-04-16（续）— 头像点击无反应 + 退出本地模式瞬间重登
 
 #### ❓ 问题 4：点击本地用户头像无反应

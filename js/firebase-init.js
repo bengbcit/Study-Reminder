@@ -284,7 +284,10 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           btn.textContent = S.avatar;
           btn.style.fontSize = '20px';
         } else {
-          const name = this.user?.displayName || this.user?.email || '?';
+          const isEmailUser = this.user?.providerData?.[0]?.providerId === 'password';
+          const name = isEmailUser
+            ? (this.user?.email || '?').split('@')[0]
+            : (this.user?.displayName || this.user?.email || '?');
           btn.textContent = name.charAt(0).toUpperCase();
           btn.style.fontSize = '';
         }
@@ -297,13 +300,19 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
 
         const l = window.I18n?.lang || 'zh';
         if (this.user) {
-          const name = this.user.displayName || this.user.email || 'User';
+          const isEmailUser = this.user.providerData?.[0]?.providerId === 'password';
+          const name = isEmailUser
+            ? (this.user.email || '').split('@')[0]
+            : (this.user.displayName || this.user.email || 'User');
+          const modeSub = isEmailUser
+            ? { zh: '邮箱模式', ja: 'メールモード', en: 'Email Mode' }[l]
+            : (this.user.email || '');
           const switchLocalLabel = { zh:'切换到本地账号', ja:'ローカルへ切替', en:'Switch to Local' }[l];
           const profileLabel     = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
           menu.innerHTML = `
             <div class="um-info">
               <div class="um-name">${name}</div>
-              <div class="um-sub">${this.user.email || ''}</div>
+              <div class="um-sub">${modeSub}</div>
             </div>
             <div class="um-divider"></div>
             <button class="um-item" onclick="window._openProfileDrawer()">
@@ -345,7 +354,10 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
 
       _renderProfile() {
         const u = this.user;
-        const name = u?.displayName || u?.email || 'User';
+        const isEmailUser = u?.providerData?.[0]?.providerId === 'password';
+        const name = isEmailUser
+          ? (u?.email || '').split('@')[0]
+          : (u?.displayName || u?.email || 'User');
         const l = window.I18n?.lang || 'zh';
         const earned = Rewards.getEarned();
         const badges = Rewards.BADGES.filter(b => earned.has(b.id));

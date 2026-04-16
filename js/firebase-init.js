@@ -39,6 +39,21 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         this.user = user;
         // Clear local-mode flag so Firebase auth takes priority on next reload
         localStorage.removeItem('ss_localEntered');
+
+        // ── Per-account data isolation ──────────────────────────
+        // Reset account-specific fields before loading UI so data from a
+        // previously-used account (sitting in localStorage) never bleeds
+        // into this account's session. Firestore will restore the real data.
+        S.points   = 0;
+        S.streak   = 0;
+        S.history  = {};
+        S.coupons  = [];
+        S.subjects = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
+        S.avatar   = null;
+        // Persist the Firebase display name so local-mode can show it too
+        S._localName = user.displayName || (user.email || '').split('@')[0];
+        saveLocal();
+
         // Show main UI immediately — don't block on Firestore load
         document.getElementById('authGate').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';

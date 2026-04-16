@@ -18,7 +18,9 @@ const Auth = {
     if (menu.classList.contains('open')) { menu.classList.remove('open'); return; }
     const l = window.I18n?.lang || 'zh';
     const name     = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
-    const subLabel = { zh:'本地模式', ja:'ローカルモード', en:'Local Mode' }[l];
+    const subLabel = S._localName
+      ? { zh:'邮箱链接', ja:'メール連携', en:'Email Linked' }[l]
+      : { zh:'本地模式', ja:'ローカルモード', en:'Local Mode' }[l];
     const emailLabel   = { zh:'登录邮箱账号', ja:'メールアカウントへ', en:'Sign in with Email' }[l];
     const logoutLabel  = { zh:'退出本地模式', ja:'ローカル終了', en:'Exit Local Mode' }[l];
     const profileLabel = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
@@ -177,7 +179,9 @@ function _localProfile() {
   const l    = (window.I18n?.lang) || 'zh';
   const name = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
 
-  const localModeLabel = { zh:'本地模式',    ja:'ローカルモード',       en:'Local Mode' }[l];
+  const localModeLabel = S._localName
+    ? { zh:'邮箱链接', ja:'メール連携', en:'Email Linked' }[l]
+    : { zh:'本地模式', ja:'ローカルモード', en:'Local Mode' }[l];
   const avatarBtnLabel = { zh:'头像',         ja:'アバター',             en:'Avatar'     }[l];
   const badgeBtnLabel  = { zh:'徽章',         ja:'バッジ',               en:'Badges'     }[l];
   const couponBtnLabel = { zh:'奖券',         ja:'クーポン',             en:'Coupons'    }[l];

@@ -9,15 +9,9 @@
    6. Paste your values below
 */
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+// Export config only — firebase-init.js handles all initialization.
+// Do NOT add bare npm imports (e.g. "firebase/app") here; they break in browsers.
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDFVkbF9NHn9F8gv2_JS6uRbwE38VDY4CY",
   authDomain: "study-reminder-8910.firebaseapp.com",
   projectId: "study-reminder-8910",
@@ -27,9 +21,4 @@ const firebaseConfig = {
   measurementId: "G-M178C4EY4Q"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-// 导出 app 实例，以便其他文件使用
-export default app;
+export default FIREBASE_CONFIG;

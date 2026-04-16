@@ -128,7 +128,7 @@ const Stats = {
       const el = document.getElementById('subjectChart');
       if (el) el.parentElement.innerHTML +=
         `<p style="text-align:center;font-size:13px;color:var(--text2);margin-top:8px">
-          提交学习简报后这里会显示统计图
+          Submit your daily report to see the chart here
         </p>`;
       return;
     }

@@ -537,20 +537,33 @@
         </div>
 
         <!-- Project 3: Happy Meal -->
-        <div class="project-card">
+        <div class="project-card" style="
+          background:linear-gradient(135deg,#1a0a00 0%,#2a1200 45%,#1a1a00 100%);
+          border-color:rgba(255,160,50,.3);position:relative;overflow:hidden;">
+          <!-- Glow blobs -->
+          <div style="position:absolute;top:-30px;right:-30px;width:200px;height:200px;
+               background:radial-gradient(circle,rgba(255,140,0,.18) 0%,transparent 70%);
+               pointer-events:none;z-index:0;border-radius:50%"></div>
+          <div style="position:absolute;bottom:-20px;left:30px;width:140px;height:140px;
+               background:radial-gradient(circle,rgba(82,201,122,.12) 0%,transparent 70%);
+               pointer-events:none;z-index:0;border-radius:50%"></div>
+          <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(255,160,50,.1) 1px,transparent 1px);
+               background-size:22px 22px;pointer-events:none;z-index:0;border-radius:24px"></div>
+          <div style="position:relative;z-index:1">
           <div class="project-card-top">
             <div>
-              <span class="project-status status-soon" data-key="status_soon">Coming Soon</span>
-              <div class="project-title">Happy Meal</div>
-              <p class="project-desc" data-key="proj3_desc">A new project in the making. Stay tuned — something delicious is coming.</p>
+              <span class="project-status" style="background:rgba(255,160,50,.18);color:#fbbf24;border:1px solid rgba(255,160,50,.35)"
+                    data-key="status_active">Active · Web App</span>
+              <div class="project-title" data-key="proj3_title" style="color:#fef3c7">Happy Meal</div>
+              <p class="project-desc" data-key="proj3_desc" style="color:rgba(254,243,199,.6)">A new project in the making. Stay tuned — something delicious is coming.</p>
             </div>
-            <span class="project-open-btn disabled" data-key="proj_coming_btn">Coming soon</span>
+            <a class="project-open-btn" href="https://happy-meal-two.vercel.app/" target="_blank"
+               data-key="proj_open_btn"
+               style="background:linear-gradient(135deg,#d97706,#f59e0b);box-shadow:0 4px 18px rgba(217,119,6,.45)">Open →</a>
           </div>
-          <div class="feature-chips">
-            <span class="chip chip-gray">🍔 <span data-key="proj3_chip1">Meal Planner</span></span>
-            <span class="chip chip-gray">🥗 <span data-key="proj3_chip2">Nutrition Track</span></span>
-            <span class="chip chip-gray">⏰ <span data-key="proj3_chip3">Reminders</span></span>
-            <span class="chip chip-gray">🤖 <span data-key="proj3_chip4">AI Chef</span></span>
+          <div class="feature-chips" id="proj3Chips">
+            <!-- Rendered by JS -->
+          </div>
           </div>
         </div>
 
@@ -795,6 +808,30 @@ const PROJ1_CHIPS = {
   ],
 };
 
+const PROJ3_CHIPS = {
+  zh: [
+    { label:'饮食计划', cls:'chip-orange', icon:'🍽️' },
+    { label:'营养追踪', cls:'chip-green',  icon:'🥗' },
+    { label:'食谱推荐', cls:'chip-gold',   icon:'👨‍🍳' },
+    { label:'购物清单', cls:'chip-teal',   icon:'🛒' },
+    { label:'热量统计', cls:'chip-red',    icon:'🔥' },
+  ],
+  ja: [
+    { label:'食事プラン', cls:'chip-orange', icon:'🍽️' },
+    { label:'栄養トラック', cls:'chip-green',  icon:'🥗' },
+    { label:'レシピ提案', cls:'chip-gold',   icon:'👨‍🍳' },
+    { label:'買い物リスト', cls:'chip-teal',  icon:'🛒' },
+    { label:'カロリー管理', cls:'chip-red',   icon:'🔥' },
+  ],
+  en: [
+    { label:'Meal Planner',    cls:'chip-orange', icon:'🍽️' },
+    { label:'Nutrition Track', cls:'chip-green',  icon:'🥗' },
+    { label:'Recipe Ideas',    cls:'chip-gold',   icon:'👨‍🍳' },
+    { label:'Shopping List',   cls:'chip-teal',   icon:'🛒' },
+    { label:'Calorie Counter', cls:'chip-red',    icon:'🔥' },
+  ],
+};
+
 const PROJ2_CHIPS = {
   zh: [
     { label:'单词卡片',   cls:'chip-purple', icon:'🃏' },
@@ -838,7 +875,7 @@ const COPY = {
     proj_desc:'为日常生活打造的应用与工具——点击任意项目即可打开。',
     proj1_title:'Efficient Learning Engine', proj1_desc:'个人学习操作系统——追踪科目、计时、记录每日简报、获得奖励。',
     proj2_title:'Thesaurus Trove', proj2_desc:'双语单词学习——日语（JLPT N1–N5）与英语（CEFR A1–C2），间隔记忆算法，多种测验模式。',
-    proj3_desc:'正在制作中——美味的东西即将到来。',
+    proj3_title:'Happy Meal', proj3_desc:'智能饮食规划 — 追踪每日营养、获取食谱灵感、管理购物清单。',
     status_active:'上线中 · 网页应用', status_soon:'即将上线',
     proj_open_btn:'打开 →', proj_coming_btn:'即将推出',
     proj3_chip1:'餐饮计划', proj3_chip2:'营养追踪', proj3_chip3:'提醒功能', proj3_chip4:'AI 厨师',
@@ -867,7 +904,7 @@ const COPY = {
     proj_desc:'日常のために作られたアプリとツール——クリックして開きましょう。',
     proj1_title:'Efficient Learning Engine', proj1_desc:'パーソナル学習OS——科目・時間・レポート・報酬を一括管理。',
     proj2_title:'Thesaurus Trove', proj2_desc:'バイリンガル単語学習——日本語（JLPT N1–N5）と英語（CEFR A1–C2）。間隔反復アルゴリズムと複数のクイズモード。',
-    proj3_desc:'制作中——美味しいものが近日公開予定。',
+    proj3_title:'Happy Meal', proj3_desc:'スマート食事管理 — 毎日の栄養を追跡、レシピのアイデア、買い物リストを管理。',
     status_active:'稼働中 · Webアプリ', status_soon:'近日公開',
     proj_open_btn:'開く →', proj_coming_btn:'近日公開',
     proj3_chip1:'食事プラン', proj3_chip2:'栄養トラック', proj3_chip3:'リマインダー', proj3_chip4:'AIシェフ',
@@ -896,7 +933,7 @@ const COPY = {
     proj_desc:'Apps and tools built for everyday life — click any project to open it.',
     proj1_title:'Efficient Learning Engine', proj1_desc:'Personal study OS — track subjects, time sessions, log daily reports, and earn rewards.',
     proj2_title:'Thesaurus Trove', proj2_desc:'Bilingual vocabulary builder — Japanese (JLPT N1–N5) and English (CEFR A1–C2), spaced-repetition algorithm, multiple quiz modes.',
-    proj3_desc:"A new project in the making — something delicious is coming.",
+    proj3_title:'Happy Meal', proj3_desc:'Smart meal planning — track daily nutrition, discover recipes, and manage your shopping list.',
     status_active:'Active · Web App', status_soon:'Coming Soon',
     proj_open_btn:'Open →', proj_coming_btn:'Coming soon',
     proj3_chip1:'Meal Planner', proj3_chip2:'Nutrition Track', proj3_chip3:'Reminders', proj3_chip4:'AI Chef',
@@ -944,6 +981,12 @@ function setLang(l) {
   const grid2 = document.getElementById('proj2Chips');
   if (grid2) {
     grid2.innerHTML = (PROJ2_CHIPS[l] || PROJ2_CHIPS.en).map(f =>
+      `<span class="chip ${f.cls}">${f.icon} ${f.label}</span>`
+    ).join('');
+  }
+  const grid3 = document.getElementById('proj3Chips');
+  if (grid3) {
+    grid3.innerHTML = (PROJ3_CHIPS[l] || PROJ3_CHIPS.en).map(f =>
       `<span class="chip ${f.cls}">${f.icon} ${f.label}</span>`
     ).join('');
   }

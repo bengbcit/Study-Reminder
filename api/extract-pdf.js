@@ -12,7 +12,8 @@ export const config = {
   },
 };
 
-const MODEL = 'gemini-1.5-flash';
+// gemini-2.0-flash: stable, free tier, multimodal (reads scanned PDFs via vision)
+const MODEL = 'gemini-2.0-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 export default async function handler(req, res) {

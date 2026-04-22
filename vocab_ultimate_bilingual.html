@@ -2,6 +2,8 @@
 <html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<!-- Apply saved theme BEFORE render to prevent light-mode flash -->
+<script>(function(){var t=localStorage.getItem('vocabTheme')||'purple';var TH={light:{'--bg':'#f6f8ff','--bg2':'#fff','--bg3':'#eef0fa','--bd':'#dde0f5','--tx':'#131320','--tx2':'#5a5a90','--acc':'#3b5bdb','--acc2':'#748ffc'},dark:{'--bg':'#0d0e1a','--bg2':'#141525','--bg3':'#1c1e30','--bd':'#2a2d48','--tx':'#e8eaff','--tx2':'#8890c0','--acc':'#748ffc','--acc2':'#91a7ff'},blue:{'--bg':'#e8f4fd','--bg2':'#fff','--bg3':'#d0e8f8','--bd':'#a8d0f0','--tx':'#0a2540','--tx2':'#3060a0','--acc':'#1971c2','--acc2':'#339af0'},purple:{'--bg':'#100d1f','--bg2':'#1a1530','--bg3':'#221c3a','--bd':'#3a3060','--tx':'#ede8ff','--tx2':'#9080c0','--acc':'#a78bfa','--acc2':'#c4b5fd'}};if(t!=='system'&&TH[t]){var s=document.documentElement.style;Object.entries(TH[t]).forEach(function(e){s.setProperty(e[0],e[1]);});}})();</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f6f8ff;--bg2:#fff;--bg3:#eef0fa;--bd:#dde0f5;--tx:#131320;--tx2:#5a5a90;--acc:#3b5bdb;--acc2:#748ffc;--suc:#2f9e44;--suc-bg:#d3f9d8;--dan:#c92a2a;--dan-bg:#ffe0e0;--war:#e67700;--war-bg:#fff3bf;--red:#e03131}
@@ -493,7 +495,7 @@ let Hist = { en: [], jp: [] };
 try { Hist.en = JSON.parse(localStorage.getItem('histEN')||'[]'); } catch(e){}
 try { Hist.jp = JSON.parse(localStorage.getItem('histJP')||'[]'); } catch(e){}
 let aFilters=[];
-let curTheme=localStorage.getItem('vocabTheme')||'system';
+let curTheme=localStorage.getItem('vocabTheme')||'purple'; // default: dark purple (matches TT brand)
 let defCount = 1; // number of definition fields
 let recognition = null;
 

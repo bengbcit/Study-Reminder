@@ -352,14 +352,13 @@ const ThemeManager = {
 
   _setAvatarImg(src) {
     const btn = document.getElementById('userAvatar');
-    if (btn) {
-      btn.textContent = '';
-      // Remove old img if any
-      btn.querySelectorAll('img').forEach(i => i.remove());
-      const img = document.createElement('img');
-      img.src = src; img.alt = 'avatar';
-      btn.appendChild(img);
-    }
+    if (!btn) return;
+    // Remove any existing img (but keep the default SVG for fallback)
+    btn.querySelectorAll('img').forEach(i => i.remove());
+    const img = document.createElement('img');
+    img.src = src; img.alt = 'avatar';
+    // Insert before the SVG so CSS :has(img) hides it
+    btn.insertBefore(img, btn.firstChild);
   },
 };
 

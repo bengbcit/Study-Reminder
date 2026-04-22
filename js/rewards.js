@@ -55,18 +55,32 @@ const Rewards = {
     const earned = this.getEarned();
 
     el.innerHTML = `
-      <!-- Points hero -->
+      <!-- Points + streak hero -->
       <div class="pts-hero">
-        <div class="pts-big">${S.points}</div>
-        <div class="pts-sub">${t('pts_lbl')}</div>
-        <div class="prog-w"><div class="prog-f" style="width:${pct}%"></div></div>
+        <div style="display:flex;justify-content:center;gap:32px;align-items:flex-end">
+          <div style="text-align:center">
+            <div class="pts-big">${S.points}</div>
+            <div class="pts-sub">${t('pts_lbl')}</div>
+          </div>
+          <div style="text-align:center">
+            <div class="pts-big" style="font-size:36px">🔥${S.streak}</div>
+            <div class="pts-sub">${{ zh:'连续天数', ja:'連続日数', en:'Day Streak' }[I18n.lang]}</div>
+          </div>
+        </div>
+        <div class="prog-w" style="margin-top:14px"><div class="prog-f" style="width:${pct}%"></div></div>
         <div class="prog-h">${progHint}</div>
       </div>
 
-      <!-- Weekly check-in -->
+      <!-- Weekly check-in (this week) -->
       <p class="sec-label">${t('lbl_week')}</p>
       <div class="card" style="padding:14px 18px 10px">
         <div class="week-row">${this._weekHtml()}</div>
+      </div>
+
+      <!-- Past check-in history (last 8 weeks) -->
+      <p class="sec-label">${{ zh:'过往打卡记录', ja:'過去のチェックイン', en:'Check-in History' }[I18n.lang]}</p>
+      <div class="card history-card">
+        ${this._historyHtml()}
       </div>
 
       <!-- Badges -->
@@ -101,6 +115,61 @@ const Rewards = {
       <p class="sec-label">${t('lbl_coupons')}</p>
       ${this._couponGalleryHtml()}
     `;
+  },
+
+  _historyHtml() {
+    const days   = t('days');       // ['日','一','二','三','四','五','六']
+    const today  = new Date();
+    const todayK = todayKey();
+    const lang   = I18n.lang;
+
+    // Build last 8 full weeks (Mon-Sun or Sun-Sat depending on locale)
+    // We go back week-by-week: week 0 = current week, week 1 = last week, etc.
+    const weeks = [];
+    for (let w = 7; w >= 0; w--) {
+      const weekDays = [];
+      for (let d = 0; d < 7; d++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - today.getDay() + d - w * 7);
+        const key = dateKey(date);
+        const hist = S.history[key] || {};
+        const anyDone = Object.values(hist).some(r => r.done);
+        const allDone = Object.values(hist).length > 0 &&
+                        S.subjects.filter(s => s.enabled).every(s => hist[s.id]?.done);
+        weekDays.push({ key, date, anyDone, allDone, isToday: key === todayK, isFuture: date > today });
+      }
+      // Skip weeks entirely in the future
+      if (weekDays.some(d => !d.isFuture || d.isToday)) {
+        weeks.push(weekDays);
+      }
+    }
+
+    const monthFmt = new Intl.DateTimeFormat(lang === 'en' ? 'en' : lang === 'ja' ? 'ja' : 'zh', { month: 'short', day: 'numeric' });
+
+    return weeks.map(week => {
+      const firstDay = week.find(d => !d.isFuture)?.date || week[0].date;
+      const lastDay  = week[week.length - 1].date;
+      const weekLabel = `${monthFmt.format(week[0].date)} – ${monthFmt.format(week[6].date)}`;
+      const doneCount = week.filter(d => d.anyDone).length;
+
+      const dots = week.map(d => {
+        let cls = 'hd';
+        if (d.isFuture && !d.isToday) cls += ' hd-future';
+        else if (d.allDone)  cls += ' hd-all';
+        else if (d.anyDone)  cls += ' hd-some';
+        else if (d.isToday)  cls += ' hd-today';
+        return `<div class="${cls}" title="${d.key}"><span>${days[new Date(d.date).getDay()]}</span></div>`;
+      }).join('');
+
+      return `
+        <div class="history-week">
+          <div class="history-week-label">
+            <span class="hwl-range">${weekLabel}</span>
+            <span class="hwl-count ${doneCount >= 5 ? 'hwl-great' : doneCount >= 3 ? 'hwl-ok' : ''}">${doneCount}/7</span>
+          </div>
+          <div class="history-dots">${dots}</div>
+        </div>`;
+    }).join('') || `<div class="info-card" style="margin:0">${{ zh:'暂无打卡记录', ja:'記録がありません', en:'No check-in history yet' }[lang]}</div>`;
   },
 
   _weekHtml() {

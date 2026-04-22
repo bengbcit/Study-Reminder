@@ -222,8 +222,10 @@ body {
   box-shadow: 0 0 14px var(--topbar-glow);
 }
 .user-btn-lg { width: 38px; height: 38px; font-size: 18px; }
-/* When avatar is an img (AI-generated), make it fill the circle */
+/* When avatar is an img (AI-generated), fill button and hide default SVG */
 .user-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.user-btn img ~ .px-avatar-default,
+.user-btn:has(img) .px-avatar-default { display: none; }
 
 /* Pixel-art home button — cosmic neon */
 .home-pixel-btn {
@@ -243,6 +245,72 @@ body {
   color: #DDD6FE;
   box-shadow: 0 0 14px rgba(167,139,250,0.65);
 }
+
+/* ── Pixel art icon base ──────────────────────────────── */
+.px-icon { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+.px-avatar-default { opacity: .9; }
+
+/* ── Language dropdown ────────────────────────────────── */
+.lang-dd { position: relative; flex-shrink: 0; }
+.lang-dd-trigger {
+  display: flex; align-items: center; gap: 4px;
+  padding: 0 10px;
+}
+.lang-flag-cur { font-size: 15px; line-height: 1; margin-left: 2px; }
+.lang-dd-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(12, 6, 40, 0.97);
+  border: 1.5px solid var(--topbar-border);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+  min-width: 140px; z-index: 200;
+  backdrop-filter: blur(16px);
+  animation: fadeDown .15s ease;
+}
+.lang-dd-menu.open { display: block; }
+@keyframes fadeDown { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:translateY(0) } }
+.lang-opt {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 16px;
+  border: none; background: transparent;
+  color: rgba(200,180,255,0.85); font-family:'Nunito',sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer; text-align: left;
+  transition: background .12s;
+}
+.lang-opt:hover, .lang-opt.active { background: rgba(120,88,248,0.25); color: #fff; }
+.lang-opt-flag { font-size: 18px; line-height: 1; }
+/* Dividers between options */
+.lang-opt + .lang-opt { border-top: 1px solid rgba(120,88,248,0.15); }
+
+/* ── History card in Rewards ──────────────────────────── */
+.history-card { padding: 12px 16px; }
+.history-week { margin-bottom: 12px; }
+.history-week:last-child { margin-bottom: 0; }
+.history-week-label {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.hwl-range { font-size: 11px; color: var(--text2); font-weight: 700; }
+.hwl-count {
+  font-size: 11px; font-weight: 900; color: var(--text2);
+  background: var(--border); border-radius: 20px; padding: 1px 8px;
+}
+.hwl-count.hwl-ok   { background: rgba(255,107,53,.2); color: #FF6B35; }
+.hwl-count.hwl-great{ background: rgba(82,201,122,.2); color: #52C97A; }
+.history-dots {
+  display: flex; gap: 4px;
+}
+.hd {
+  flex: 1; height: 28px; border-radius: 6px;
+  background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 800; color: var(--text2);
+  transition: background .2s;
+}
+.hd-future { opacity: .3; }
+.hd-today  { background: rgba(120,88,248,0.25); color: var(--topbar-accent); border: 1px solid var(--topbar-accent); }
+.hd-some   { background: rgba(255,107,53,.35); color: #FF8C5A; }
+.hd-all    { background: rgba(82,201,122,.45); color: #3DAD6A; }
 
 /* ── APP SIDEBAR ───────────────────────────────────────── */
 .app-sidebar {

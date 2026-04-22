@@ -44,12 +44,18 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         // Reset account-specific fields before loading UI so data from a
         // previously-used account (sitting in localStorage) never bleeds
         // into this account's session. Firestore will restore the real data.
-        S.points   = 0;
-        S.streak   = 0;
-        S.history  = {};
-        S.coupons  = [];
-        S.subjects = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
-        S.avatar   = null;
+        S.points      = 0;
+        S.streak      = 0;
+        S.history     = {};
+        S.coupons     = [];
+        S.subjects    = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
+        S.avatar      = null;
+        S.todayReport = {};   // clear report so prev account's entries don't bleed
+        S.notionToken = '';
+        S.notionDbId  = '';
+        S.notionArchiveDbId   = '';
+        S.notionSyncedPages   = [];
+        S.notionDraftSummary  = '';
         // Persist the Firebase display name so local-mode can show it too
         S._localName = user.displayName || (user.email || '').split('@')[0];
         saveLocal();
@@ -221,20 +227,31 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const snap = await getDoc(doc(_db, 'users', uid));
           if (!snap.exists()) return;
           const d = snap.data();
-          if (d.subjects?.length) S.subjects = d.subjects;
-          if (d.points != null) S.points = d.points;
-          if (d.streak != null) S.streak = d.streak;
-          if (d.history) S.history = d.history;
-          if (d.coupons) S.coupons = d.coupons;
-          if (d.settings) Object.assign(S, d.settings);
-          if (d.notionToken) S.notionToken = d.notionToken;
-          if (d.notionDbId) S.notionDbId = d.notionDbId;
+          if (d.subjects?.length)   S.subjects    = d.subjects;
+          if (d.points  != null)    S.points      = d.points;
+          if (d.streak  != null)    S.streak      = d.streak;
+          if (d.history)            S.history     = d.history;
+          if (d.coupons)            S.coupons     = d.coupons;
+          if (d.avatar)             S.avatar      = d.avatar;
+          if (d.todayReport)        S.todayReport = d.todayReport;
+          if (d.notionToken)        S.notionToken = d.notionToken;
+          if (d.notionDbId)         S.notionDbId  = d.notionDbId;
+          if (d.notionArchiveDbId)  S.notionArchiveDbId  = d.notionArchiveDbId;
+          if (d.notionSyncedPages)  S.notionSyncedPages  = d.notionSyncedPages;
+          if (d.notionDraftSummary) S.notionDraftSummary = d.notionDraftSummary;
+          if (d.settings)           Object.assign(S, d.settings);
           saveLocal();
-          // Refresh UI so Firebase data (subjects, streak) replaces local data
+          // Refresh UI so Firebase data replaces defaults
           Subjects.render();
-          document.getElementById('streakNum').textContent = S.streak;
-          this._updateAvatar(); // keep Firebase avatar after UI refresh
+          if (window.Report) Report.render();
+          const snEl = document.getElementById('streakNum');
+          if (snEl) snEl.textContent = S.streak;
+          this._updateAvatar();
           if (window.ThemeManager) ThemeManager.restore();
+          // If Notion modal is open, refresh its inputs with loaded tokens
+          if (document.getElementById('notionModal')?.classList.contains('open') && window.Notion) {
+            Notion._render();
+          }
         } catch (e) { console.warn('Firestore load:', e.message); }
       },
 
@@ -242,20 +259,25 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
         if (!this.user) return;
         try {
           await updateDoc(doc(_db, 'users', this.user.uid), {
-            subjects: S.subjects,
-            points: S.points,
-            streak: S.streak,
-            history: S.history,
-            coupons: S.coupons,
-            notionToken: S.notionToken || '',
-            notionDbId: S.notionDbId || '',
+            subjects:           S.subjects,
+            points:             S.points,
+            streak:             S.streak,
+            history:            S.history,
+            coupons:            S.coupons,
+            avatar:             S.avatar || null,
+            todayReport:        S.todayReport || {},
+            notionToken:        S.notionToken || '',
+            notionDbId:         S.notionDbId  || '',
+            notionArchiveDbId:  S.notionArchiveDbId  || '',
+            notionSyncedPages:  S.notionSyncedPages  || [],
+            notionDraftSummary: S.notionDraftSummary || '',
             settings: {
-              notify: S.notify,
-              startTime: S.startTime,
-              remindBefore: S.remindBefore,
-              emailAddr: S.emailAddr,
-              discordWebhook: S.discordWebhook,
-              themeBg: S.themeBg || '',
+              notify:        S.notify,
+              startTime:     S.startTime,
+              remindBefore:  S.remindBefore,
+              emailAddr:     S.emailAddr     || '',
+              discordWebhook:S.discordWebhook|| '',
+              themeBg:       S.themeBg       || '',
             },
           });
         } catch (e) { console.warn('Firestore save:', e.message); }

@@ -506,18 +506,33 @@
         </div>
 
         <!-- Project 2: Thesaurus Trove (TT) -->
-        <div class="project-card" style="border-color:rgba(155,109,255,.22);background:rgba(155,109,255,.04)">
+        <div class="project-card" style="
+          background:linear-gradient(135deg,#12002e 0%,#0a1040 40%,#001a30 100%);
+          border-color:rgba(155,109,255,.35);position:relative;overflow:hidden;">
+          <!-- Decorative glow blobs -->
+          <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;
+               background:radial-gradient(circle,rgba(155,109,255,.22) 0%,transparent 70%);
+               pointer-events:none;z-index:0;border-radius:50%"></div>
+          <div style="position:absolute;bottom:-30px;left:20px;width:160px;height:160px;
+               background:radial-gradient(circle,rgba(0,196,180,.14) 0%,transparent 70%);
+               pointer-events:none;z-index:0;border-radius:50%"></div>
+          <!-- Pixel dot grid texture -->
+          <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(155,109,255,.12) 1px,transparent 1px);
+               background-size:22px 22px;pointer-events:none;z-index:0;border-radius:24px"></div>
+          <div style="position:relative;z-index:1">
           <div class="project-card-top">
             <div>
-              <span class="project-status status-active" data-key="status_active">Active · Web App</span>
-              <div class="project-title" data-key="proj2_title">Thesaurus Trove</div>
-              <p class="project-desc" data-key="proj2_desc">Bilingual vocabulary builder with spaced-repetition quizzes — Japanese (JLPT N1–N5) and English (CEFR A1–C2).</p>
+              <span class="project-status" style="background:rgba(155,109,255,.18);color:#c4b5fd;border:1px solid rgba(155,109,255,.35)"
+                    data-key="status_active">Active · Web App</span>
+              <div class="project-title" data-key="proj2_title" style="color:#e9d5ff">Thesaurus Trove</div>
+              <p class="project-desc" data-key="proj2_desc" style="color:rgba(233,213,255,.6)">Bilingual vocabulary builder with spaced-repetition quizzes — Japanese (JLPT N1–N5) and English (CEFR A1–C2).</p>
             </div>
             <a class="project-open-btn" href="/vocab_ultimate_bilingual.html" data-key="proj_open_btn"
-               style="background:linear-gradient(135deg,#9B6DFF,#7C3AED)">Open →</a>
+               style="background:linear-gradient(135deg,#7C3AED,#9B6DFF);box-shadow:0 4px 18px rgba(124,58,237,.45)">Open →</a>
           </div>
           <div class="feature-chips" id="proj2Chips">
             <!-- Rendered by JS -->
+          </div>
           </div>
         </div>
 

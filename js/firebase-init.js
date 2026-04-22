@@ -344,8 +344,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const modeSub = isEmailUser
             ? { zh: '邮箱模式', ja: 'メールモード', en: 'Email Mode' }[l]
             : (this.user.email || '');
-          const switchLocalLabel = { zh:'切换到本地账号', ja:'ローカルへ切替', en:'Switch to Local' }[l];
           const profileLabel     = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
+          const switchAccLabel   = { zh:'切换/更换账号', ja:'アカウント切替', en:'Switch Account' }[l];
           menu.innerHTML = `
             <div class="um-info">
               <div class="um-name">${name}</div>
@@ -355,8 +355,8 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
             <button class="um-item" onclick="window._openProfileDrawer()">
               🖼 ${profileLabel}
             </button>
-            <button class="um-item" onclick="App.switchToLocalAccount();document.getElementById('userMenu').classList.remove('open')">
-              🏠 ${switchLocalLabel}
+            <button class="um-item" onclick="document.getElementById('userMenu').classList.remove('open');window.Auth._logout()">
+              🔄 ${switchAccLabel}
             </button>
             <button class="um-item um-danger" onclick="window.Auth._logout()">
               🚪 ${t('profile_logout')}
@@ -365,7 +365,6 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           // Local mode
           const name    = S._localName || { zh:'本地用户', ja:'ローカルユーザー', en:'Local User' }[l];
           const subLabel = { zh:'本地模式', ja:'ローカルモード', en:'Local Mode' }[l];
-          const emailLabel  = { zh:'登录邮箱账号', ja:'メールアカウントへ', en:'Sign in with Email' }[l];
           const logoutLabel = { zh:'退出本地模式', ja:'ローカル終了', en:'Exit Local Mode' }[l];
           const profileLabel = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
           menu.innerHTML = `
@@ -376,9 +375,6 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
             <div class="um-divider"></div>
             <button class="um-item" onclick="window._openProfileDrawer()">
               🖼 ${profileLabel}
-            </button>
-            <button class="um-item" onclick="App.switchToEmailAccount();document.getElementById('userMenu').classList.remove('open')">
-              📧 ${emailLabel}
             </button>
             <button class="um-item um-danger" onclick="App.exitLocalMode()">
               🚪 ${logoutLabel}
@@ -441,14 +437,6 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
               <input type="file" accept="image/*" style="display:none"
                      onchange="Auth._uploadAvatar(this)">
             </label>
-            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-              <div style="font-size:12px;color:var(--text2);margin-bottom:8px">
-                ${{ zh:'切换账号', ja:'アカウント切替', en:'Switch Account' }[l] || '切换账号'}
-              </div>
-              <button class="psa-btn" onclick="App.switchToLocalAccount()">
-                🏠 ${{ zh:'切换到本地账号', ja:'ローカルアカウントへ', en:'Switch to Local Account' }[l]}
-              </button>
-            </div>
           </div>
           <div id="badgePanel" class="profile-expand-panel">
             <div class="profile-badges">${badgesHtml}</div>

@@ -13,7 +13,7 @@
       "destination": "/app.html"
     },
     {
-      "source": "/((?!css/|js/|api/|images/|screenshots/|app\\.html|landing\\.html|design-wizard\\.html).*)",
+      "source": "/((?!css/|js/|api/|images/|screenshots/|app\\.html|landing\\.html|design-wizard\\.html|vocab_ultimate_bilingual\\.html).*)",
       "destination": "/landing.html"
     }
   ],

@@ -1,10 +1,21 @@
-# Study Stars / スタディスター
+# 学习星球 / Efficient Learning Engine
+
+> 🚀 A pixel-art styled all-in-one study tracker — subjects, timer, report, calendar, stats, rewards, Notion sync, and now a built-in vocab app.
+> Deploy: Vercel · Auth: Firebase · Sync: Firestore · i18n: zh / ja / en
 
 ---
 
-## v1 — Initial Release (Single File)
+## v3 — Pixel Topbar + Vocab App + Account UX (2026-04-23)
 
-> Previous single-file version (`index.html` only). See git history for reference.
+### What's new
+
+- **Pixel-art topbar** with Press Start 2P font; language switcher is now a dropdown (globe icon + flag emoji)
+- **🔥 Streak** moved from topbar to Rewards page hero section
+- **Past check-in history** in Rewards — last 8 weeks, colour-coded dots (grey / orange / green)
+- **Notion token persistence** — stored in Firestore, no need to re-enter after login
+- **AI background & avatar generation** — Stability AI Ultra (bg) + Core (avatar) via `/api/generate-bg` and `/api/generate-avatar`; requires `STABILITY_API_KEY` in Vercel env vars
+- **Account menu cleanup** — Firebase users: "Switch Account" logs out to auth gate; Local mode: removed redundant "Sign in with Email" button
+- **📖 Vocab app** (`vocab_ultimate_bilingual.html`) integrated — click 📖 in sidebar to open in new tab; supports Japanese (JLPT N1–N5) + English (CEFR A1–C2), SRS quiz, daily goals, streak
 
 ---
 

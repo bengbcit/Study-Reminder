@@ -347,14 +347,13 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const profileLabel     = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
           const switchAccLabel   = { zh:'切换/更换账号', ja:'アカウント切替', en:'Switch Account' }[l];
           menu.innerHTML = `
-            <div class="um-info">
+            <div class="um-info um-info-clickable" title="${profileLabel}"
+                 onclick="window._openProfileDrawer();document.getElementById('userMenu').classList.remove('open')">
               <div class="um-name">${name}</div>
               <div class="um-sub">${modeSub}</div>
+              <div class="um-info-hint">↗ ${profileLabel}</div>
             </div>
             <div class="um-divider"></div>
-            <button class="um-item" onclick="window._openProfileDrawer()">
-              🖼 ${profileLabel}
-            </button>
             <button class="um-item" onclick="document.getElementById('userMenu').classList.remove('open');window.Auth._logout()">
               🔄 ${switchAccLabel}
             </button>
@@ -368,14 +367,13 @@ if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
           const logoutLabel = { zh:'退出本地模式', ja:'ローカル終了', en:'Exit Local Mode' }[l];
           const profileLabel = { zh:'头像 / 徽章 / 奖券', ja:'アバター / バッジ', en:'Avatar & Badges' }[l];
           menu.innerHTML = `
-            <div class="um-info">
+            <div class="um-info um-info-clickable" title="${profileLabel}"
+                 onclick="window._openProfileDrawer();document.getElementById('userMenu').classList.remove('open')">
               <div class="um-name">${name}</div>
               <div class="um-sub">${subLabel}</div>
+              <div class="um-info-hint">↗ ${profileLabel}</div>
             </div>
             <div class="um-divider"></div>
-            <button class="um-item" onclick="window._openProfileDrawer()">
-              🖼 ${profileLabel}
-            </button>
             <button class="um-item um-danger" onclick="App.exitLocalMode()">
               🚪 ${logoutLabel}
             </button>`;

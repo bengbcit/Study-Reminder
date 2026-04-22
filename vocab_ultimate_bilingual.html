@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f6f8ff;--bg2:#fff;--bg3:#eef0fa;--bd:#dde0f5;--tx:#131320;--tx2:#5a5a90;--acc:#3b5bdb;--acc2:#748ffc;--suc:#2f9e44;--suc-bg:#d3f9d8;--dan:#c92a2a;--dan-bg:#ffe0e0;--war:#e67700;--war-bg:#fff3bf;--red:#e03131}
@@ -107,27 +109,88 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 /* Lang switch animation */
 .sec-fade{animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Thesaurus Trove pixel header ── */
+.tt-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;height:54px;gap:10px;
+  background:var(--bg2);border-bottom:2px solid var(--acc);
+  position:sticky;top:0;z-index:20;
+}
+.tt-logo-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0;text-decoration:none}
+.tt-logo-icon{font-size:20px;line-height:1}
+.tt-logo-text{
+  font-family:'Press Start 2P',monospace;font-size:6.5px;
+  color:var(--acc);line-height:1.6;white-space:nowrap;
+  text-shadow:0 0 8px color-mix(in srgb,var(--acc) 40%,transparent);
+}
+.tt-tabs-wrap{flex:1;overflow-x:auto;display:flex;min-width:0}
+.tt-tabs-wrap::-webkit-scrollbar{display:none}
+.tt-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.tt-lang-btn{
+  display:flex;align-items:center;gap:4px;
+  padding:5px 10px;border-radius:8px;
+  border:1px solid var(--bd);background:var(--bg3);
+  color:var(--tx);cursor:pointer;font-size:11px;font-weight:500;
+  transition:all .15s;white-space:nowrap;
+}
+.tt-lang-btn:hover{border-color:var(--acc);color:var(--acc)}
+.tt-home-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--bd);background:var(--bg3);
+  color:var(--tx2);text-decoration:none;font-size:15px;
+  transition:all .15s;flex-shrink:0;
+}
+.tt-home-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--bg3)}
+/* pixel home icon inside tt-home-btn */
+.tt-px-home{display:block;image-rendering:pixelated}
 </style>
 </head><body>
 <div class="app">
 <div class="notif" id="notif"></div>
 
-<div class="topbar">
-  <div style="display:flex;align-items:center;gap:8px">
-    <a href="app.html" title="返回 Efficient Learning Engine" style="display:flex;align-items:center;padding:5px 8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg3);text-decoration:none;color:var(--tx2);font-size:12px;gap:4px;transition:all .2s" onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--bd)'">🚀 ←</a>
-    <div class="logo-btn" id="logoBtn" onclick="switchLang()">
-      <span class="lang-dot" id="langDot"></span>
-      <span id="logoText">English Vocab</span>
-      <span style="font-size:10px;color:var(--tx2)">⇄</span>
+<div class="tt-header">
+  <!-- Left: pixel logo -->
+  <div class="tt-logo-wrap">
+    <span class="tt-logo-icon">📚</span>
+    <span class="tt-logo-text">Thesaurus<br>Trove</span>
+  </div>
+
+  <!-- Center: scrollable tab bar -->
+  <div class="tt-tabs-wrap">
+    <div class="tabs" id="tabBar" style="border:none;background:transparent;padding:0;gap:3px">
+      <div class="tab active" onclick="sw('home')" id="tab-btn-home">Home</div>
+      <div class="tab" onclick="sw('words')" id="tab-btn-words">Words</div>
+      <div class="tab" onclick="sw('add')" id="tab-btn-add">Add</div>
+      <div class="tab" onclick="sw('quiz')" id="tab-btn-quiz">Quiz</div>
+      <div class="tab" onclick="sw('map')" id="tab-btn-map">Map</div>
+      <div class="tab" onclick="sw('more')" id="tab-btn-more">More</div>
     </div>
   </div>
-  <div class="tabs" id="tabBar">
-    <div class="tab active" onclick="sw('home')">Home</div>
-    <div class="tab" onclick="sw('words')">Words</div>
-    <div class="tab" onclick="sw('add')">Add</div>
-    <div class="tab" onclick="sw('quiz')">Quiz</div>
-    <div class="tab" onclick="sw('map')">Map</div>
-    <div class="tab" onclick="sw('more')">More</div>
+
+  <!-- Right: lang switch + home -->
+  <div class="tt-actions">
+    <div class="tt-lang-btn" id="logoBtn" onclick="switchLang()" title="Switch language">
+      <span class="lang-dot" id="langDot"></span>
+      <span id="logoText">EN</span>
+      <span style="font-size:9px;opacity:.55">⇄</span>
+    </div>
+    <a href="/" class="tt-home-btn" title="Study Planet">
+      <!-- pixel house SVG -->
+      <svg class="tt-px-home" viewBox="0 0 12 12" width="16" height="16">
+        <rect x="5" y="0" width="2" height="1" fill="currentColor"/>
+        <rect x="4" y="1" width="4" height="1" fill="currentColor"/>
+        <rect x="3" y="2" width="6" height="1" fill="currentColor"/>
+        <rect x="2" y="3" width="8" height="1" fill="currentColor"/>
+        <rect x="1" y="4" width="10" height="1" fill="currentColor"/>
+        <rect x="2" y="5" width="8" height="6" fill="currentColor"/>
+        <rect x="3" y="5" width="6" height="5" fill="var(--bg2)"/>
+        <rect x="5" y="7" width="2" height="4" fill="currentColor"/>
+        <rect x="3" y="6" width="2" height="2" fill="currentColor"/>
+        <rect x="7" y="6" width="2" height="2" fill="currentColor"/>
+      </svg>
+    </a>
   </div>
 </div>
 

@@ -411,7 +411,10 @@
 
           <!-- Logged in -->
           <div id="menuUser" style="display:none">
-            <div class="user-info-block">
+            <div class="user-info-block" onclick="goToApp(); closePlanetMenu()"
+                 style="cursor:pointer;border-radius:12px;transition:background .15s"
+                 onmouseover="this.style.background='rgba(255,107,53,.08)'"
+                 onmouseout="this.style.background=''">
               <div class="user-avatar-circle" id="userAvatarCircle">D</div>
               <div class="user-info-text">
                 <div class="user-display-name" id="userDisplayName">User</div>
@@ -419,9 +422,16 @@
               </div>
             </div>
             <div class="menu-divider"></div>
-            <div class="planet-menu-item" onclick="openProfileModal(); closePlanetMenu()">👤 <span data-key="menu_profile">Profile</span></div>
-            <div class="planet-menu-item">⚙ <span data-key="menu_account">Account</span></div>
+            <div class="planet-menu-item" onclick="goToApp(); closePlanetMenu()">
+              🚀 <span data-key="menu_ele">Efficient Learning Engine</span>
+            </div>
+            <div class="planet-menu-item" onclick="goToTT(); closePlanetMenu()">
+              📚 <span data-key="menu_tt">Thesaurus Trove</span>
+            </div>
             <div class="menu-divider"></div>
+            <div class="planet-menu-item" onclick="switchAccount()">
+              🔄 <span data-key="menu_switch">Switch Account</span>
+            </div>
             <div class="planet-menu-item danger" onclick="signOutUser()" data-key="menu_signout">Sign Out</div>
           </div>
 
@@ -495,21 +505,37 @@
           </div><!-- /z-index overlay wrapper -->
         </div>
 
-        <!-- Project 2: Happy Meal -->
+        <!-- Project 2: Thesaurus Trove (TT) -->
+        <div class="project-card" style="border-color:rgba(155,109,255,.22);background:rgba(155,109,255,.04)">
+          <div class="project-card-top">
+            <div>
+              <span class="project-status status-active" data-key="status_active">Active · Web App</span>
+              <div class="project-title" data-key="proj2_title">Thesaurus Trove</div>
+              <p class="project-desc" data-key="proj2_desc">Bilingual vocabulary builder with spaced-repetition quizzes — Japanese (JLPT N1–N5) and English (CEFR A1–C2).</p>
+            </div>
+            <a class="project-open-btn" href="/vocab_ultimate_bilingual.html" data-key="proj_open_btn"
+               style="background:linear-gradient(135deg,#9B6DFF,#7C3AED)">Open →</a>
+          </div>
+          <div class="feature-chips" id="proj2Chips">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Project 3: Happy Meal -->
         <div class="project-card">
           <div class="project-card-top">
             <div>
               <span class="project-status status-soon" data-key="status_soon">Coming Soon</span>
               <div class="project-title">Happy Meal</div>
-              <p class="project-desc" data-key="proj2_desc">A new project in the making. Stay tuned — something delicious is coming.</p>
+              <p class="project-desc" data-key="proj3_desc">A new project in the making. Stay tuned — something delicious is coming.</p>
             </div>
             <span class="project-open-btn disabled" data-key="proj_coming_btn">Coming soon</span>
           </div>
           <div class="feature-chips">
-            <span class="chip chip-gray">🍔 <span data-key="proj2_chip1">Meal Planner</span></span>
-            <span class="chip chip-gray">🥗 <span data-key="proj2_chip2">Nutrition Track</span></span>
-            <span class="chip chip-gray">⏰ <span data-key="proj2_chip3">Reminders</span></span>
-            <span class="chip chip-gray">🤖 <span data-key="proj2_chip4">AI Chef</span></span>
+            <span class="chip chip-gray">🍔 <span data-key="proj3_chip1">Meal Planner</span></span>
+            <span class="chip chip-gray">🥗 <span data-key="proj3_chip2">Nutrition Track</span></span>
+            <span class="chip chip-gray">⏰ <span data-key="proj3_chip3">Reminders</span></span>
+            <span class="chip chip-gray">🤖 <span data-key="proj3_chip4">AI Chef</span></span>
           </div>
         </div>
 
@@ -754,6 +780,36 @@ const PROJ1_CHIPS = {
   ],
 };
 
+const PROJ2_CHIPS = {
+  zh: [
+    { label:'单词卡片',   cls:'chip-purple', icon:'🃏' },
+    { label:'间隔记忆',   cls:'chip-blue',   icon:'🧠' },
+    { label:'每日目标',   cls:'chip-green',  icon:'🎯' },
+    { label:'测验模式',   cls:'chip-orange', icon:'✏️' },
+    { label:'JLPT N1-N5', cls:'chip-teal',   icon:'🇯🇵' },
+    { label:'CEFR A1-C2', cls:'chip-red',    icon:'🇺🇸' },
+    { label:'学习连续',   cls:'chip-gold',   icon:'🔥' },
+  ],
+  ja: [
+    { label:'単語カード',     cls:'chip-purple', icon:'🃏' },
+    { label:'間隔反復',       cls:'chip-blue',   icon:'🧠' },
+    { label:'デイリーゴール', cls:'chip-green',  icon:'🎯' },
+    { label:'クイズモード',   cls:'chip-orange', icon:'✏️' },
+    { label:'JLPT N1-N5',     cls:'chip-teal',   icon:'🇯🇵' },
+    { label:'CEFR A1-C2',     cls:'chip-red',    icon:'🇺🇸' },
+    { label:'連続学習',       cls:'chip-gold',   icon:'🔥' },
+  ],
+  en: [
+    { label:'Word Cards',    cls:'chip-purple', icon:'🃏' },
+    { label:'Spaced Rep.',   cls:'chip-blue',   icon:'🧠' },
+    { label:'Daily Goal',    cls:'chip-green',  icon:'🎯' },
+    { label:'Quiz Modes',    cls:'chip-orange', icon:'✏️' },
+    { label:'JLPT N1–N5',   cls:'chip-teal',   icon:'🇯🇵' },
+    { label:'CEFR A1–C2',   cls:'chip-red',    icon:'🇺🇸' },
+    { label:'Streak',        cls:'chip-gold',   icon:'🔥' },
+  ],
+};
+
 const COPY = {
   zh: {
     hero_name:'学习星球', hero_headline:'让每一天的学习，都有迹可循',
@@ -766,10 +822,12 @@ const COPY = {
     proj_tag:'项目', proj_title:'项目',
     proj_desc:'为日常生活打造的应用与工具——点击任意项目即可打开。',
     proj1_title:'Efficient Learning Engine', proj1_desc:'个人学习操作系统——追踪科目、计时、记录每日简报、获得奖励。',
-    proj2_desc:'正在制作中——美味的东西即将到来。',
+    proj2_title:'Thesaurus Trove', proj2_desc:'双语单词学习——日语（JLPT N1–N5）与英语（CEFR A1–C2），间隔记忆算法，多种测验模式。',
+    proj3_desc:'正在制作中——美味的东西即将到来。',
     status_active:'上线中 · 网页应用', status_soon:'即将上线',
     proj_open_btn:'打开 →', proj_coming_btn:'即将推出',
-    proj2_chip1:'餐饮计划', proj2_chip2:'营养追踪', proj2_chip3:'提醒功能', proj2_chip4:'AI 厨师',
+    proj3_chip1:'餐饮计划', proj3_chip2:'营养追踪', proj3_chip3:'提醒功能', proj3_chip4:'AI 厨师',
+    menu_ele:'Efficient Learning Engine', menu_tt:'Thesaurus Trove', menu_switch:'切换账号',
     contact_tag:'联系', contact_title:'联系我。',
     contact_desc:'有功能建议、Bug 反馈，或者只是想打个招呼？很高兴听到你的声音。',
     contact_name_ph:'姓名', contact_email_ph:'邮箱', contact_msg_ph:'消息内容', contact_send:'发送 →',
@@ -793,10 +851,12 @@ const COPY = {
     proj_tag:'プロジェクト', proj_title:'プロジェクト',
     proj_desc:'日常のために作られたアプリとツール——クリックして開きましょう。',
     proj1_title:'Efficient Learning Engine', proj1_desc:'パーソナル学習OS——科目・時間・レポート・報酬を一括管理。',
-    proj2_desc:'制作中——美味しいものが近日公開予定。',
+    proj2_title:'Thesaurus Trove', proj2_desc:'バイリンガル単語学習——日本語（JLPT N1–N5）と英語（CEFR A1–C2）。間隔反復アルゴリズムと複数のクイズモード。',
+    proj3_desc:'制作中——美味しいものが近日公開予定。',
     status_active:'稼働中 · Webアプリ', status_soon:'近日公開',
     proj_open_btn:'開く →', proj_coming_btn:'近日公開',
-    proj2_chip1:'食事プラン', proj2_chip2:'栄養トラック', proj2_chip3:'リマインダー', proj2_chip4:'AIシェフ',
+    proj3_chip1:'食事プラン', proj3_chip2:'栄養トラック', proj3_chip3:'リマインダー', proj3_chip4:'AIシェフ',
+    menu_ele:'Efficient Learning Engine', menu_tt:'Thesaurus Trove', menu_switch:'アカウント切替',
     contact_tag:'お問い合わせ', contact_title:'お気軽にどうぞ。',
     contact_desc:'機能リクエスト、バグ報告、またはただ挨拶したい方もお気軽に！',
     contact_name_ph:'名前', contact_email_ph:'メールアドレス', contact_msg_ph:'メッセージ', contact_send:'送信 →',
@@ -820,10 +880,12 @@ const COPY = {
     proj_tag:'Projects', proj_title:'Projects',
     proj_desc:'Apps and tools built for everyday life — click any project to open it.',
     proj1_title:'Efficient Learning Engine', proj1_desc:'Personal study OS — track subjects, time sessions, log daily reports, and earn rewards.',
-    proj2_desc:"A new project in the making — something delicious is coming.",
+    proj2_title:'Thesaurus Trove', proj2_desc:'Bilingual vocabulary builder — Japanese (JLPT N1–N5) and English (CEFR A1–C2), spaced-repetition algorithm, multiple quiz modes.',
+    proj3_desc:"A new project in the making — something delicious is coming.",
     status_active:'Active · Web App', status_soon:'Coming Soon',
     proj_open_btn:'Open →', proj_coming_btn:'Coming soon',
-    proj2_chip1:'Meal Planner', proj2_chip2:'Nutrition Track', proj2_chip3:'Reminders', proj2_chip4:'AI Chef',
+    proj3_chip1:'Meal Planner', proj3_chip2:'Nutrition Track', proj3_chip3:'Reminders', proj3_chip4:'AI Chef',
+    menu_ele:'Efficient Learning Engine', menu_tt:'Thesaurus Trove', menu_switch:'Switch Account',
     contact_tag:'Contact', contact_title:'Get in touch.',
     contact_desc:"Have a feature request, bug report, or just want to say hi? I'd love to hear from you.",
     contact_name_ph:'Name', contact_email_ph:'Email', contact_msg_ph:'Message', contact_send:'Send →',
@@ -861,6 +923,12 @@ function setLang(l) {
   const grid = document.getElementById('proj1Chips');
   if (grid) {
     grid.innerHTML = (PROJ1_CHIPS[l] || PROJ1_CHIPS.en).map(f =>
+      `<span class="chip ${f.cls}">${f.icon} ${f.label}</span>`
+    ).join('');
+  }
+  const grid2 = document.getElementById('proj2Chips');
+  if (grid2) {
+    grid2.innerHTML = (PROJ2_CHIPS[l] || PROJ2_CHIPS.en).map(f =>
       `<span class="chip ${f.cls}">${f.icon} ${f.label}</span>`
     ).join('');
   }
@@ -925,9 +993,13 @@ function showLogin() {
   document.getElementById('loginForm').style.display = 'block';
 }
 
-/* ── Profile modal placeholder ── */
-function openProfileModal() {
-  alert('Profile settings coming soon!');
+/* ── Project shortcuts ── */
+function goToApp() { window.location.href = '/app'; }
+function goToTT()  { window.location.href = '/vocab_ultimate_bilingual.html'; }
+async function switchAccount() {
+  closePlanetMenu();
+  if (typeof signOutUser === 'function') await signOutUser();
+  openAuth();
 }
 
 /* ── Mobile nav ── */
@@ -962,7 +1034,7 @@ setLang(def);
 Object.assign(window, { openAuth, closeAuth, showRegister, showLogin,
   toggleMobileNav, closeMobileNav, handleContact, setLang,
   toggleLangMenu, closeLangMenu, togglePlanetMenu, closePlanetMenu,
-  heroCTAClick, openProfileModal });
+  heroCTAClick, goToApp, goToTT, switchAccount });
 </script>
 
 </body>

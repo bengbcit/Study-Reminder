@@ -365,6 +365,78 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 
 <!-- MORE -->
 <div class="sec" id="tab-more">
+
+  <!-- ── PDF Extractor ─────────────────────────────── -->
+  <div class="card" style="margin-bottom:9px;border:2px solid var(--acc);border-style:dashed">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:600;color:var(--acc)" id="lbl-pdf-title">📄 PDF → 单词提取 (Gemini AI)</div>
+      <div style="font-size:9px;color:var(--tx2);background:var(--bg3);padding:2px 7px;border-radius:10px">Free · 扫描版OK</div>
+    </div>
+
+    <!-- Language toggle -->
+    <div class="row" style="margin-bottom:8px">
+      <label class="lbl" style="margin-bottom:5px" id="lbl-pdf-lang">提取语言 / Extract Language</label>
+      <div style="display:flex;gap:6px">
+        <button id="pdf-lang-jp" class="bp" style="flex:1;font-size:12px" onclick="pdfSetLang('jp')">🇯🇵 日語</button>
+        <button id="pdf-lang-en" class="bg-btn" style="flex:1;font-size:12px" onclick="pdfSetLang('en')">🇺🇸 English</button>
+      </div>
+    </div>
+
+    <!-- Max words -->
+    <div class="row" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <label class="lbl" style="margin:0;white-space:nowrap" id="lbl-pdf-max">最多单词数</label>
+        <input type="range" min="10" max="100" step="10" value="30" id="pdfMax"
+               oninput="document.getElementById('pdfMaxVal').textContent=this.value" style="flex:1">
+        <span style="font-size:12px;font-weight:600;color:var(--acc);min-width:26px" id="pdfMaxVal">30</span>
+      </div>
+    </div>
+
+    <!-- File upload area -->
+    <label style="display:flex;align-items:center;justify-content:center;gap:8px;
+                  border:1.5px dashed var(--bd);border-radius:10px;padding:14px;
+                  cursor:pointer;transition:all .2s;color:var(--tx2);font-size:13px;
+                  background:var(--bg3)"
+           id="pdfDropZone"
+           onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'"
+           onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx2)'">
+      <span style="font-size:20px">📁</span>
+      <span id="pdfDropLabel">选择 PDF 文件 (max 15MB)</span>
+      <input type="file" id="pdfFile" accept=".pdf" style="display:none" onchange="pdfPreviewFile(this)">
+    </label>
+
+    <!-- File info -->
+    <div id="pdfFileInfo" style="display:none;margin-top:8px;font-size:11px;color:var(--tx2);
+         background:var(--bg3);border-radius:8px;padding:7px 10px"></div>
+
+    <!-- Extract button -->
+    <button class="bp" id="pdfExtractBtn" style="width:100%;margin-top:10px;font-size:13px"
+            onclick="pdfExtract()" disabled>
+      ✨ 用 Gemini AI 提取
+    </button>
+
+    <!-- Progress -->
+    <div id="pdfProgress" style="display:none;margin-top:10px">
+      <div class="pbar"><div class="pfill" id="pdfFill" style="width:5%;transition:width 2.5s ease"></div></div>
+      <div style="font-size:11px;color:var(--tx2);margin-top:4px;text-align:center" id="pdfProgressTxt">读取中…</div>
+    </div>
+  </div>
+
+  <!-- ── Extracted word preview ───────────────────── -->
+  <div id="pdfPreviewSection" style="display:none;margin-bottom:9px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--acc2)" id="pdfPreviewCount">0 个单词</div>
+      <div style="display:flex;gap:6px">
+        <button class="bg-btn" style="font-size:11px;padding:4px 10px" onclick="pdfToggleAll(true)">全选</button>
+        <button class="bg-btn" style="font-size:11px;padding:4px 10px" onclick="pdfToggleAll(false)">取消</button>
+      </div>
+    </div>
+    <div id="pdfPreviewList" style="max-height:380px;overflow-y:auto;border-radius:10px"></div>
+    <button class="bp" id="pdfImportBtn" style="width:100%;margin-top:8px;font-size:13px" onclick="pdfImport()">
+      ⬇ 导入选中单词
+    </button>
+  </div>
+
   <div class="card" style="margin-bottom:8px">
     <div style="font-size:12px;font-weight:500;color:var(--acc2);margin-bottom:7px" id="lbl-export">Export</div>
     <div class="g2"><button class="bg-btn" onclick="exportW('txt')">📄 TXT</button><button class="bg-btn" onclick="exportW('csv')">📊 CSV</button></div>
@@ -1059,5 +1131,176 @@ save();
 document.getElementById('goalN').value=localStorage.getItem(lang+'Goal')||5;
 renderHome();
 buildCatFilter();
+
+// ─── PDF EXTRACTOR ───────────────────────────────────────────────────────────
+let _pdfLang = 'jp';
+let _pdfWords = [];
+
+function pdfSetLang(l) {
+  _pdfLang = l;
+  document.getElementById('pdf-lang-jp').className = l === 'jp' ? 'bp' : 'bg-btn';
+  document.getElementById('pdf-lang-en').className = l === 'en' ? 'bp' : 'bg-btn';
+}
+
+function pdfPreviewFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const info    = document.getElementById('pdfFileInfo');
+  const btn     = document.getElementById('pdfExtractBtn');
+  const label   = document.getElementById('pdfDropLabel');
+  const sizeMB  = (file.size / 1024 / 1024).toFixed(1);
+  const tooLarge = file.size > 15 * 1024 * 1024;
+
+  label.textContent = file.name;
+  info.style.display = 'block';
+  info.innerHTML = `
+    <b>${file.name}</b> &nbsp;·&nbsp; ${sizeMB} MB
+    ${tooLarge
+      ? '<br><span style="color:var(--dan)">⚠️ 文件过大 (限15MB)。请压缩后重试。</span>'
+      : `<br><span style="color:var(--suc)">✅ 准备好提取 ${_pdfLang === 'jp' ? '日语' : '英语'}单词</span>`
+    }`;
+  btn.disabled = tooLarge;
+}
+
+async function pdfExtract() {
+  const input = document.getElementById('pdfFile');
+  const file  = input?.files?.[0];
+  if (!file) { notify('请先选择PDF文件'); return; }
+
+  const btn      = document.getElementById('pdfExtractBtn');
+  const progress = document.getElementById('pdfProgress');
+  const fill     = document.getElementById('pdfFill');
+  const txt      = document.getElementById('pdfProgressTxt');
+  const maxWords = document.getElementById('pdfMax').value;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ 提取中…';
+  progress.style.display = 'block';
+  document.getElementById('pdfPreviewSection').style.display = 'none';
+
+  // Animate bar: 5% → 55% while reading
+  requestAnimationFrame(() => { fill.style.width = '55%'; });
+  txt.textContent = lang === 'jp' ? '📄 読み込み中…' : '📄 Reading PDF…';
+
+  try {
+    // Convert PDF to base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = e => resolve(e.target.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    txt.textContent = '🧠 Gemini が解析中 / 分析中…';
+    fill.style.transition = 'width 8s linear';
+    fill.style.width = '88%';
+
+    const res  = await fetch('/api/extract-pdf', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ pdfBase64: base64, lang: _pdfLang, maxWords }),
+    });
+
+    const data = await res.json();
+    fill.style.transition = 'width .3s';
+    fill.style.width = '100%';
+
+    if (!res.ok) throw new Error(data.error || '提取失败');
+    if (data._demo) {
+      notify('⚠️ GEMINI_API_KEY 未配置 — 请在 Vercel 环境变量中添加');
+      progress.style.display = 'none';
+      btn.textContent = '✨ 用 Gemini AI 提取';
+      btn.disabled = false;
+      return;
+    }
+
+    _pdfWords = data.words || [];
+    txt.textContent = `✅ 找到 ${_pdfWords.length} 个单词`;
+    pdfRenderPreview();
+
+  } catch (e) {
+    fill.style.width = '100%';
+    fill.style.background = 'var(--dan)';
+    txt.textContent = '❌ ' + e.message;
+    notify('❌ ' + e.message, 4000);
+  } finally {
+    btn.textContent = '✨ 用 Gemini AI 提取';
+    btn.disabled = false;
+  }
+}
+
+function pdfRenderPreview() {
+  if (!_pdfWords.length) { notify('PDF中未找到单词，请检查文件'); return; }
+
+  const section = document.getElementById('pdfPreviewSection');
+  const list    = document.getElementById('pdfPreviewList');
+  const count   = document.getElementById('pdfPreviewCount');
+
+  count.textContent = `找到 ${_pdfWords.length} 个单词 — 选择要导入的：`;
+  section.style.display = 'block';
+
+  list.innerHTML = _pdfWords.map((w, i) => {
+    const lvlCls = w.level ? `t-${w.level.toLowerCase()}` : '';
+    return `
+      <label class="wcard" style="cursor:pointer;gap:10px;align-items:flex-start;margin-bottom:6px"
+             for="pdf-ck-${i}">
+        <input type="checkbox" id="pdf-ck-${i}" checked
+               style="margin-top:3px;flex-shrink:0;width:15px;height:15px;accent-color:var(--acc)">
+        <div class="wmain">
+          <div class="whead" style="font-size:17px">${w.word}</div>
+          ${w.kana ? `<div class="wsub">${w.kana}</div>` : ''}
+          ${w.pron ? `<div class="wsub">${w.pron}</div>` : ''}
+          <div class="wdef" style="margin-top:2px">${w.meaning || '—'}</div>
+          ${w.ex ? `<div class="wex">${w.ex}</div>` : ''}
+          <div class="wtags" style="margin-top:4px">
+            ${w.level ? `<span class="tag ${lvlCls}" style="${!lvlCls?'background:var(--bg3);color:var(--tx2)':''}">${w.level}</span>` : ''}
+            ${w.cat   ? `<span class="tag" style="background:var(--bg3);color:var(--tx2)">${w.cat}</span>` : ''}
+          </div>
+        </div>
+      </label>`;
+  }).join('');
+
+  // Scroll to preview
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function pdfToggleAll(checked) {
+  document.querySelectorAll('[id^="pdf-ck-"]').forEach(cb => cb.checked = checked);
+}
+
+function pdfImport() {
+  const today = new Date().toDateString();
+  let added = 0, skipped = 0;
+
+  _pdfWords.forEach((w, i) => {
+    const cb = document.getElementById('pdf-ck-' + i);
+    if (!cb?.checked) return;
+    if (cw().some(e => e.word === w.word)) { skipped++; return; }
+
+    cw().unshift({
+      word:      w.word,
+      defs:      [{ meaning: w.meaning || '', ex: w.ex || '' }],
+      pron:      _pdfLang === 'en' ? (w.pron || '') : '',
+      kana:      _pdfLang === 'jp' ? (w.kana || '') : '',
+      root: '', rel: '',
+      level:     w.level || '',
+      cat:       w.cat   || '',
+      mastered:  false,
+      addedDate: today,
+      srsBox:    0,
+      nextReview: today,
+      wrongCount: 0,
+    });
+    added++;
+  });
+
+  if (added > 0) {
+    save(); renderHome(); buildCatFilter();
+    notify(`✅ 导入 ${added} 个单词${skipped ? `（跳过 ${skipped} 个重复）` : ''}`, 3000);
+    sw('words');
+  } else {
+    notify(skipped ? `全部 ${skipped} 个已存在，跳过` : '没有选中单词');
+  }
+}
 </script>
 </body></html>

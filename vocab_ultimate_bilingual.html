@@ -112,40 +112,91 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 .sec-fade{animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── Thesaurus Trove pixel header ── */
+/* ── Thesaurus Trove pixel header — neon purple ── */
+:root{
+  --tt-hbg:  rgba(16,8,46,0.92);
+  --tt-hbd:  rgba(155,109,255,0.40);
+  --tt-hacc: #a78bfa;
+  --tt-hglow:rgba(155,109,255,0.55);
+}
 .tt-header{
   display:flex;align-items:center;justify-content:space-between;
   padding:0 14px;height:54px;gap:10px;
-  background:var(--bg2);border-bottom:2px solid var(--acc);
+  background:var(--tt-hbg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:2px solid var(--tt-hbd);
+  box-shadow:0 2px 20px rgba(0,0,0,0.45),0 0 0 1px rgba(155,109,255,0.07);
   position:sticky;top:0;z-index:20;
 }
 .tt-logo-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0;text-decoration:none}
-.tt-logo-icon{font-size:20px;line-height:1}
+.tt-logo-icon{
+  font-size:20px;line-height:1;
+  filter:drop-shadow(0 0 8px var(--tt-hglow));
+  image-rendering:pixelated;
+}
 .tt-logo-text{
   font-family:'Press Start 2P',monospace;font-size:6.5px;
-  color:var(--acc);line-height:1.6;white-space:nowrap;
-  text-shadow:0 0 8px color-mix(in srgb,var(--acc) 40%,transparent);
+  color:var(--tt-hacc);line-height:1.6;white-space:nowrap;
+  text-shadow:0 0 10px var(--tt-hglow),0 0 20px var(--tt-hglow);
 }
 .tt-tabs-wrap{flex:1;overflow-x:auto;display:flex;min-width:0}
 .tt-tabs-wrap::-webkit-scrollbar{display:none}
-.tt-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.tt-lang-btn{
-  display:flex;align-items:center;gap:4px;
-  padding:5px 10px;border-radius:8px;
-  border:1px solid var(--bd);background:var(--bg3);
-  color:var(--tx);cursor:pointer;font-size:11px;font-weight:500;
-  transition:all .15s;white-space:nowrap;
+/* tabs inherit header bg area — transparent strip */
+.tt-tabs-wrap .tabs{background:transparent;border:none;padding:0;gap:3px}
+.tt-tabs-wrap .tab{
+  color:rgba(200,185,255,0.55);
+  transition:all .15s;
 }
-.tt-lang-btn:hover{border-color:var(--acc);color:var(--acc)}
+.tt-tabs-wrap .tab.active{
+  background:var(--tt-hacc);color:#fff;
+  box-shadow:0 0 8px var(--tt-hglow);
+}
+.tt-tabs-wrap .tab:hover:not(.active){
+  color:#fff;background:rgba(155,109,255,0.22);
+}
+.tt-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+/* Language toggle pill — matches ELE lang-sw */
+.tt-lang-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 11px;
+  border-radius:8px;
+  border:1.5px solid var(--tt-hbd);
+  background:rgba(16,8,50,0.70);
+  color:var(--tt-hacc);
+  cursor:pointer;font-size:11px;font-weight:700;
+  letter-spacing:0.5px;
+  box-shadow:0 0 6px rgba(155,109,255,0.18),inset 0 0 4px rgba(155,109,255,0.06);
+  transition:all .15s;white-space:nowrap;
+  image-rendering:pixelated;
+}
+.tt-lang-btn:hover{
+  border-color:var(--tt-hacc);
+  box-shadow:0 0 12px var(--tt-hglow),inset 0 0 8px rgba(155,109,255,0.15);
+  transform:translateY(-1px);
+}
+.tt-lang-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--tt-hacc);
+  box-shadow:0 0 5px var(--tt-hglow);
+  flex-shrink:0;
+}
+/* Home button — matches ELE tb-icon-btn */
 .tt-home-btn{
   display:flex;align-items:center;justify-content:center;
-  width:32px;height:32px;border-radius:8px;
-  border:1px solid var(--bd);background:var(--bg3);
-  color:var(--tx2);text-decoration:none;font-size:15px;
+  width:34px;height:34px;border-radius:8px;
+  border:1.5px solid var(--tt-hbd);
+  background:rgba(16,8,50,0.70);
+  color:var(--tt-hacc);text-decoration:none;
+  box-shadow:0 0 6px rgba(155,109,255,0.18),inset 0 0 4px rgba(155,109,255,0.06);
   transition:all .15s;flex-shrink:0;
+  image-rendering:pixelated;
 }
-.tt-home-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--bg3)}
-/* pixel home icon inside tt-home-btn */
+.tt-home-btn:hover{
+  border-color:var(--tt-hacc);
+  box-shadow:0 0 12px var(--tt-hglow),inset 0 0 8px rgba(155,109,255,0.15);
+  transform:translateY(-1px);
+  color:#ddd6fe;
+}
 .tt-px-home{display:block;image-rendering:pixelated}
 </style>
 </head><body>
@@ -174,23 +225,26 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
   <!-- Right: lang switch + home -->
   <div class="tt-actions">
     <div class="tt-lang-btn" id="logoBtn" onclick="switchLang()" title="Switch language">
-      <span class="lang-dot" id="langDot"></span>
-      <span id="logoText">EN</span>
-      <span style="font-size:9px;opacity:.55">⇄</span>
+      <span class="tt-lang-dot" id="langDot"></span>
+      <span id="logoText" style="font-family:'Press Start 2P',monospace;font-size:8px;letter-spacing:1px">EN</span>
+      <svg viewBox="0 0 10 6" width="10" height="6" style="opacity:.6;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square">
+        <polyline points="0,1 3,4 6,1"/><polyline points="4,5 7,2 10,5"/>
+      </svg>
     </div>
     <a href="/" class="tt-home-btn" title="Study Planet">
-      <!-- pixel house SVG -->
-      <svg class="tt-px-home" viewBox="0 0 12 12" width="16" height="16">
-        <rect x="5" y="0" width="2" height="1" fill="currentColor"/>
-        <rect x="4" y="1" width="4" height="1" fill="currentColor"/>
-        <rect x="3" y="2" width="6" height="1" fill="currentColor"/>
-        <rect x="2" y="3" width="8" height="1" fill="currentColor"/>
-        <rect x="1" y="4" width="10" height="1" fill="currentColor"/>
-        <rect x="2" y="5" width="8" height="6" fill="currentColor"/>
-        <rect x="3" y="5" width="6" height="5" fill="var(--bg2)"/>
-        <rect x="5" y="7" width="2" height="4" fill="currentColor"/>
-        <rect x="3" y="6" width="2" height="2" fill="currentColor"/>
-        <rect x="7" y="6" width="2" height="2" fill="currentColor"/>
+      <!-- pixel house SVG — ELE style -->
+      <svg class="tt-px-home" viewBox="0 0 14 14" width="17" height="17">
+        <rect x="6" y="0" width="2" height="2" fill="currentColor"/>
+        <rect x="4" y="2" width="6" height="1" fill="currentColor"/>
+        <rect x="2" y="3" width="10" height="1" fill="currentColor"/>
+        <rect x="0" y="4" width="14" height="1" fill="currentColor"/>
+        <rect x="1" y="5" width="12" height="8" fill="currentColor"/>
+        <rect x="2" y="5" width="10" height="7" fill="rgba(16,8,50,0.85)"/>
+        <rect x="5" y="8" width="4" height="5" fill="currentColor"/>
+        <rect x="2" y="6" width="4" height="3" fill="currentColor"/>
+        <rect x="8" y="6" width="4" height="3" fill="currentColor"/>
+        <rect x="3" y="7" width="2" height="1" fill="rgba(16,8,50,0.85)"/>
+        <rect x="9" y="7" width="2" height="1" fill="rgba(16,8,50,0.85)"/>
       </svg>
     </a>
   </div>
@@ -570,7 +624,7 @@ const I18N = {
 function t(key){ return I18N[lang][key] || key; }
 function T(){ // apply translations to static elements
   const i=I18N[lang];
-  document.getElementById('logoText').textContent=i.logo;
+  document.getElementById('logoText').textContent=lang==='jp'?'JP':'EN';
   document.querySelectorAll('#tabBar .tab').forEach((el,idx)=>el.textContent=i.tabs[idx]);
   document.getElementById('sl-total').textContent=i.slTotal;
   document.getElementById('sl-mastered').textContent=i.slMastered;
@@ -623,7 +677,8 @@ function T(){ // apply translations to static elements
   // voice default
   document.getElementById('voiceLang').value = lang==='jp'?'ja-JP':'en-US';
   // logo dot color hint
-  document.getElementById('langDot').style.background = lang==='jp'?'#f87171':'var(--acc)';
+  document.getElementById('langDot').style.background = lang==='jp'?'#f87171':'#a78bfa';
+  document.getElementById('langDot').style.boxShadow = lang==='jp'?'0 0 5px #f87171':'0 0 5px rgba(167,139,250,0.8)';
 }
 
 // ─── LANG SWITCH ─────────────────────────────────────

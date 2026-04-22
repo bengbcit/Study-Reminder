@@ -1,7 +1,61 @@
 # 学习星球 / Efficient Learning Engine
 
-> 🚀 A pixel-art styled all-in-one study tracker — subjects, timer, report, calendar, stats, rewards, Notion sync, and now a built-in vocab app.
+> 🚀 A pixel-art styled all-in-one study platform — study tracker, vocabulary app, meal planner, and more.
 > Deploy: Vercel · Auth: Firebase · Sync: Firestore · i18n: zh / ja / en
+
+---
+
+## v4 — Multi-Project Platform + AI PDF Vocab Extraction (2026-04-23)
+
+### What's new (English)
+
+- **Multi-project landing page** — `landing.html` now hosts three standalone project cards: ELE, Thesaurus Trove (TT), and Happy Meal (HM)
+- **Thesaurus Trove is now a standalone project** — removed from ELE sidebar; TT card on landing page with its own deep-purple gradient + glow blobs + dot-grid texture
+- **Happy Meal added** — links to `https://happy-meal-two.vercel.app/` with an amber/orange card; status: Active
+- **TT pixel-art header** — Press Start 2P font, scrollable tab bar (Words / Quiz / Stats / More), language toggle, 🏠 home button; matches ELE's topbar style
+- **TT default dark theme (purple)** — fixed FOUC with inline `<script>` in `<head>` that applies CSS vars before page renders
+- **AI PDF vocabulary extraction** — upload any PDF (including scanned) to TT's More tab → Gemini 2.0 Flash extracts up to 100 words → preview with checkboxes → import to word list; requires `GEMINI_API_KEY` in Vercel env vars
+- **Avatar dropdown UX cleanup** — name row is now clickable (opens profile drawer); removed redundant "Sign in with Email" button from local mode menu; Firebase menu: "Switch to Local" → "Switch Account"
+- **Planet menu** (landing page, logged-in) — now has separate ELE and TT entry points, plus Switch Account
+
+**File structure:**
+```
+study-reminder/
+├── landing.html                    # Multi-project hub (ELE + TT + HM)
+├── index.html                      # ELE main app shell
+├── app.html                        # ELE app (pixel topbar, sidebar)
+├── vocab_ultimate_bilingual.html   # Thesaurus Trove standalone app
+├── vercel.json                     # Routing + body-size config
+├── css/
+│   └── style.css
+├── js/
+│   ├── firebase-config.js
+│   ├── firebase-init.js            # Auth + avatar dropdown UX
+│   ├── i18n.js
+│   ├── state.js
+│   ├── app.js
+│   ├── subjects.js / remind.js / timer.js
+│   ├── report.js / calendar.js / stats.js
+│   ├── rewards.js / keys.js / notion.js / theme.js
+│   └── auth.js
+└── api/
+    ├── encourage.js                # Claude AI encouragement
+    ├── notion.js                   # Notion proxy
+    └── extract-pdf.js              # ★ NEW — Gemini PDF → vocab extraction
+```
+
+---
+
+### v4 新機能（日本語）
+
+- **マルチプロジェクト型ランディングページ** — `landing.html` に3つの独立プロジェクトカードを表示：ELE・Thesaurus Trove (TT)・Happy Meal (HM)
+- **Thesaurus Trove の独立化** — ELEサイドバーから分離、ランディングページの独自カードへ（深紫グラデーション＋グロー＋ドットグリッド）
+- **Happy Meal 追加** — `https://happy-meal-two.vercel.app/` へのリンクカード（琥珀/オレンジ配色、ステータス: Active）
+- **TT ピクセルアートヘッダー** — Press Start 2P フォント、スクロール可能なタブバー（Words / Quiz / Stats / More）、言語切替、🏠 ホームボタン
+- **TT デフォルトダークテーマ（purple）** — `<head>` 内のインライン `<script>` で FOUC（スタイル未適用フラッシュ）を防止
+- **AI PDF 語彙抽出** — PDFをアップロード（スキャン版もOK）→ Gemini 2.0 Flash が最大100語を抽出 → チェックボックスで選択 → 単語帳にインポート（`GEMINI_API_KEY` が必要）
+- **アバタードロップダウン UX 改善** — 名前行クリックでプロフィールドロワーを開くように変更；ローカルモードの「メールでログイン」ボタンを削除；Firebase メニュー：「ローカルに切替」→「アカウント切替」
+- **惑星メニュー**（ランディングページ、ログイン済み）— ELE・TT への個別リンク＋アカウント切替
 
 ---
 

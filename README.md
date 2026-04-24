@@ -1,24 +1,13 @@
-# 学习星球 / Efficient Learning Engine
+# Efficient Learning Engine / 学習プラネット
 
-> 🚀 A pixel-art styled all-in-one study platform — study tracker, vocabulary app, meal planner, and more.
+> 🚀 A pixel-art styled all-in-one study platform — study tracker, vocabulary app, meal planner, and more.  
+> 🚀 ピクセルアートスタイルのオールインワン学習プラットフォーム — 学習トラッカー・語彙アプリ・食事プランナーなど。  
 > Deploy: Vercel · Auth: Firebase · Sync: Firestore · i18n: zh / ja / en
 
 ---
 
-## v4 — Multi-Project Platform + AI PDF Vocab Extraction (2026-04-23)
+## Project Structure / プロジェクト構造
 
-### What's new (English)
-
-- **Multi-project landing page** — `landing.html` now hosts three standalone project cards: ELE, Thesaurus Trove (TT), and Happy Meal (HM)
-- **Thesaurus Trove is now a standalone project** — removed from ELE sidebar; TT card on landing page with its own deep-purple gradient + glow blobs + dot-grid texture
-- **Happy Meal added** — links to `https://happy-meal-two.vercel.app/` with an amber/orange card; status: Active
-- **TT pixel-art header** — Press Start 2P font, scrollable tab bar (Words / Quiz / Stats / More), language toggle, 🏠 home button; matches ELE's topbar style
-- **TT default dark theme (purple)** — fixed FOUC with inline `<script>` in `<head>` that applies CSS vars before page renders
-- **AI PDF vocabulary extraction** — upload any PDF (including scanned) to TT's More tab → Gemini 2.0 Flash extracts up to 100 words → preview with checkboxes → import to word list; requires `GEMINI_API_KEY` in Vercel env vars
-- **Avatar dropdown UX cleanup** — name row is now clickable (opens profile drawer); removed redundant "Sign in with Email" button from local mode menu; Firebase menu: "Switch to Local" → "Switch Account"
-- **Planet menu** (landing page, logged-in) — now has separate ELE and TT entry points, plus Switch Account
-
-**File structure:**
 ```
 study-reminder/
 ├── landing.html                    # Multi-project hub (ELE + TT + HM)
@@ -41,12 +30,27 @@ study-reminder/
 └── api/
     ├── encourage.js                # Claude AI encouragement
     ├── notion.js                   # Notion proxy
-    └── extract-pdf.js              # ★ NEW — Gemini PDF → vocab extraction
+    └── extract-pdf.js              # Gemini PDF → vocab extraction
 ```
 
 ---
 
-### v4 新機能（日本語）
+## Changelog / 変更履歴
+
+### V1.2 — Multi-Project Platform + AI PDF Vocab Extraction (2026-04-23)
+
+**English:**
+
+- **Multi-project landing page** — `landing.html` now hosts three standalone project cards: ELE, Thesaurus Trove (TT), and Happy Meal (HM)
+- **Thesaurus Trove is now a standalone project** — removed from ELE sidebar; TT card on landing page with its own deep-purple gradient + glow blobs + dot-grid texture
+- **Happy Meal added** — links to `https://happy-meal-two.vercel.app/` with an amber/orange card; status: Active
+- **TT pixel-art header** — Press Start 2P font, scrollable tab bar (Words / Quiz / Stats / More), language toggle, 🏠 home button; matches ELE's topbar style
+- **TT default dark theme (purple)** — fixed FOUC with inline `<script>` in `<head>` that applies CSS vars before page renders
+- **AI PDF vocabulary extraction** — upload any PDF (including scanned) to TT's More tab → Gemini 2.0 Flash extracts up to 100 words → preview with checkboxes → import to word list; requires `GEMINI_API_KEY` in Vercel env vars
+- **Avatar dropdown UX cleanup** — name row is now clickable (opens profile drawer); removed redundant "Sign in with Email" button from local mode menu; Firebase menu: "Switch to Local" → "Switch Account"
+- **Planet menu** (landing page, logged-in) — now has separate ELE and TT entry points, plus Switch Account
+
+**日本語：**
 
 - **マルチプロジェクト型ランディングページ** — `landing.html` に3つの独立プロジェクトカードを表示：ELE・Thesaurus Trove (TT)・Happy Meal (HM)
 - **Thesaurus Trove の独立化** — ELEサイドバーから分離、ランディングページの独自カードへ（深紫グラデーション＋グロー＋ドットグリッド）
@@ -59,9 +63,9 @@ study-reminder/
 
 ---
 
-## v3 — Pixel Topbar + Vocab App + Account UX (2026-04-23)
+### V1.1 — Pixel Topbar + Vocab App + Account UX (2026-04-23)
 
-### What's new
+**English:**
 
 - **Pixel-art topbar** with Press Start 2P font; language switcher is now a dropdown (globe icon + flag emoji)
 - **🔥 Streak** moved from topbar to Rewards page hero section
@@ -71,13 +75,22 @@ study-reminder/
 - **Account menu cleanup** — Firebase users: "Switch Account" logs out to auth gate; Local mode: removed redundant "Sign in with Email" button
 - **📖 Vocab app** (`vocab_ultimate_bilingual.html`) integrated — click 📖 in sidebar to open in new tab; supports Japanese (JLPT N1–N5) + English (CEFR A1–C2), SRS quiz, daily goals, streak
 
+**日本語：**
+
+- **ピクセルアートトップバー** — Press Start 2P フォント使用；言語切替がドロップダウン（地球アイコン＋国旗絵文字）に変更
+- **🔥 ストリーク** — トップバーから報酬ページのヒーローセクションに移動
+- **過去のチェックイン履歴** — 報酬ページに直近8週間のカラーコードドット（グレー / オレンジ / グリーン）表示
+- **Notion トークンの永続化** — Firestoreに保存、ログイン後の再入力不要
+- **AI による背景＆アバター生成** — Stability AI Ultra（背景）＋ Core（アバター）、`/api/generate-bg` と `/api/generate-avatar` 経由；Vercel 環境変数に `STABILITY_API_KEY` が必要
+- **アカウントメニューの整理** — Firebaseユーザー：「アカウント切替」で認証ゲートにログアウト；ローカルモード：「メールでログイン」ボタンを削除
+- **📖 語彙アプリ** (`vocab_ultimate_bilingual.html`) 統合 — サイドバーの📖をクリックして新タブで開く；日本語（JLPT N1〜N5）＋英語（CEFR A1〜C2）対応、SRSクイズ、日次目標、ストリーク
+
 ---
 
-## v2 — Multi-File Refactor + New Features
+### V2.1 — Multi-File Refactor + New Features
 
-### English
+**English:**
 
-**What's new in v2:**
 - Split into multiple files (`css/`, `js/` modules) for easier maintenance
 - Subject settings: add / delete / toggle subjects with custom icon & color
 - Save settings → auto-updates today's calendar as a todo-list (green checkmarks)
@@ -92,33 +105,8 @@ study-reminder/
 - Language switcher: Chinese / Japanese / English (top-left)
 - Code comments: all in English
 
-**File structure:**
-```
-study-reminder/
-├── index.html              # Main HTML shell
-├── css/
-│   └── style.css           # All styles
-├── js/
-│   ├── firebase-config.js  # Firebase credentials (fill in yours)
-│   ├── i18n.js             # zh/ja/en language pack
-│   ├── state.js            # Runtime state + localStorage helpers
-│   ├── auth.js             # Firebase auth (Email + Google)
-│   ├── subjects.js         # Subject add/delete/toggle
-│   ├── remind.js           # Email / Telegram / Browser push
-│   ├── timer.js            # Focus countdown timer
-│   ├── report.js           # Daily report + EmailJS + AI encouragement
-│   ├── calendar.js         # Calendar view + daily todo-list
-│   ├── stats.js            # Chart.js statistics
-│   ├── rewards.js          # Points / badges / coupon generation
-│   └── app.js              # Entry point, page routing, save settings
-└── vercel.json
-```
+**日本語：**
 
----
-
-### 日本語
-
-**v2 の新機能：**
 - 複数ファイルに分割（`css/`、`js/` モジュール）でメンテナンスしやすく
 - 科目設定：アイコン・カラー付きで科目を追加・削除・停止
 - 保存ボタン → その日のカレンダーがTodoリスト（緑チェック）に自動更新
@@ -137,7 +125,7 @@ study-reminder/
 
 ## Setup Guide / セットアップ手順
 
-### 1. Deploy to Vercel / Vercelへデプロイ
+### 1. Deploy to Vercel / Vercel へデプロイ
 
 **EN:** Upload the entire `study-reminder/` folder at [vercel.com](https://vercel.com) → Add New → Project → Upload.
 
@@ -145,7 +133,7 @@ study-reminder/
 
 ---
 
-### 2. Firebase Setup / Firebase設定
+### 2. Firebase Setup / Firebase 設定
 
 **EN:**
 1. Go to [console.firebase.google.com](https://console.firebase.google.com)
@@ -163,7 +151,7 @@ study-reminder/
 
 ---
 
-### 3. EmailJS Setup / EmailJS設定
+### 3. EmailJS Setup / EmailJS 設定
 
 **EN:**
 1. Sign up at [emailjs.com](https://emailjs.com) (free: 200 emails/month)
@@ -179,7 +167,7 @@ study-reminder/
 
 ---
 
-### 4. Telegram Bot Setup / Telegramボット設定
+### 4. Telegram Bot Setup / Telegram ボット設定
 
 **EN:**
 1. Open Telegram → search `@BotFather` → send `/newbot`
@@ -195,7 +183,7 @@ study-reminder/
 
 ---
 
-### 5. AI Encouragement (Claude API) / AI応援機能
+### 5. AI Encouragement (Claude API) / AI 応援機能
 
 **EN:** The AI encouragement in `js/report.js` calls the Anthropic API directly. Add your Anthropic API key as a Vercel environment variable `ANTHROPIC_API_KEY` and create a small serverless function, or call the API from your own backend. For a quick test, you can temporarily hardcode the key (not recommended for production).
 

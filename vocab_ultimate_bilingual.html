@@ -244,6 +244,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
   <div class="tt-tabs-wrap">
     <div class="tabs" id="tabBar" style="border:none;background:transparent;padding:0;gap:3px">
       <div class="tab active" onclick="sw('home')" id="tab-btn-home">Home</div>
+      <div class="tab" onclick="sw('trans')" id="tab-btn-trans">Translate</div>
       <div class="tab" onclick="sw('words')" id="tab-btn-words">Words</div>
       <div class="tab" onclick="sw('add')" id="tab-btn-add">Add</div>
       <div class="tab" onclick="sw('quiz')" id="tab-btn-quiz">Quiz</div>
@@ -326,6 +327,42 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
     </div>
     <div id="duePreview" style="font-size:12px;color:var(--tx2);margin-bottom:7px"></div>
     <button class="bp" style="width:100%;padding:8px" onclick="startSRS()" id="btn-srs">Start SRS Review</button>
+  </div>
+</div>
+
+<!-- TRANSLATE -->
+<div class="sec" id="tab-trans">
+  <div class="card" style="margin-bottom:9px">
+    <div style="font-size:12px;font-weight:500;color:var(--acc2);margin-bottom:10px">🌐 <span id="lbl-trans-title">Quick Translate</span></div>
+    <div class="row"><textarea id="transInput" rows="3" placeholder="Enter text..." style="resize:vertical"></textarea></div>
+    <div class="g2" style="margin-bottom:10px">
+      <div>
+        <label class="lbl" id="lbl-trans-from">From</label>
+        <select id="transFrom">
+          <option value="en">🇬🇧 English</option>
+          <option value="ja">🇯🇵 日本語</option>
+          <option value="zh-CN">🇨🇳 中文</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" id="lbl-trans-to">To</label>
+        <select id="transTo">
+          <option value="zh-CN">🇨🇳 中文</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="ja">🇯🇵 日本語</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="bp" onclick="doTranslate()" style="flex:1" id="btn-do-trans">🌐 Translate</button>
+      <button class="bg-btn" onclick="swapTransLangs()" title="Swap languages" style="width:36px;padding:0;font-size:16px">⇄</button>
+    </div>
+    <div id="transResult" style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;min-height:56px;display:none;font-size:15px;line-height:1.65;word-break:break-word"></div>
+    <div id="transAttr" style="font-size:10px;color:var(--tx2);margin-top:6px;display:none">Powered by MyMemory API</div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;font-weight:500;color:var(--acc2);margin-bottom:8px">🗂 <span id="lbl-trans-hist">Recent</span></div>
+    <div id="transHistList"><div class="empty" style="padding:16px 0;font-size:12px">No translations yet</div></div>
   </div>
 </div>
 
@@ -590,7 +627,7 @@ let recognition = null;
 const I18N = {
   en: {
     logo:'English Vocab', logoSub:'⇄ 日本語',
-    tabs:['Home','Words','Add','Quiz','Map','More'],
+    tabs:['Home','Translate','Words','Add','Quiz','Map','More'],
     slTotal:'Total',slMastered:'Mastered',slHard:'Hard',slDue:'Due',
     dailyGoal:'Daily Goal',perday:'words/day',streak:'Streak',
     wotd:'✨ Word of the Day',hardWords:'Hard Words 😓',
@@ -622,7 +659,7 @@ const I18N = {
   },
   jp: {
     logo:'日語詞彙',logoSub:'⇄ English',
-    tabs:['主页','单词','添加','测试','联想图','更多'],
+    tabs:['主页','翻译','单词','添加','测试','联想图','更多'],
     slTotal:'全部',slMastered:'已掌握',slHard:'困难词',slDue:'待复习',
     dailyGoal:'今日目标',perday:'个/天',streak:'连续学习',
     wotd:'✨ 每日单词',hardWords:'错题本 😓',
@@ -654,7 +691,7 @@ const I18N = {
   },
   zh: {
     logo:'中文词汇',logoSub:'⇄ English',
-    tabs:['主页','单词','添加','测试','联想图','更多'],
+    tabs:['主页','翻译','单词','添加','测试','联想图','更多'],
     slTotal:'全部',slMastered:'已掌握',slHard:'困难词',slDue:'待复习',
     dailyGoal:'今日目标',perday:'个/天',streak:'连续学习',
     wotd:'✨ 每日单词',hardWords:'错题本 😓',
@@ -741,9 +778,24 @@ function T(){ // apply translations to static elements
   document.getElementById('lbl-listenq').textContent=i.listenQ;
   // voice default
   document.getElementById('voiceLang').value = lang==='jp'?'ja-JP':lang==='zh'?'zh-CN':'en-US';
-  // logo dot color hint
-  document.getElementById('langDot').style.background = lang==='jp'?'#f87171':lang==='zh'?'#34d399':'#a78bfa';
-  document.getElementById('langDot').style.boxShadow = lang==='jp'?'0 0 5px #f87171':lang==='zh'?'0 0 5px #34d399':'0 0 5px rgba(167,139,250,0.8)';
+  // logo dot + header accent per language
+  const accs={en:{dot:'#a78bfa',glow:'rgba(167,139,250,0.8)',hacc:'#a78bfa',hglow:'rgba(155,109,255,0.55)',hbd:'rgba(155,109,255,0.40)',hbg:'rgba(16,8,46,0.92)'},
+               jp:{dot:'#f87171',glow:'#f87171',hacc:'#f87171',hglow:'rgba(248,113,113,0.55)',hbd:'rgba(248,113,113,0.35)',hbg:'rgba(46,8,8,0.92)'},
+               zh:{dot:'#34d399',glow:'#34d399',hacc:'#34d399',hglow:'rgba(52,211,153,0.55)',hbd:'rgba(52,211,153,0.35)',hbg:'rgba(4,30,20,0.92)'}};
+  const a=accs[lang];
+  document.getElementById('langDot').style.background=a.dot;
+  document.getElementById('langDot').style.boxShadow='0 0 5px '+a.glow;
+  const r=document.documentElement.style;
+  r.setProperty('--tt-hacc',a.hacc);
+  r.setProperty('--tt-hglow',a.hglow);
+  r.setProperty('--tt-hbd',a.hbd);
+  r.setProperty('--tt-hbg',a.hbg);
+  // translate tab labels
+  if(document.getElementById('lbl-trans-title'))document.getElementById('lbl-trans-title').textContent=lang==='en'?'Quick Translate':'快速翻译';
+  if(document.getElementById('lbl-trans-from'))document.getElementById('lbl-trans-from').textContent=lang==='en'?'From':'原语言';
+  if(document.getElementById('lbl-trans-to'))document.getElementById('lbl-trans-to').textContent=lang==='en'?'To':'目标语言';
+  if(document.getElementById('btn-do-trans'))document.getElementById('btn-do-trans').textContent=lang==='en'?'🌐 Translate':'🌐 翻译';
+  if(document.getElementById('lbl-trans-hist'))document.getElementById('lbl-trans-hist').textContent=lang==='en'?'Recent':'最近翻译';
 }
 
 // ─── LANG SWITCH ─────────────────────────────────────
@@ -827,6 +879,7 @@ function renderAddForm(populate){
         <button class="vbtn" id="vbtn-word" onclick="voiceInput('f-word','word')" title="${i.voiceHint}">🎤</button>
         <button class="bg-btn" onclick="speakAdd()" style="width:36px;padding:0;font-size:14px">🔊</button>
       </div>
+      <button class="bg-btn" id="btn-autofill" onclick="autoFill()" style="width:100%;margin-top:6px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px">✨ ${lang==='en'?'Auto-fill':'一键补充'}</button>
     </div>
     ${extraFields}
     <div style="font-size:11px;color:var(--acc2);font-weight:500;margin-bottom:6px">${i.fieldMeaning}</div>
@@ -922,6 +975,121 @@ function addWord(){
 }
 
 function speakAdd(){const t=(document.getElementById('f-word')||{}).value;if(t)speak(t);}
+
+// ─── AUTO-FILL ────────────────────────────────────────
+async function autoFill(){
+  const word=(document.getElementById('f-word')||{}).value.trim();
+  if(!word){notify(lang==='en'?'Enter a word first!':'请先输入单词！');return;}
+  const btn=document.getElementById('btn-autofill');
+  if(btn){btn.textContent='⏳ '+(lang==='en'?'Loading...':'查询中...');btn.disabled=true;}
+  try{
+    if(lang==='jp') await autoFillJP(word);
+    else if(lang==='en') await autoFillEN(word);
+    else await autoFillZH(word);
+  }catch(e){notify(lang==='en'?'Auto-fill failed':'自动补充失败');}
+  finally{if(btn){btn.textContent='✨ '+(lang==='en'?'Auto-fill':'一键补充');btn.disabled=false;}}
+}
+
+async function autoFillJP(word){
+  const data=await fetchJisho(word);
+  if(!data||!data.data||!data.data.length){notify('未找到词条（Jisho）');return;}
+  const entry=data.data[0];
+  const reading=(entry.japanese&&entry.japanese[0]&&entry.japanese[0].reading)||'';
+  const defs=[];
+  (entry.senses||[]).slice(0,3).forEach(s=>{
+    const meaning=s.english_definitions.join('; ');
+    const ex='';
+    if(meaning)defs.push({meaning,ex});
+  });
+  const level=(entry.jlpt&&entry.jlpt[0]||'').toUpperCase().replace('JLPT-','N')||'';
+  const cat=(entry.senses&&entry.senses[0]&&entry.senses[0].parts_of_speech&&entry.senses[0].parts_of_speech[0])||'';
+  const catMap={'Noun':'名词','Verb':'动词','Adjective':'形容词','Adverb':'副词'};
+  const catV=Object.keys(catMap).find(k=>cat.includes(k))||'';
+  renderAddForm({word,kana:reading,defs:defs.length?defs:[{meaning:'',ex:''}],level,cat:catMap[catV]||''});
+  notify('✅ '+(lang==='en'?'Auto-filled from Jisho':'已从 Jisho 补充'));
+}
+
+async function autoFillEN(word){
+  const data=await fetchEnDict(word);
+  if(!data||!data.length){notify('Not found (dictionary)');return;}
+  const entry=data[0];
+  const pron=(entry.phonetics&&entry.phonetics.find(p=>p.text)&&entry.phonetics.find(p=>p.text).text)||'';
+  const defs=[];
+  (entry.meanings||[]).forEach(m=>{
+    (m.definitions||[]).slice(0,2).forEach(d=>{
+      defs.push({meaning:d.definition||(m.partOfSpeech||''),ex:d.example||''});
+    });
+  });
+  const catRaw=(entry.meanings&&entry.meanings[0]&&entry.meanings[0].partOfSpeech)||'';
+  const catMap={'noun':'Academic','verb':'Academic','adjective':'Academic','adverb':'Academic'};
+  renderAddForm({word,pron,defs:defs.length?defs:[{meaning:'',ex:''}],level:'',cat:catMap[catRaw]||''});
+  notify('✅ Auto-filled from dictionary');
+}
+
+async function autoFillZH(word){
+  const [transEN,transJP]=await Promise.allSettled([
+    fetchMyMemory(word,'zh','en'),
+    fetchMyMemory(word,'zh','ja')
+  ]);
+  const meaning=[
+    transEN.status==='fulfilled'&&transEN.value?'EN: '+transEN.value:'',
+    transJP.status==='fulfilled'&&transJP.value?'JP: '+transJP.value:''
+  ].filter(Boolean).join('  ');
+  renderAddForm({word,defs:[{meaning:meaning||'',ex:''}]});
+  if(meaning)notify('✅ 已自动补充翻译');
+  else notify('未找到翻译');
+}
+
+// ─── TRANSLATE TAB ───────────────────────────────────
+const _transHist=[];
+function renderTransTab(){
+  const from=document.getElementById('transFrom');
+  const to=document.getElementById('transTo');
+  if(from){
+    const srcCode=lang==='jp'?'ja':lang==='zh'?'zh-CN':'en';
+    from.value=srcCode;
+    to.value=srcCode==='en'?'zh-CN':srcCode==='zh-CN'?'en':'zh-CN';
+  }
+  renderTransHist();
+}
+function renderTransHist(){
+  const el=document.getElementById('transHistList');
+  if(!el)return;
+  if(!_transHist.length){el.innerHTML='<div class="empty" style="padding:16px 0;font-size:12px">'+(lang==='en'?'No translations yet':'暂无翻译记录')+'</div>';return;}
+  el.innerHTML=_transHist.slice(-6).reverse().map(h=>`<div style="padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px"><span style="color:var(--acc2)">${h.from}</span><span style="color:var(--tx2);margin:0 6px">→</span><span>${h.to}</span></div>`).join('');
+}
+async function doTranslate(){
+  const text=(document.getElementById('transInput')||{}).value.trim();
+  if(!text){notify(lang==='en'?'Enter some text first':'请输入文本');return;}
+  const fromEl=document.getElementById('transFrom');
+  const toEl=document.getElementById('transTo');
+  const fromV=fromEl?fromEl.value:'en';
+  const toV=toEl?toEl.value:'zh-CN';
+  if(fromV===toV){notify(lang==='en'?'From and To must differ':'原语言与目标语言不能相同');return;}
+  const resEl=document.getElementById('transResult');
+  const attrEl=document.getElementById('transAttr');
+  if(resEl){resEl.style.display='block';resEl.textContent=lang==='en'?'Translating...':'翻译中...';}
+  try{
+    const result=await fetchMyMemory(text,fromV,toV);
+    if(resEl)resEl.textContent=result||'—';
+    if(attrEl)attrEl.style.display='block';
+    if(result){_transHist.push({from:text,to:result});renderTransHist();}
+  }catch(e){
+    if(resEl)resEl.textContent=lang==='en'?'Translation failed':'翻译失败';
+  }
+}
+function swapTransLangs(){
+  const f=document.getElementById('transFrom');
+  const t=document.getElementById('transTo');
+  if(!f||!t)return;
+  const tmp=f.value; f.value=t.value; t.value=tmp;
+  const inp=document.getElementById('transInput');
+  const res=document.getElementById('transResult');
+  if(res&&res.textContent&&res.textContent!==''&&res.style.display!=='none'&&inp){
+    inp.value=res.textContent;
+    res.style.display='none';
+  }
+}
 
 function bulkAdd(){
   const lines=document.getElementById('bulk').value.trim().split('\n').filter(Boolean);
@@ -1021,7 +1189,7 @@ function speak(text,langOverride){
   if(!window.speechSynthesis)return;
   window.speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
-  u.lang=langOverride||document.getElementById('voiceLang').value||(lang==='jp'?'ja-JP':'en-US');
+  u.lang=langOverride||(lang==='jp'?'ja-JP':lang==='zh'?'zh-CN':'en-US');
   u.rate=parseFloat(document.getElementById('vRate').value||0.85);
   window.speechSynthesis.speak(u);
 }
@@ -1223,9 +1391,10 @@ function sw(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   const tabEl=document.getElementById('tab-'+tab);
   if(tabEl){tabEl.classList.add('active');tabEl.classList.add('sec-fade');}
-  const map={home:0,words:1,add:2,quiz:3,map:4,more:5};
+  const map={home:0,trans:1,words:2,add:3,quiz:4,map:5,more:6};
   const idx=map[tab]; if(idx!==undefined)document.querySelectorAll('.tab')[idx].classList.add('active');
   if(tab==='home')renderHome();
+  if(tab==='trans')renderTransTab();
   if(tab==='words'){buildCatFilter();rw();}
   if(tab==='add')renderAddForm();
   if(tab==='quiz'){renderHist();updateQuizPool();}

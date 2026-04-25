@@ -934,7 +934,7 @@ function voiceInput(targetId, fieldHint){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(recognition){recognition.stop();recognition=null;}
   recognition=new SR();
-  recognition.lang=lang==='jp'?'ja-JP':'en-US';
+  recognition.lang=lang==='jp'?'ja-JP':lang==='zh'?'zh-CN':'en-US';
   recognition.interimResults=false;
   recognition.maxAlternatives=1;
   const btn=document.getElementById('vbtn-'+fieldHint)||document.getElementById('vbtn-word');

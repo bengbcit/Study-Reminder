@@ -225,6 +225,9 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 .dict-err{font-size:12px;color:var(--tx2);font-style:italic}
 .dict-attr{font-size:10px;color:var(--tx2);margin-top:5px}
 .dict-attr a{color:var(--acc2);text-decoration:none}
+/* Inline translation strip */
+.wtrans{background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:5px 8px;margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.trbtn{background:var(--bg3)!important;border:1px solid var(--bd)!important;border-radius:6px;padding:2px 5px!important;font-size:11px!important;line-height:1.3}
 </style>
 </head><body>
 <div class="app">
@@ -536,6 +539,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
         <option value="en-GB">English — British (en-GB)</option>
         <option value="en-AU">English — Australian (en-AU)</option>
         <option value="ja-JP">日本語 (ja-JP)</option>
+        <option value="zh-CN">中文 — 普通话 (zh-CN)</option>
       </select>
     </div>
     <div style="display:flex;align-items:center;gap:7px">
@@ -566,15 +570,17 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 
 <script>
 // ─── STATE ──────────────────────────────────────────
-let lang = localStorage.getItem('vocabLang') || 'en'; // 'en' or 'jp'
-let W = { en: [], jp: [] };
+let lang = localStorage.getItem('vocabLang') || 'en'; // 'en', 'jp', or 'zh'
+let W = { en: [], jp: [], zh: [] };
 try { W.en = JSON.parse(localStorage.getItem('vocabEN') || '[]'); } catch(e){}
 try { W.jp = JSON.parse(localStorage.getItem('vocabJP') || '[]'); } catch(e){}
+try { W.zh = JSON.parse(localStorage.getItem('vocabZH') || '[]'); } catch(e){}
 
 let QW=[],QI=0,QSc=0,QAns=false,QFlip=false,curMode='mc';
-let Hist = { en: [], jp: [] };
+let Hist = { en: [], jp: [], zh: [] };
 try { Hist.en = JSON.parse(localStorage.getItem('histEN')||'[]'); } catch(e){}
 try { Hist.jp = JSON.parse(localStorage.getItem('histJP')||'[]'); } catch(e){}
+try { Hist.zh = JSON.parse(localStorage.getItem('histZH')||'[]'); } catch(e){}
 let aFilters=[];
 let curTheme=localStorage.getItem('vocabTheme')||'purple'; // default: dark purple (matches TT brand)
 let defCount = 1; // number of definition fields
@@ -645,13 +651,45 @@ const I18N = {
     goalDone:'🎉 今日目标完成！',goalStatus:'今日已添加 {n}/{g} 个',
     sortNew:'最新',sortAlpha:'字母',sortHard:'最难',sortDue:'待复习',
     bulk:'批量添加',
+  },
+  zh: {
+    logo:'中文词汇',logoSub:'⇄ English',
+    tabs:['主页','单词','添加','测试','联想图','更多'],
+    slTotal:'全部',slMastered:'已掌握',slHard:'困难词',slDue:'待复习',
+    dailyGoal:'今日目标',perday:'个/天',streak:'连续学习',
+    wotd:'✨ 每日单词',hardWords:'错题本 😓',
+    fieldWord:'中文 *',fieldPron:'拼音',fieldMeaning:'英文/日文意思',
+    fieldEx:'例句',fieldRoot:'联想词',fieldRel:'相关词',
+    fieldLevel:'HSK 等级',fieldCat:'词性',
+    levels:['无','HSK1','HSK2','HSK3','HSK4','HSK5','HSK6','词组'],
+    cats:['无','动词','名词','形容词','副词','其他'],
+    placeholder:{word:'例: 食物',pron:'例: shí wù',meaning:'例: food / 食べ物',ex:'例: 我喜欢吃食物。',root:'例: 吃, 饮食',rel:'例: 饮食, 饭'},
+    bulkFmt:'格式：中文, 拼音, 意思, 等级, 词性',
+    bulkPH:'食物,shí wù,food,HSK2,名词\n学习,xué xí,to study,HSK2,动词',
+    addDef:'+ 添加另一个意思',
+    voiceHint:'🎤 点击语音输入单词',
+    srsBtn:'开始复习到期单词',
+    qModes:['四选一','拼写','翻牌','听力'],
+    qDirs:['随机切换','单词→意思','意思→单词'],
+    qPool:['全部','仅错题','待复习'],
+    listenQ:'听音频，选出正确单词',
+    checkBtn:'确认',endBtn:'结束',tryAgain:'再来一次',startQuiz:'开始测试',
+    genMap:'生成图',mapTitle:'词汇联想图',mapInfo:'在添加单词时填写联想词，点击🔗生成词族图。',
+    relWords:'有联想词的单词：',
+    exportLbl:'导出',importLbl:'导入 CSV',voiceLbl:'发音设置',accentLbl:'语言',speedLbl:'语速',dataLbl:'数据管理',
+    clearMaster:'清除掌握标记',clearAll:'清空全部',
+    noWords:'暂无单词，去添加吧 ✍️',
+    searchPH:'搜索中文 / 拼音...',
+    goalDone:'🎉 今日目标完成！',goalStatus:'今日已添加 {n}/{g} 个',
+    sortNew:'最新',sortAlpha:'字母',sortHard:'最难',sortDue:'待复习',
+    bulk:'批量添加',
   }
 };
 
 function t(key){ return I18N[lang][key] || key; }
 function T(){ // apply translations to static elements
   const i=I18N[lang];
-  document.getElementById('logoText').textContent=lang==='jp'?'JP':'EN';
+  document.getElementById('logoText').textContent=lang==='jp'?'JP':lang==='zh'?'ZH':'EN';
   document.querySelectorAll('#tabBar .tab').forEach((el,idx)=>el.textContent=i.tabs[idx]);
   document.getElementById('sl-total').textContent=i.slTotal;
   document.getElementById('sl-mastered').textContent=i.slMastered;
@@ -702,15 +740,15 @@ function T(){ // apply translations to static elements
   document.getElementById('btn-clearall').textContent=i.clearAll;
   document.getElementById('lbl-listenq').textContent=i.listenQ;
   // voice default
-  document.getElementById('voiceLang').value = lang==='jp'?'ja-JP':'en-US';
+  document.getElementById('voiceLang').value = lang==='jp'?'ja-JP':lang==='zh'?'zh-CN':'en-US';
   // logo dot color hint
-  document.getElementById('langDot').style.background = lang==='jp'?'#f87171':'#a78bfa';
-  document.getElementById('langDot').style.boxShadow = lang==='jp'?'0 0 5px #f87171':'0 0 5px rgba(167,139,250,0.8)';
+  document.getElementById('langDot').style.background = lang==='jp'?'#f87171':lang==='zh'?'#34d399':'#a78bfa';
+  document.getElementById('langDot').style.boxShadow = lang==='jp'?'0 0 5px #f87171':lang==='zh'?'0 0 5px #34d399':'0 0 5px rgba(167,139,250,0.8)';
 }
 
 // ─── LANG SWITCH ─────────────────────────────────────
 function switchLang(){
-  lang = lang==='en'?'jp':'en';
+  lang = lang==='en'?'jp':lang==='jp'?'zh':'en';
   localStorage.setItem('vocabLang', lang);
   T();
   renderAddForm();
@@ -718,11 +756,11 @@ function switchLang(){
   rw();
   renderHome();
   updateQuizPool();
-  notify(lang==='en'?'Switched to English':'已切换到日语模式');
+  notify(lang==='en'?'Switched to English 🇬🇧':lang==='jp'?'已切换到日语 🇯🇵':'已切换到中文 🇨🇳');
 }
 
 // ─── SAVE/LOAD ────────────────────────────────────────
-function save(){ localStorage.setItem('vocabEN', JSON.stringify(W.en)); localStorage.setItem('vocabJP', JSON.stringify(W.jp)); }
+function save(){ localStorage.setItem('vocabEN', JSON.stringify(W.en)); localStorage.setItem('vocabJP', JSON.stringify(W.jp)); localStorage.setItem('vocabZH', JSON.stringify(W.zh)); }
 function cw(){ return W[lang]; }
 function notify(m,t=2200){ const n=document.getElementById('notif'); n.textContent=m; n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),t); }
 
@@ -753,8 +791,8 @@ function renderHome(){
   // WOTD
   if(ws.length){
     const w=ws[new Date().getDate()%ws.length];
-    const head=lang==='en'?w.word:w.word;
-    const sub=lang==='en'?w.pron:(w.kana||'');
+    const head=w.word;
+    const sub=lang==='jp'?(w.kana||''):(w.pron||'');
     const def1=(w.defs&&w.defs[0])?w.defs[0].meaning:w.meaning||'';
     const ex1=(w.defs&&w.defs[0]&&w.defs[0].ex)?w.defs[0].ex:'';
     document.getElementById('wotd').innerHTML=`<div style="font-size:18px;font-weight:500">${head} <span style="font-size:13px;cursor:pointer;color:var(--acc2)" onclick="speak('${head.replace(/'/g,"\\'")}')">🔊</span></div>${sub?`<div style="font-size:11px;font-family:monospace;color:var(--tx2)">${sub}</div>`:''}<div style="font-size:13px;color:var(--tx2);margin-top:3px">${def1}</div>${ex1?`<div style="font-size:11px;color:var(--tx2);font-style:italic;margin-top:3px">"${ex1}"</div>`:''} ${w.root?`<div style="font-size:11px;color:var(--acc);margin-top:3px">📖 ${w.root}</div>`:''}`;
@@ -775,11 +813,11 @@ function renderAddForm(populate){
   const defs=p.defs||[{meaning:'',ex:''}];
   defCount=defs.length;
   const defsHtml=defs.map((d,idx)=>buildDefHTML(idx,d.meaning,d.ex)).join('');
-  const extraFields = lang==='en'
-    ? `<div class="row"><label class="lbl">${i.fieldPron}</label><div style="display:flex;gap:6px"><input id="f-pron" value="${p.pron||''}" placeholder="${i.placeholder.pron}" style="flex:1"><button class="vbtn" id="vbtn-pron" onclick="voiceInput('f-pron','pron')" title="${i.voiceHint}">🎤</button></div></div>
+  const extraFields = lang==='jp'
+    ? `<div class="row"><label class="lbl">${i.fieldPron}</label><div style="display:flex;gap:6px"><input id="f-kana" value="${p.kana||''}" placeholder="${i.placeholder.pron}" style="flex:1"><button class="vbtn" id="vbtn-kana" onclick="voiceInput('f-kana','kana')" title="${i.voiceHint}">🎤</button></div></div>
        <div class="row"><label class="lbl">${i.fieldRoot}</label><input id="f-root" value="${p.root||''}" placeholder="${i.placeholder.root}"></div>
        <div class="row"><label class="lbl">${i.fieldRel}</label><input id="f-rel" value="${p.rel||''}" placeholder="${i.placeholder.rel}"></div>`
-    : `<div class="row"><label class="lbl">${i.fieldPron}</label><div style="display:flex;gap:6px"><input id="f-kana" value="${p.kana||''}" placeholder="${i.placeholder.pron}" style="flex:1"><button class="vbtn" id="vbtn-kana" onclick="voiceInput('f-kana','kana')" title="${i.voiceHint}">🎤</button></div></div>
+    : `<div class="row"><label class="lbl">${i.fieldPron}</label><div style="display:flex;gap:6px"><input id="f-pron" value="${p.pron||''}" placeholder="${i.placeholder.pron}" style="flex:1"><button class="vbtn" id="vbtn-pron" onclick="voiceInput('f-pron','pron')" title="${i.voiceHint}">🎤</button></div></div>
        <div class="row"><label class="lbl">${i.fieldRoot}</label><input id="f-root" value="${p.root||''}" placeholder="${i.placeholder.root}"></div>
        <div class="row"><label class="lbl">${i.fieldRel}</label><input id="f-rel" value="${p.rel||''}" placeholder="${i.placeholder.rel}"></div>`;
   document.getElementById('addFormCard').innerHTML=`
@@ -869,7 +907,7 @@ function addWord(){
   const today=new Date().toDateString();
   const entry={
     word, defs,
-    pron: lang==='en'?(document.getElementById('f-pron')||{}).value.trim():'',
+    pron: lang!=='jp'?(document.getElementById('f-pron')||{}).value.trim():'',
     kana: lang==='jp'?(document.getElementById('f-kana')||{}).value.trim():'',
     root:(document.getElementById('f-root')||{}).value.trim(),
     rel:(document.getElementById('f-rel')||{}).value.trim(),
@@ -891,7 +929,9 @@ function bulkAdd(){
   lines.forEach(l=>{
     const p=l.split(/[,，]/).map(s=>s.trim());
     if(p[0]&&p[1]){
-      cw().unshift({word:p[0],defs:[{meaning:p[1],ex:p[2]||''}],pron:'',kana:lang==='jp'?(p[1]||''):'',root:'',rel:'',level:p[3]||'',cat:p[4]||'',mastered:false,addedDate:today,srsBox:0,nextReview:today,wrongCount:0});c++;
+      const isJpZh=lang==='jp'||lang==='zh';
+      const meaning=isJpZh?(p[2]||p[1]):p[1];
+      cw().unshift({word:p[0],defs:[{meaning,ex:isJpZh?(p[5]||''):(p[2]||'')}],pron:lang==='zh'?(p[1]||''):'',kana:lang==='jp'?(p[1]||''):'',root:'',rel:'',level:(isJpZh?p[3]:p[3])||'',cat:(isJpZh?p[4]:p[4])||'',mastered:false,addedDate:today,srsBox:0,nextReview:today,wrongCount:0});c++;
     }
   });
   if(c){save();document.getElementById('bulk').value='';notify((lang==='en'?'✅ Added ':'✅ 批量添加 ')+c+(lang==='en'?' words':' 个'));buildCatFilter();}
@@ -902,7 +942,8 @@ function bulkAdd(){
 function tagCls(v){
   const jpM={'N1':'t-n1','N2':'t-n2','N3':'t-n3','N4':'t-n4','N5':'t-n5','动词':'t-verb','名词':'t-noun','形容词':'t-adj','副词':'t-adv','词组':'t-phrase'};
   const enM={'A1':'t-a1','A2':'t-a2','B1':'t-b1','B2':'t-b2','C1':'t-c1','C2':'t-c2','Phrase':'t-phrase'};
-  return (lang==='jp'?jpM:enM)[v]||'t-other';
+  const zhM={'HSK1':'t-n5','HSK2':'t-n4','HSK3':'t-n3','HSK4':'t-n2','HSK5':'t-n1','HSK6':'t-n1','词组':'t-phrase','动词':'t-verb','名词':'t-noun','形容词':'t-adj','副词':'t-adv'};
+  return (lang==='jp'?jpM:lang==='zh'?zhM:enM)[v]||'t-other';
 }
 
 function buildCatFilter(){
@@ -944,11 +985,12 @@ function rw(){
     const tags=[w.level,w.cat].filter(Boolean).map(t=>`<span class="tag ${tagCls(t)}">${t}</span>`).join('');
     const defs=w.defs||[{meaning:w.meaning||'',ex:''}];
     const defsHTML=defs.map((d,i)=>`<div style="margin-top:${i?4:2}px"><span style="font-size:10px;color:var(--acc2);font-weight:500">${i+1}.</span> <span style="font-size:12px;color:var(--tx2)">${d.meaning}</span>${d.ex?`<div style="font-size:11px;color:var(--tx2);font-style:italic;margin-left:12px">"${d.ex}"</div>`:''}</div>`).join('');
-    const sub = lang==='en'?(w.pron||''):(w.kana||'');
+    const sub = lang==='jp'?(w.kana||''):(w.pron||'');
     return `<div class="wcard${w.mastered?' mastered':''}">
       <div style="font-size:17px;cursor:pointer;margin-top:2px" onclick="toggleMaster(${ri})">${w.mastered?'✅':'⬜'}</div>
       <div class="wmain">
-        <div style="display:flex;align-items:baseline;gap:5px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="ico trbtn" onclick="quickTranslate(${ri})" title="${lang==='en'?'Translate':'翻译'}" style="padding:2px 5px;font-size:11px;flex-shrink:0">🌐</button>
           <span class="whead">${w.word}</span>
           <span style="font-size:11px;cursor:pointer;color:var(--acc2)" onclick="speak('${w.word.replace(/'/g,"\\'")}')">🔊</span>
         </div>
@@ -957,6 +999,7 @@ function rw(){
         ${w.root?`<div class="wroot">📖 ${w.root}</div>`:''}
         ${w.rel?`<div style="font-size:10px;color:var(--tx2);margin-top:2px">🔗 ${w.rel}</div>`:''}
         <div class="wtags">${tags}${isDue(w)?`<span class="tag t-due">${lang==='en'?'Due':'待复习'}</span>`:''}${(w.wrongCount||0)>=2?`<span class="tag t-hard">${lang==='en'?'✗':'错'}${w.wrongCount}</span>`:''}</div>
+        <div class="wtrans" id="wt-${ri}" style="display:none"></div>
       </div>
       <div class="wact">
         <button class="ico" onclick="openDict(${ri})" title="${lang==='en'?'Dictionary':'辞書'}">🔍</button>
@@ -1206,12 +1249,21 @@ function seedJP(){
   ].forEach(w=>W.jp.push({...w,pron:'',mastered:false,addedDate:t,srsBox:0,nextReview:t,wrongCount:0}));
 }
 
+function seedZH(){
+  const t=new Date().toDateString();
+  [{word:'食物',pron:'shí wù',defs:[{meaning:'food',ex:'我喜欢吃食物。'},{meaning:'食品',ex:'这种食物很健康。'}],root:'',rel:'饮食,饭',level:'HSK2',cat:'名词'},
+   {word:'学习',pron:'xué xí',defs:[{meaning:'to study / to learn',ex:'我每天学习中文。'}],root:'',rel:'教育,知识',level:'HSK2',cat:'动词'},
+   {word:'美丽',pron:'měi lì',defs:[{meaning:'beautiful',ex:'这里的风景很美丽。'}],root:'',rel:'漂亮,好看',level:'HSK4',cat:'形容词'}
+  ].forEach(w=>W.zh.push({...w,kana:'',mastered:false,addedDate:t,srsBox:0,nextReview:t,wrongCount:0}));
+}
+
 // ─── INIT ─────────────────────────────────────────────
 setTheme(curTheme);
 T();
 renderAddForm();
 if(!W.en.length) seedEN();
 if(!W.jp.length) seedJP();
+if(!W.zh.length) seedZH();
 save();
 document.getElementById('goalN').value=localStorage.getItem(lang+'Goal')||5;
 renderHome();
@@ -1388,6 +1440,36 @@ function pdfImport() {
   }
 }
 
+// ─── QUICK TRANSLATE (inline on word card) ────────────
+const _transCache = {};
+async function quickTranslate(idx) {
+  const w = cw()[idx];
+  if (!w) return;
+  const el = document.getElementById('wt-' + idx);
+  if (!el) return;
+  if (el.style.display !== 'none') { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = '<span style="font-size:11px;color:var(--tx2)">⟳</span>';
+
+  const cacheKey = lang + '_' + w.word;
+  if (_transCache[cacheKey]) { el.innerHTML = _transCache[cacheKey]; return; }
+
+  const srcCode = lang === 'jp' ? 'ja' : lang === 'zh' ? 'zh' : 'en';
+  const targets = [
+    {l:'en', code:'en', flag:'🇬🇧', name:'English'},
+    {l:'jp', code:'ja', flag:'🇯🇵', name:'日本語'},
+    {l:'zh', code:'zh-CN', flag:'🇨🇳', name:'中文'},
+  ].filter(t => t.l !== lang);
+
+  const results = await Promise.allSettled(targets.map(t => fetchMyMemory(w.word, srcCode, t.code)));
+  const html = targets.map((t, i) => {
+    const val = results[i].status === 'fulfilled' && results[i].value ? results[i].value : '—';
+    return `<span style="font-size:11px;color:var(--tx2)">${t.flag} <span style="color:var(--acc2)">${t.name}</span>: ${val}</span>`;
+  }).join('<span style="color:var(--bd);margin:0 4px">·</span>');
+  _transCache[cacheKey] = html;
+  el.innerHTML = html;
+}
+
 // ─── DICT PANEL ──────────────────────────────────────
 function openDict(idx) {
   const w = cw()[idx];
@@ -1427,12 +1509,16 @@ async function loadDict(w) {
     setTimeout(() => initHanziWriter(cjkChars), 60);
   }
 
-  const [defRes, transRes] = await Promise.allSettled([
-    lang === 'jp' ? fetchJisho(word) : fetchEnDict(word),
-    fetchMyMemory(word, lang === 'jp' ? 'ja' : 'en'),
-  ]);
+  const srcCode = lang === 'jp' ? 'ja' : lang === 'zh' ? 'zh' : 'en';
+  const tgtCode = lang === 'zh' ? 'en' : 'zh-CN';
+  let defPromise;
+  if (lang === 'jp') defPromise = fetchJisho(word);
+  else if (lang === 'en') defPromise = fetchEnDict(word);
+  else defPromise = Promise.resolve(null);
+
+  const [defRes, transRes] = await Promise.allSettled([defPromise, fetchMyMemory(word, srcCode, tgtCode)]);
   renderDefSection(defRes);
-  renderTransSection(transRes);
+  renderTransSection(transRes, tgtCode);
 }
 
 function initHanziWriter(chars) {
@@ -1511,8 +1597,8 @@ async function fetchEnDict(word) {
   return { type: 'en', meanings };
 }
 
-async function fetchMyMemory(text, srcLang) {
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang}|zh-CN`;
+async function fetchMyMemory(text, srcLang, targetLang = 'zh-CN') {
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang}|${targetLang}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Translation error');
   const json = await res.json();
@@ -1549,10 +1635,11 @@ function renderDefSection(res) {
   el.innerHTML = inner;
 }
 
-function renderTransSection(res) {
+function renderTransSection(res, tgtCode) {
   const el = document.getElementById('dpTrans');
   if (!el) return;
-  const lbl = `<div class="dict-sec-lbl">翻译 · Translation → 中文</div>`;
+  const tgtName = tgtCode === 'en' ? 'English' : tgtCode === 'ja' ? '日本語' : '中文';
+  const lbl = `<div class="dict-sec-lbl">翻译 · Translation → ${tgtName}</div>`;
   if (res.status === 'rejected' || !res.value) {
     el.innerHTML = lbl + `<div class="dict-err">Translation unavailable</div>`;
     return;

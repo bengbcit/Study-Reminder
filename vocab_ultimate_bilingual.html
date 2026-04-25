@@ -658,36 +658,36 @@ const I18N = {
     bulk:'Bulk Add',
   },
   jp: {
-    logo:'日語詞彙',logoSub:'⇄ English',
-    tabs:['主页','翻译','单词','添加','测试','联想图','更多'],
-    slTotal:'全部',slMastered:'已掌握',slHard:'困难词',slDue:'待复习',
-    dailyGoal:'今日目标',perday:'个/天',streak:'连续学习',
-    wotd:'✨ 每日单词',hardWords:'错题本 😓',
-    fieldWord:'日文 *',fieldPron:'读音（假名）',fieldMeaning:'中文意思',
-    fieldEx:'例句',fieldRoot:'联想词',fieldRel:'相关词',
-    fieldLevel:'JLPT 等级',fieldCat:'词性',
-    levels:['无','N1','N2','N3','N4','N5','词组'],
-    cats:['无','动词','名词','形容词','副词','其他'],
-    placeholder:{word:'例: 食べる',pron:'例: たべる',meaning:'例: 吃',ex:'例: 毎日ご飯を食べる。',root:'例: 飲む, 料理',rel:'例: 料理, 食事'},
-    bulkFmt:'格式：日文, 假名, 中文, 等级, 词性',
-    bulkPH:'食べる,たべる,吃,N4,动词\n飲む,のむ,喝,N4,动词',
-    addDef:'+ 添加另一个意思',
-    voiceHint:'🎤 点击语音输入单词',
-    srsBtn:'开始复习到期单词',
-    qModes:['四选一','拼写','翻牌','听力'],
-    qDirs:['随机切换','单词→意思','意思→单词'],
-    qPool:['全部','仅错题','待复习'],
-    listenQ:'听音频，选出正确单词',
-    checkBtn:'确认',endBtn:'结束',tryAgain:'再来一次',startQuiz:'开始测试',
-    genMap:'生成图',mapTitle:'词汇联想图',mapInfo:'在添加单词时填写联想词，点击🔗生成词族图。',
-    relWords:'有联想词的单词：',
-    exportLbl:'导出',importLbl:'导入 CSV',voiceLbl:'发音设置',accentLbl:'语言',speedLbl:'语速',dataLbl:'数据管理',
-    clearMaster:'清除掌握标记',clearAll:'清空全部',
-    noWords:'暂无单词，去添加吧 ✍️',
-    searchPH:'搜索日文 / 中文 / 假名...',
-    goalDone:'🎉 今日目标完成！',goalStatus:'今日已添加 {n}/{g} 个',
-    sortNew:'最新',sortAlpha:'字母',sortHard:'最难',sortDue:'待复习',
-    bulk:'批量添加',
+    logo:'日本語単語',logoSub:'⇄ English',
+    tabs:['ホーム','翻訳','単語','追加','テスト','連想マップ','設定'],
+    slTotal:'合計',slMastered:'習得済',slHard:'苦手',slDue:'復習待ち',
+    dailyGoal:'今日の目標',perday:'語/日',streak:'連続学習',
+    wotd:'✨ 今日の単語',hardWords:'間違えた語 😓',
+    fieldWord:'日本語 *',fieldPron:'読み（ひらがな）',fieldMeaning:'意味（中国語）',
+    fieldEx:'例文',fieldRoot:'語源・関連語',fieldRel:'関連語',
+    fieldLevel:'JLPT レベル',fieldCat:'品詞',
+    levels:['なし','N1','N2','N3','N4','N5','フレーズ'],
+    cats:['なし','動詞','名詞','形容詞','副詞','その他'],
+    placeholder:{word:'例: 食べる',pron:'例: たべる',meaning:'例: 食べること',ex:'例: 毎日ご飯を食べる。',root:'例: 飲む, 料理',rel:'例: 料理, 食事'},
+    bulkFmt:'形式：単語, 読み, 意味, レベル, 品詞',
+    bulkPH:'食べる,たべる,食べること,N4,動詞\n飲む,のむ,飲むこと,N4,動詞',
+    addDef:'+ 別の意味を追加',
+    voiceHint:'🎤 クリックして音声入力',
+    srsBtn:'復習期限の単語を開始',
+    qModes:['4択','スペル','フラッシュカード','リスニング'],
+    qDirs:['ランダム','単語→意味','意味→単語'],
+    qPool:['全て','苦手語のみ','復習待ちのみ'],
+    listenQ:'音声を聞いて正しい単語を選んでください',
+    checkBtn:'確認',endBtn:'終了',tryAgain:'もう一度',startQuiz:'テスト開始',
+    genMap:'マップ生成',mapTitle:'単語連想マップ',mapInfo:'単語追加時に関連語を入力し、🔗をタップして連想マップを生成。',
+    relWords:'関連語がある単語：',
+    exportLbl:'エクスポート',importLbl:'CSV インポート',voiceLbl:'音声設定',accentLbl:'言語',speedLbl:'速度',dataLbl:'データ管理',
+    clearMaster:'習得マークをクリア',clearAll:'全て削除',
+    noWords:'単語がありません。追加してみましょう ✍️',
+    searchPH:'日本語 / 意味 / 読みを検索...',
+    goalDone:'🎉 今日の目標達成！',goalStatus:'今日 {n}/{g} 語追加済み',
+    sortNew:'新着順',sortAlpha:'50音順',sortHard:'苦手順',sortDue:'復習待ち順',
+    bulk:'一括追加',
   },
   zh: {
     logo:'中文词汇',logoSub:'⇄ English',
@@ -1160,7 +1160,7 @@ function rw(){
         <div style="display:flex;align-items:center;gap:6px">
           <button class="ico trbtn" onclick="quickTranslate(${ri})" title="${lang==='en'?'Translate':'翻译'}" style="padding:2px 5px;font-size:11px;flex-shrink:0">🌐</button>
           <span class="whead">${w.word}</span>
-          <span style="font-size:11px;cursor:pointer;color:var(--acc2)" onclick="speak('${w.word.replace(/'/g,"\\'")}')">🔊</span>
+          <button class="ico" onclick="speak('${w.word.replace(/'/g,"\\'")}'" style="font-size:11px;padding:2px 5px">🔊</button>
         </div>
         ${sub?`<div class="wsub">${sub}</div>`:''}
         ${defsHTML}
@@ -1727,7 +1727,11 @@ function initHanziWriter(chars) {
 }
 
 async function fetchJisho(word) {
-  const res = await fetch(`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(word)}`);
+  const direct = `https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(word)}`;
+  const proxy  = `https://corsproxy.io/?${encodeURIComponent(direct)}`;
+  let res;
+  try { res = await fetch(direct); } catch(_) { res = await fetch(proxy); }
+  if (!res.ok) { res = await fetch(proxy); }
   if (!res.ok) throw new Error('Jisho ' + res.status);
   const json = await res.json();
   const entries = json.data;

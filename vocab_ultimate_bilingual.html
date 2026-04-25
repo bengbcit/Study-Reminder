@@ -2,6 +2,7 @@
 <html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3/dist/hanzi-writer.min.js"></script>
 <!-- Apply saved theme BEFORE render to prevent light-mode flash -->
 <script>(function(){var t=localStorage.getItem('vocabTheme')||'purple';var TH={light:{'--bg':'#f6f8ff','--bg2':'#fff','--bg3':'#eef0fa','--bd':'#dde0f5','--tx':'#131320','--tx2':'#5a5a90','--acc':'#3b5bdb','--acc2':'#748ffc'},dark:{'--bg':'#0d0e1a','--bg2':'#141525','--bg3':'#1c1e30','--bd':'#2a2d48','--tx':'#e8eaff','--tx2':'#8890c0','--acc':'#748ffc','--acc2':'#91a7ff'},blue:{'--bg':'#e8f4fd','--bg2':'#fff','--bg3':'#d0e8f8','--bd':'#a8d0f0','--tx':'#0a2540','--tx2':'#3060a0','--acc':'#1971c2','--acc2':'#339af0'},purple:{'--bg':'#100d1f','--bg2':'#1a1530','--bg3':'#221c3a','--bd':'#3a3060','--tx':'#ede8ff','--tx2':'#9080c0','--acc':'#a78bfa','--acc2':'#c4b5fd'}};if(t!=='system'&&TH[t]){var s=document.documentElement.style;Object.entries(TH[t]).forEach(function(e){s.setProperty(e[0],e[1]);});}})();</script>
 <style>
@@ -198,6 +199,32 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
   color:#ddd6fe;
 }
 .tt-px-home{display:block;image-rendering:pixelated}
+
+/* ─── Dict Panel ─────────────────────────────────── */
+#dictOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:90;opacity:0;pointer-events:none;transition:opacity .25s}
+#dictOverlay.open{opacity:1;pointer-events:all}
+#dictPanel{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(102%);width:100%;max-width:500px;max-height:82vh;background:var(--bg2);border:1px solid var(--bd);border-bottom:none;border-radius:16px 16px 0 0;z-index:91;overflow-y:auto;transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:0 -6px 40px rgba(0,0,0,.5),0 0 0 1px rgba(155,109,255,0.08)}
+#dictPanel.open{transform:translateX(-50%) translateY(0)}
+.dict-handle{width:36px;height:4px;background:var(--bd);border-radius:99px;margin:10px auto 0;cursor:pointer}
+.dict-head{padding:12px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--bd)}
+.dict-title{flex:1;min-width:0}
+.dict-word-big{font-size:26px;font-weight:600;line-height:1.2;word-break:break-all}
+.dict-reading{font-size:13px;color:var(--acc2);font-family:monospace;margin-top:3px;min-height:18px}
+.dict-x{width:30px;height:30px;border-radius:8px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dict-x:hover{border-color:var(--dan);color:var(--dan)}
+.dict-sec{padding:11px 16px;border-bottom:1px solid var(--bd)}
+.dict-sec:last-child{border-bottom:none;padding-bottom:22px}
+.dict-sec-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);font-weight:600;margin-bottom:8px}
+.dict-def-row{font-size:13px;margin-bottom:7px;line-height:1.55;color:var(--tx)}
+.dict-pos{font-size:10px;background:var(--bg3);border:1px solid var(--bd);border-radius:4px;padding:1px 5px;color:var(--acc2);margin-right:5px;white-space:nowrap}
+.dict-stroke-row{display:flex;gap:8px;flex-wrap:wrap;padding:2px 0}
+.dict-char-box{display:flex;flex-direction:column;align-items:center;gap:4px}
+.dict-char-lbl{font-size:9px;color:var(--tx2)}
+.dict-loading{font-size:12px;color:var(--tx2);text-align:center;padding:12px 0}
+.dict-trans-text{font-size:14px;color:var(--tx);padding:3px 0;line-height:1.5}
+.dict-err{font-size:12px;color:var(--tx2);font-style:italic}
+.dict-attr{font-size:10px;color:var(--tx2);margin-top:5px}
+.dict-attr a{color:var(--acc2);text-decoration:none}
 </style>
 </head><body>
 <div class="app">
@@ -932,6 +959,7 @@ function rw(){
         <div class="wtags">${tags}${isDue(w)?`<span class="tag t-due">${lang==='en'?'Due':'待复习'}</span>`:''}${(w.wrongCount||0)>=2?`<span class="tag t-hard">${lang==='en'?'✗':'错'}${w.wrongCount}</span>`:''}</div>
       </div>
       <div class="wact">
+        <button class="ico" onclick="openDict(${ri})" title="${lang==='en'?'Dictionary':'辞書'}">🔍</button>
         <button class="ico" onclick="editWord(${ri})">✏️</button>
         <button class="ico" onclick="mapWord(${ri})">🔗</button>
         <button class="ico" onclick="deleteWord(${ri})">🗑</button>
@@ -1359,5 +1387,191 @@ function pdfImport() {
     notify(skipped ? `全部 ${skipped} 个已存在，跳过` : '没有选中单词');
   }
 }
+
+// ─── DICT PANEL ──────────────────────────────────────
+function openDict(idx) {
+  const w = cw()[idx];
+  if (!w) return;
+  document.getElementById('dpWord').textContent = w.word;
+  const reading = lang === 'jp' ? (w.kana || '') : (w.pron || '');
+  document.getElementById('dpReading').textContent = reading;
+  document.getElementById('dpBody').innerHTML = '<div class="dict-loading">⟳ Loading…</div>';
+  document.getElementById('dictOverlay').classList.add('open');
+  document.getElementById('dictPanel').classList.add('open');
+  loadDict(w);
+}
+
+function closeDict() {
+  document.getElementById('dictOverlay').classList.remove('open');
+  document.getElementById('dictPanel').classList.remove('open');
+}
+
+function hasCJK(s) {
+  return /[一-鿿㐀-䶿豈-﫿]/.test(s);
+}
+
+async function loadDict(w) {
+  const body = document.getElementById('dpBody');
+  const word = w.word;
+  const cjkChars = [...word].filter(c => hasCJK(c));
+
+  let sections = '';
+  if (cjkChars.length) {
+    sections += `<div class="dict-sec"><div class="dict-sec-lbl">笔顺 · Stroke Order</div><div class="dict-stroke-row" id="dpStrokes"><div class="dict-loading">Animating…</div></div></div>`;
+  }
+  sections += `<div class="dict-sec" id="dpDefs"><div class="dict-loading">⟳ Fetching definition…</div></div>`;
+  sections += `<div class="dict-sec" id="dpTrans"><div class="dict-loading">⟳ Translating…</div></div>`;
+  body.innerHTML = sections;
+
+  if (cjkChars.length) {
+    setTimeout(() => initHanziWriter(cjkChars), 60);
+  }
+
+  const [defRes, transRes] = await Promise.allSettled([
+    lang === 'jp' ? fetchJisho(word) : fetchEnDict(word),
+    fetchMyMemory(word, lang === 'jp' ? 'ja' : 'en'),
+  ]);
+  renderDefSection(defRes);
+  renderTransSection(transRes);
+}
+
+function initHanziWriter(chars) {
+  const container = document.getElementById('dpStrokes');
+  if (!container) return;
+  if (typeof HanziWriter === 'undefined') {
+    container.innerHTML = '<div class="dict-err">Hanziwriter failed to load</div>';
+    return;
+  }
+  container.innerHTML = '';
+  const cs = getComputedStyle(document.documentElement);
+  const strokeColor = cs.getPropertyValue('--acc').trim() || '#a78bfa';
+  const outlineColor = cs.getPropertyValue('--bd').trim() || '#3a3060';
+  chars.slice(0, 5).forEach(char => {
+    const wrap = document.createElement('div');
+    wrap.className = 'dict-char-box';
+    const box = document.createElement('div');
+    box.style.cssText = 'width:76px;height:76px;background:var(--bg3);border-radius:8px;border:1px solid var(--bd);overflow:hidden';
+    const lbl = document.createElement('div');
+    lbl.className = 'dict-char-lbl';
+    lbl.textContent = char;
+    wrap.appendChild(box);
+    wrap.appendChild(lbl);
+    container.appendChild(wrap);
+    try {
+      const hw = HanziWriter.create(box, char, {
+        width: 76, height: 76, padding: 7,
+        strokeColor, outlineColor,
+        strokeAnimationSpeed: 1, delayBetweenStrokes: 100,
+        showOutline: true, drawingFadeTime: 0,
+      });
+      hw.animateCharacter();
+    } catch(e) {
+      box.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:28px">${char}</div>`;
+    }
+  });
+}
+
+async function fetchJisho(word) {
+  const res = await fetch(`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(word)}`);
+  if (!res.ok) throw new Error('Jisho ' + res.status);
+  const json = await res.json();
+  const entries = json.data;
+  if (!entries?.length) return null;
+  const e = entries[0];
+  const reading = e.japanese?.[0]?.reading || '';
+  if (reading) {
+    const el = document.getElementById('dpReading');
+    if (el) el.textContent = reading;
+  }
+  const senses = (e.senses || []).slice(0, 5).map(s => ({
+    pos: (s.parts_of_speech || []).slice(0, 2).join(', '),
+    defs: (s.english_definitions || []).slice(0, 3).join('; '),
+    tags: [...(s.tags || []), ...(s.misc || [])].slice(0, 2),
+  }));
+  return { type: 'jisho', senses, jlpt: e.jlpt?.[0] || '', slug: e.slug };
+}
+
+async function fetchEnDict(word) {
+  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+  if (!res.ok) throw new Error('Dict ' + res.status);
+  const json = await res.json();
+  const entry = json[0];
+  if (!entry) return null;
+  const phonetic = entry.phonetic || entry.phonetics?.find(p => p.text)?.text || '';
+  if (phonetic) {
+    const el = document.getElementById('dpReading');
+    if (el) el.textContent = phonetic;
+  }
+  const meanings = (entry.meanings || []).slice(0, 3).map(m => ({
+    pos: m.partOfSpeech || '',
+    defs: (m.definitions || []).slice(0, 2).map(d => d.definition),
+    example: m.definitions?.[0]?.example || '',
+    synonyms: (m.synonyms || m.definitions?.[0]?.synonyms || []).slice(0, 3),
+  }));
+  return { type: 'en', meanings };
+}
+
+async function fetchMyMemory(text, srcLang) {
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang}|zh-CN`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Translation error');
+  const json = await res.json();
+  const translated = json.responseData?.translatedText;
+  if (!translated || translated.toLowerCase() === text.toLowerCase()) return null;
+  return translated;
+}
+
+function renderDefSection(res) {
+  const el = document.getElementById('dpDefs');
+  if (!el) return;
+  const lbl = `<div class="dict-sec-lbl">${lang === 'jp' ? '辞書 · Jisho' : 'Dictionary'}</div>`;
+  if (res.status === 'rejected' || !res.value) {
+    el.innerHTML = lbl + `<div class="dict-err">${lang === 'jp' ? '定義が見つかりません' : 'No definition found'}</div>`;
+    return;
+  }
+  const d = res.value;
+  let inner = lbl;
+  if (d.type === 'jisho') {
+    if (d.jlpt) {
+      const lvl = d.jlpt.replace('jlpt-n', '');
+      inner += `<span class="tag t-n${lvl}" style="margin-bottom:8px;display:inline-block">${d.jlpt.toUpperCase()}</span> `;
+    }
+    inner += d.senses.map(s =>
+      `<div class="dict-def-row">${s.pos ? `<span class="dict-pos">${s.pos}</span>` : ''}${s.defs}${s.tags.length ? `<span style="font-size:10px;color:var(--tx2);margin-left:6px">${s.tags.join(' · ')}</span>` : ''}</div>`
+    ).join('');
+    inner += `<div class="dict-attr">via <a href="https://jisho.org/word/${d.slug}" target="_blank">Jisho</a></div>`;
+  } else if (d.type === 'en') {
+    inner += d.meanings.map(m =>
+      `<div class="dict-def-row"><span class="dict-pos">${m.pos}</span>${m.defs.join('; ')}${m.example ? `<div style="font-size:11px;color:var(--tx2);margin-top:2px;font-style:italic">"${m.example}"</div>` : ''}${m.synonyms.length ? `<div style="font-size:10px;color:var(--acc2);margin-top:2px">≈ ${m.synonyms.join(', ')}</div>` : ''}</div>`
+    ).join('');
+    inner += `<div class="dict-attr">via <a href="https://dictionaryapi.dev" target="_blank">dictionaryapi.dev</a></div>`;
+  }
+  el.innerHTML = inner;
+}
+
+function renderTransSection(res) {
+  const el = document.getElementById('dpTrans');
+  if (!el) return;
+  const lbl = `<div class="dict-sec-lbl">翻译 · Translation → 中文</div>`;
+  if (res.status === 'rejected' || !res.value) {
+    el.innerHTML = lbl + `<div class="dict-err">Translation unavailable</div>`;
+    return;
+  }
+  el.innerHTML = lbl + `<div class="dict-trans-text">${res.value}</div><div class="dict-attr">via MyMemory</div>`;
+}
 </script>
+
+<!-- ── Dict Panel ──────────────────────────────── -->
+<div id="dictOverlay" onclick="closeDict()"></div>
+<div id="dictPanel" role="dialog" aria-modal="true">
+  <div class="dict-handle" onclick="closeDict()"></div>
+  <div class="dict-head">
+    <div class="dict-title">
+      <div class="dict-word-big" id="dpWord">—</div>
+      <div class="dict-reading" id="dpReading"></div>
+    </div>
+    <button class="dict-x" onclick="closeDict()">✕</button>
+  </div>
+  <div id="dpBody"></div>
+</div>
 </body></html>

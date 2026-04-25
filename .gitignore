@@ -154,3 +154,8 @@ graphify-out/
 superpowers/
 temp/
 screenshots/
+
+# QA agent files
+hm_qa_agent.py
+qa_report
+

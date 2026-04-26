@@ -370,6 +370,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
       <button class="bg-btn" onclick="swapTransLangs()" title="Swap languages" style="width:36px;padding:0;font-size:16px">⇄</button>
     </div>
     <div id="transResult" style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;min-height:56px;display:none;font-size:15px;line-height:1.65;word-break:break-word"></div>
+    <button id="transAddBtn" class="bp" onclick="addTransWord(this)" style="display:none;width:100%;margin-top:8px;font-size:12px;padding:8px"></button>
     <div id="transAttr" style="font-size:10px;color:var(--tx2);margin-top:6px;display:none">Powered by MyMemory API</div>
   </div>
   <div class="card">
@@ -1155,11 +1156,24 @@ async function doTranslate(){
   const resEl=document.getElementById('transResult');
   const attrEl=document.getElementById('transAttr');
   if(resEl){resEl.style.display='block';resEl.textContent=t('translatingMsg');}
+  const addBtn=document.getElementById('transAddBtn');
+  if(addBtn)addBtn.style.display='none';
   try{
     const result=await fetchMyMemory(text,fromV,toV);
     if(resEl)resEl.textContent=result||'—';
     if(attrEl)attrEl.style.display='block';
-    if(result){_transHist.push({from:text,to:result});renderTransHist();}
+    if(result){
+      _transHist.push({from:text,to:result});renderTransHist();
+      const isWord=text.trim().split(/\s+/).length===1&&text.trim().length<=40;
+      if(isWord&&addBtn){
+        const lblMap={en:'📚 → EN vocab',ja:'📚 → JP単語帳','zh-CN':'📚 → 中文单词本','zh-TW':'📚 → 中文单词本'};
+        addBtn.textContent=lblMap[fromV]||'📚 Save word';
+        addBtn._word=text.trim();
+        addBtn._meaning=result;
+        addBtn._fromLang=fromV;
+        addBtn.style.display='block';
+      }
+    }
   }catch(e){
     if(resEl)resEl.textContent=t('transFailMsg');
   }
@@ -1169,12 +1183,22 @@ function swapTransLangs(){
   const t=document.getElementById('transTo');
   if(!f||!t)return;
   const tmp=f.value; f.value=t.value; t.value=tmp;
+  const ab=document.getElementById('transAddBtn');if(ab)ab.style.display='none';
   const inp=document.getElementById('transInput');
   const res=document.getElementById('transResult');
   if(res&&res.textContent&&res.textContent!==''&&res.style.display!=='none'&&inp){
     inp.value=res.textContent;
     res.style.display='none';
   }
+}
+
+function addTransWord(btn){
+  const word=btn._word;const meaning=btn._meaning;const fromLang=btn._fromLang;
+  const lk=fromLang==='ja'?'jp':fromLang==='en'?'en':'zh';
+  const today=new Date().toDateString();
+  W[lk].unshift({word,defs:[{meaning,ex:''}],pron:'',kana:'',root:'',rel:'',level:'',cat:'',mastered:false,addedDate:today,srsBox:0,nextReview:today,wrongCount:0});
+  save();if(lang===lk)buildCatFilter();
+  notify(t('addOk')+word);btn.style.display='none';
 }
 
 function bulkAdd(){

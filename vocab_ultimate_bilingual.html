@@ -235,6 +235,9 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 .trbtn{background:var(--bg3)!important;border:1px solid var(--bd)!important;border-radius:6px;padding:2px 5px!important;font-size:11px!important;line-height:1.3}
 </style>
 </head><body>
+<video id="bgVideo" autoplay muted loop playsinline style="position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;opacity:0.08;pointer-events:none">
+  <source src="images_vid/wordbook.mp4.mp4" type="video/mp4">
+</video>
 <div class="app">
 <div class="notif" id="notif"></div>
 
@@ -1115,17 +1118,10 @@ async function autoFillEN(word){
 }
 
 async function autoFillZH(word){
-  const [transEN,transJP]=await Promise.allSettled([
-    fetchMyMemory(word,'zh','en'),
-    fetchMyMemory(word,'zh','ja')
-  ]);
-  const meaning=[
-    transEN.status==='fulfilled'&&transEN.value?'EN: '+transEN.value:'',
-    transJP.status==='fulfilled'&&transJP.value?'JP: '+transJP.value:''
-  ].filter(Boolean).join('  ');
-  renderAddForm({word,defs:[{meaning:meaning||'',ex:''}]});
-  if(meaning)notify('✅ 已自动补充翻译');
-  else notify('未找到翻译');
+  const enMeaning=await fetchMyMemory(word,'zh-CN','en');
+  if(!enMeaning){notify(t('autoFillErr'));return;}
+  renderAddForm({word,defs:[{meaning:enMeaning,ex:''}]});
+  notify(t('autoFillOk'));
 }
 
 // ─── TRANSLATE TAB ───────────────────────────────────

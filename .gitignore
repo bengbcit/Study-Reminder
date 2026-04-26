@@ -158,4 +158,5 @@ screenshots/
 # QA agent files
 hm_qa_agent.py
 qa_report
+thesaurus_trove_qa.py
 

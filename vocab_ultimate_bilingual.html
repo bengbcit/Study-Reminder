@@ -18,7 +18,11 @@ body{background:var(--bg);color:var(--tx);font-family:system-ui,sans-serif;font-
 .tabs{display:flex;gap:2px;background:var(--bg3);padding:2px;border-radius:8px;border:1px solid var(--bd)}
 .tab{padding:5px 9px;border-radius:6px;cursor:pointer;font-size:11px;color:var(--tx2);transition:all .15s;white-space:nowrap}
 .tab.active{background:var(--acc);color:#fff}
-.sec{display:none;padding:12px 14px}.sec.active{display:block}
+.sec{padding:20px 14px 28px}.sec+.sec{border-top:1px solid var(--bd)}
+.sec-title{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--tt-hacc);text-shadow:0 0 8px var(--tt-hglow);margin-bottom:16px;display:flex;align-items:center;gap:8px;opacity:.85;letter-spacing:.5px}
+.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--tt-hacc) 0%,transparent 100%);opacity:.3}
+.card{box-shadow:0 1px 10px rgba(0,0,0,.12);transition:box-shadow .2s}.card:hover{box-shadow:0 3px 18px rgba(0,0,0,.2)}
+.wcard{transition:border-color .15s,box-shadow .15s}.wcard:hover{box-shadow:0 2px 12px rgba(0,0,0,.15)}
 input,select,textarea{background:var(--bg3);border:1px solid var(--bd);color:var(--tx);border-radius:8px;padding:7px 10px;font-size:13px;outline:none;width:100%;transition:border .15s;resize:none}
 input:focus,select:focus,textarea:focus{border-color:var(--acc)}
 button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:500;transition:all .15s}
@@ -282,7 +286,8 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 </div>
 
 <!-- HOME -->
-<div class="sec active" id="tab-home">
+<div class="sec" id="tab-home">
+<div class="sec-title">🏠 <span id="sec-lbl-home">Home</span></div>
   <div class="g4" style="margin-bottom:10px">
     <div class="sc"><div class="sn" id="ht">0</div><div class="sl" id="sl-total">Total</div></div>
     <div class="sc"><div class="sn" id="hm">0</div><div class="sl" id="sl-mastered">Mastered</div></div>
@@ -332,6 +337,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 
 <!-- TRANSLATE -->
 <div class="sec" id="tab-trans">
+<div class="sec-title">🌐 <span id="sec-lbl-trans">Translate</span></div>
   <div class="card" style="margin-bottom:9px">
     <div style="font-size:12px;font-weight:500;color:var(--acc2);margin-bottom:10px">🌐 <span id="lbl-trans-title">Quick Translate</span></div>
     <div class="row"><textarea id="transInput" rows="3" placeholder="Enter text..." style="resize:vertical"></textarea></div>
@@ -368,6 +374,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 
 <!-- WORDS -->
 <div class="sec" id="tab-words">
+<div class="sec-title">📖 <span id="sec-lbl-words">Words</span></div>
   <div style="display:flex;gap:6px;margin-bottom:9px">
     <input id="si" placeholder="Search..." oninput="rw()" style="flex:1">
     <select id="sortSel" onchange="rw()" style="width:105px">
@@ -383,6 +390,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 
 <!-- ADD -->
 <div class="sec" id="tab-add">
+<div class="sec-title">✏️ <span id="sec-lbl-add">Add</span></div>
   <div class="card" style="margin-bottom:9px" id="addFormCard">
     <!-- Dynamic form rendered by JS -->
   </div>
@@ -396,6 +404,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 
 <!-- QUIZ -->
 <div class="sec" id="tab-quiz">
+<div class="sec-title">🧪 <span id="sec-lbl-quiz">Quiz</span></div>
   <div id="qSetup">
     <div class="card" style="margin-bottom:9px">
       <div class="row"><label class="lbl" id="lbl-qmode">Quiz Mode</label>
@@ -472,6 +481,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 
 <!-- MAP -->
 <div class="sec" id="tab-map">
+<div class="sec-title">🔗 <span id="sec-lbl-map">Map</span></div>
   <div style="font-size:13px;font-weight:500;margin-bottom:5px;color:var(--acc2)" id="lbl-maptitle">Word Family Map</div>
   <div style="font-size:12px;color:var(--tx2);margin-bottom:8px" id="lbl-mapinfo">Add related words when creating entries to build visual word maps.</div>
   <div style="display:flex;gap:6px;margin-bottom:8px">
@@ -488,6 +498,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 
 <!-- MORE -->
 <div class="sec" id="tab-more">
+<div class="sec-title">⚙️ <span id="sec-lbl-more">More</span></div>
 
   <!-- ── PDF Extractor ─────────────────────────────── -->
   <div class="card" style="margin-bottom:9px;border:2px solid var(--acc);border-style:dashed">
@@ -796,19 +807,25 @@ function T(){ // apply translations to static elements
   if(document.getElementById('lbl-trans-to'))document.getElementById('lbl-trans-to').textContent=lang==='en'?'To':'目标语言';
   if(document.getElementById('btn-do-trans'))document.getElementById('btn-do-trans').textContent=lang==='en'?'🌐 Translate':'🌐 翻译';
   if(document.getElementById('lbl-trans-hist'))document.getElementById('lbl-trans-hist').textContent=lang==='en'?'Recent':'最近翻译';
+  // Section title labels
+  const secLabels={home:[i.tabs[0],'Home'],trans:[i.tabs[1],'Translate'],words:[i.tabs[2],'Words'],add:[i.tabs[3],lang==='en'?'Add':'添加'],quiz:[i.tabs[4],lang==='en'?'Quiz':'测试'],map:[i.tabs[5],lang==='en'?'Map':'联想图'],more:[i.tabs[6],lang==='en'?'More':'更多']};
+  Object.entries(secLabels).forEach(([k,v])=>{const el=document.getElementById('sec-lbl-'+k);if(el)el.textContent=v[0]||v[1];});
 }
 
 // ─── LANG SWITCH ─────────────────────────────────────
+let _activeTab = 'home';
 function switchLang(){
   lang = lang==='en'?'jp':lang==='jp'?'zh':'en';
   localStorage.setItem('vocabLang', lang);
   T();
-  renderAddForm();
+  renderHome();
   buildCatFilter();
   rw();
-  renderHome();
+  renderAddForm();
+  renderThemeBtns();
+  renderTransTab();
   updateQuizPool();
-  notify(lang==='en'?'Switched to English 🇬🇧':lang==='jp'?'已切换到日语 🇯🇵':'已切换到中文 🇨🇳');
+  notify(lang==='en'?'Switched to English 🇬🇧':lang==='jp'?'已切換到日語 🇯🇵':'已切換到中文 🇨🇳');
 }
 
 // ─── SAVE/LOAD ────────────────────────────────────────
@@ -1386,21 +1403,38 @@ function clearMastered(){cw().forEach(w=>w.mastered=false);save();rw();notify(la
 function clearAll(){if(confirm(lang==='en'?'Clear all words?':'清空全部单词？')){W[lang]=[];save();rw();buildCatFilter();notify(lang==='en'?'Cleared':'已清空');}}
 
 // ─── TAB ─────────────────────────────────────────────
-function sw(tab){
-  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+function sw(tab, noScroll){
+  _activeTab = tab;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  const tabEl=document.getElementById('tab-'+tab);
-  if(tabEl){tabEl.classList.add('active');tabEl.classList.add('sec-fade');}
   const map={home:0,trans:1,words:2,add:3,quiz:4,map:5,more:6};
   const idx=map[tab]; if(idx!==undefined)document.querySelectorAll('.tab')[idx].classList.add('active');
-  if(tab==='home')renderHome();
-  if(tab==='trans')renderTransTab();
-  if(tab==='words'){buildCatFilter();rw();}
-  if(tab==='add')renderAddForm();
+  const el=document.getElementById('tab-'+tab);
+  if(el && !noScroll){
+    const top=el.getBoundingClientRect().top+window.scrollY-62;
+    window.scrollTo({top,behavior:'smooth'});
+  }
   if(tab==='quiz'){renderHist();updateQuizPool();}
   if(tab==='map')initMap();
-  if(tab==='more')renderThemeBtns();
 }
+
+// ─── SCROLL → active tab ──────────────────────────────
+(function(){
+  const secs=[...document.querySelectorAll('.sec[id^="tab-"]')];
+  const tabMap={};
+  const tabOrder={home:0,trans:1,words:2,add:3,quiz:4,map:5,more:6};
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{tabMap[e.target.id]=e.isIntersecting;});
+    const vis=secs.find(s=>tabMap[s.id]);
+    if(vis){
+      const key=vis.id.replace('tab-','');
+      _activeTab=key;
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      const idx=tabOrder[key];
+      if(idx!==undefined)document.querySelectorAll('.tab')[idx].classList.add('active');
+    }
+  },{threshold:0,rootMargin:'-62px 0px -55% 0px'});
+  secs.forEach(s=>io.observe(s));
+})();
 
 // ─── SEED DATA ────────────────────────────────────────
 function seedEN(){
@@ -1429,7 +1463,6 @@ function seedZH(){
 // ─── INIT ─────────────────────────────────────────────
 setTheme(curTheme);
 T();
-renderAddForm();
 if(!W.en.length) seedEN();
 if(!W.jp.length) seedJP();
 if(!W.zh.length) seedZH();
@@ -1437,6 +1470,10 @@ save();
 document.getElementById('goalN').value=localStorage.getItem(lang+'Goal')||5;
 renderHome();
 buildCatFilter();
+rw();
+renderAddForm();
+renderThemeBtns();
+renderTransTab();
 
 // ─── PDF EXTRACTOR ───────────────────────────────────────────────────────────
 let _pdfLang = 'jp';

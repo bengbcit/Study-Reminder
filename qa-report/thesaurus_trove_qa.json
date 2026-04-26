@@ -1,0 +1,347 @@
+[
+  {
+    "name": "Page title present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Body renders",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Pixel header visible",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "7 tabs in header",
+    "passed": true,
+    "note": "found 7"
+  },
+  {
+    "name": "JS state initialised (lang, W)",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "No JS console errors on load",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "All 7 sections in DOM",
+    "passed": true,
+    "note": "found 7"
+  },
+  {
+    "name": "Home section visible without click",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Words section visible without click",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Section title labels present (≥7)",
+    "passed": true,
+    "note": "found 7"
+  },
+  {
+    "name": "More section visible when scrolled to bottom",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Initial lang is valid (en)",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Cycles through all 3 languages",
+    "passed": true,
+    "note": "saw: ['en', 'jp', 'zh', 'en']"
+  },
+  {
+    "name": "Header accent color changes per language (tab labels update)",
+    "passed": true,
+    "note": "en=Home jp=ホーム zh=主页"
+  },
+  {
+    "name": "Logo text updates on switch",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Word list re-renders after lang switch (not empty)",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Tab 'home' activates on click",
+    "passed": true,
+    "note": "active tab text: 'Home'"
+  },
+  {
+    "name": "Tab 'trans' activates on click",
+    "passed": true,
+    "note": "active tab text: 'Translate'"
+  },
+  {
+    "name": "Tab 'words' activates on click",
+    "passed": true,
+    "note": "active tab text: 'Words'"
+  },
+  {
+    "name": "Tab 'add' activates on click",
+    "passed": true,
+    "note": "active tab text: 'Add'"
+  },
+  {
+    "name": "Tab 'quiz' activates on click",
+    "passed": true,
+    "note": "active tab text: 'Quiz'"
+  },
+  {
+    "name": "Tab 'map' activates on click",
+    "passed": true,
+    "note": "active tab text: 'Map'"
+  },
+  {
+    "name": "Tab 'more' activates on click",
+    "passed": true,
+    "note": "active tab text: 'More'"
+  },
+  {
+    "name": "IntersectionObserver updates active tab on scroll",
+    "passed": true,
+    "note": "active tab: 'Words'"
+  },
+  {
+    "name": "Stat #ht renders",
+    "passed": true,
+    "note": "value='3'"
+  },
+  {
+    "name": "Stat #hm renders",
+    "passed": true,
+    "note": "value='0'"
+  },
+  {
+    "name": "Stat #hh renders",
+    "passed": true,
+    "note": "value='0'"
+  },
+  {
+    "name": "Stat #hd renders",
+    "passed": true,
+    "note": "value='3'"
+  },
+  {
+    "name": "Goal ring percentage visible",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Word of the Day card has content",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Streak bar has 7 day squares",
+    "passed": true,
+    "note": "found 7"
+  },
+  {
+    "name": "Translate input field present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "From/To selectors present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Swap languages button present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Translation result appears after clicking Translate",
+    "passed": true,
+    "note": "result: '你好'"
+  },
+  {
+    "name": "Search input present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Sort selector present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Word cards rendered (≥1)",
+    "passed": true,
+    "note": "found 3 cards"
+  },
+  {
+    "name": "🔊 Speak button in word card",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "🔍 Dict button in word card",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "🌐 Translate button in word card",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Search filter works",
+    "passed": true,
+    "note": "filtered to 3 cards"
+  },
+  {
+    "name": "Word input field present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Auto-fill button present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Voice input button (🎤) present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Add Word button present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Adding a word shows success notification",
+    "passed": true,
+    "note": "notif: '✅ Added: __qa_test__'"
+  },
+  {
+    "name": "Bulk add textarea present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Quiz mode selector present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "4 quiz modes available",
+    "passed": true,
+    "note": "found 4"
+  },
+  {
+    "name": "Start Quiz button present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Quiz starts on click",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Quiz end button present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Dict panel opens on 🔍 click",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Dict overlay appears",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Dict panel shows word",
+    "passed": true,
+    "note": "word: 'serendipity'"
+  },
+  {
+    "name": "Dict panel closes on ✕",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Theme buttons present (≥4)",
+    "passed": true,
+    "note": "found 5"
+  },
+  {
+    "name": "Voice language dropdown present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "zh-CN voice option present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Export section present (label + TXT/CSV buttons)",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "speak() handles zh-CN",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "speak() handles ja-JP",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "speak() does NOT use voiceLang dropdown as primary source",
+    "passed": true,
+    "note": "old broken pattern still present"
+  },
+  {
+    "name": "voiceInput() handles zh-CN",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "voiceInput() handles ja-JP",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Card box-shadow defined in CSS",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Pixel font loaded for logo",
+    "passed": true,
+    "note": "font: \"Press Start 2P\", monospace"
+  },
+  {
+    "name": "Header is sticky",
+    "passed": true,
+    "note": "position: sticky"
+  }
+]

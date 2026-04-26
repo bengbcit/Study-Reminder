@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thesaurus Trove</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3/dist/hanzi-writer.min.js"></script>
@@ -814,6 +815,7 @@ function T(){ // apply translations to static elements
 
 // ─── LANG SWITCH ─────────────────────────────────────
 let _activeTab = 'home';
+let _swLock = false;
 function switchLang(){
   lang = lang==='en'?'jp':lang==='jp'?'zh':'en';
   localStorage.setItem('vocabLang', lang);
@@ -1403,10 +1405,35 @@ function clearMastered(){cw().forEach(w=>w.mastered=false);save();rw();notify(la
 function clearAll(){if(confirm(lang==='en'?'Clear all words?':'清空全部单词？')){W[lang]=[];save();rw();buildCatFilter();notify(lang==='en'?'Cleared':'已清空');}}
 
 // ─── TAB ─────────────────────────────────────────────
+// ─── SCROLL → active tab ──────────────────────────────
+const _tabOrder={home:0,trans:1,words:2,add:3,quiz:4,map:5,more:6};
+const _tabSecs=()=>[...document.querySelectorAll('.sec[id^="tab-"]')];
+function updateFromScroll(){
+  if(_swLock) return;
+  let best=null, bestTop=-Infinity;
+  _tabSecs().forEach(s=>{
+    const top=s.getBoundingClientRect().top - 62;
+    if(top<=10 && top>bestTop){bestTop=top;best=s;}
+  });
+  if(best){
+    const key=best.id.replace('tab-','');
+    if(key!==_activeTab){
+      _activeTab=key;
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      const idx=_tabOrder[key];
+      if(idx!==undefined)document.querySelectorAll('.tab')[idx].classList.add('active');
+    }
+  }
+}
+window.addEventListener('scroll', updateFromScroll, {passive:true});
+
 function sw(tab, noScroll){
   _activeTab = tab;
+  _swLock = true;
+  clearTimeout(window._swLockTimer);
+  window._swLockTimer = setTimeout(()=>{ _swLock = false; updateFromScroll(); }, 900);
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  const map={home:0,trans:1,words:2,add:3,quiz:4,map:5,more:6};
+  const map=_tabOrder;
   const idx=map[tab]; if(idx!==undefined)document.querySelectorAll('.tab')[idx].classList.add('active');
   const el=document.getElementById('tab-'+tab);
   if(el && !noScroll){
@@ -1416,25 +1443,6 @@ function sw(tab, noScroll){
   if(tab==='quiz'){renderHist();updateQuizPool();}
   if(tab==='map')initMap();
 }
-
-// ─── SCROLL → active tab ──────────────────────────────
-(function(){
-  const secs=[...document.querySelectorAll('.sec[id^="tab-"]')];
-  const tabMap={};
-  const tabOrder={home:0,trans:1,words:2,add:3,quiz:4,map:5,more:6};
-  const io=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{tabMap[e.target.id]=e.isIntersecting;});
-    const vis=secs.find(s=>tabMap[s.id]);
-    if(vis){
-      const key=vis.id.replace('tab-','');
-      _activeTab=key;
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      const idx=tabOrder[key];
-      if(idx!==undefined)document.querySelectorAll('.tab')[idx].classList.add('active');
-    }
-  },{threshold:0,rootMargin:'-62px 0px -55% 0px'});
-  secs.forEach(s=>io.observe(s));
-})();
 
 // ─── SEED DATA ────────────────────────────────────────
 function seedEN(){

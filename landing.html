@@ -557,30 +557,7 @@
       background: rgba(255, 255, 255, .05);
     }
 
-    /* TT card wordbook video preview */
-    #ttProjectCard .tt-overlay {
-      transition: opacity 0.5s ease;
-    }
-    #ttProjectCard:hover .tt-overlay {
-      opacity: 0.25;
-    }
-    #ttCardVideo {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      z-index: 0;
-      border-radius: 24px;
-      pointer-events: none;
-    }
-    #ttProjectCard:hover #ttCardVideo {
-      opacity: 0.75;
-    }
-
-    .project-card-top {
+.project-card-top {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -1237,15 +1214,11 @@
           </div>
 
           <!-- Project 2: Thesaurus Trove (TT) -->
-          <div id="ttProjectCard" class="project-card" style="
+          <div class="project-card" style="
           background-image:url('images_vid/Gemini_GenImage.png');background-size:cover;background-position:center;
           border-color:rgba(155,109,255,.35);position:relative;overflow:hidden;">
-            <!-- Wordbook video preview (visible on hover) -->
-            <video id="ttCardVideo" muted loop playsinline preload="none">
-              <source src="images_vid/wordbook.mp4.mp4" type="video/mp4">
-            </video>
             <!-- Dark overlay for readability -->
-            <div class="tt-overlay" style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(18,0,46,.72) 0%,rgba(10,16,64,.65) 40%,rgba(0,26,48,.68) 100%);border-radius:24px;pointer-events:none;z-index:0;"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(18,0,46,.72) 0%,rgba(10,16,64,.65) 40%,rgba(0,26,48,.68) 100%);border-radius:24px;pointer-events:none;z-index:0;"></div>
             <!-- Decorative glow blobs -->
             <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;
                background:radial-gradient(circle,rgba(155,109,255,.22) 0%,transparent 70%);
@@ -1800,16 +1773,6 @@
       document.getElementById('registerForm').style.display = 'none';
       document.getElementById('loginForm').style.display = 'block';
     }
-
-    /* ── TT card video preview ── */
-    (function () {
-      const card = document.getElementById('ttProjectCard');
-      const vid = document.getElementById('ttCardVideo');
-      if (card && vid) {
-        card.addEventListener('mouseenter', () => vid.play().catch(() => {}));
-        card.addEventListener('mouseleave', () => { vid.pause(); vid.currentTime = 0; });
-      }
-    })();
 
     /* ── Project shortcuts ── */
     function goToApp() { window.location.href = '/app'; }

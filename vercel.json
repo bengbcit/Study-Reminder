@@ -13,11 +13,11 @@
       "destination": "/app.html"
     },
     {
-      "source": "/vocab_ultimate_bilingual/(.*)",
+      "source": "/vocab_ultimate_bilingual",
       "destination": "/vocab_ultimate_bilingual.html"
     },
     {
-      "source": "/((?!css/|js/|api/|images/|screenshots/|app\\.html|landing\\.html|design-wizard\\.html|vocab_ultimate_bilingual\\.html).*)",
+      "source": "/((?!css/|js/|api/|images/|screenshots/|app\\.html|landing\\.html|design-wizard\\.html|vocab_ultimate_bilingual).*)",
       "destination": "/landing.html"
     }
   ],

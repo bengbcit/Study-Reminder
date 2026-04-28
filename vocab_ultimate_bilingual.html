@@ -13,7 +13,7 @@
 body{background:var(--bg);color:var(--tx);font-family:system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 .app{max-width:680px;margin:0 auto;position:relative;z-index:2}
 #bgStatic{position:fixed;inset:0;background:url('images_vid/Gemini_GenImage.png') center/cover no-repeat;z-index:0;pointer-events:none;opacity:0;transition:opacity .5s}
-#bgOverlay{position:fixed;inset:0;background:var(--bg);opacity:.78;z-index:1;pointer-events:none}
+#bgOverlay{position:fixed;inset:0;background:var(--bg);opacity:0;z-index:1;pointer-events:none}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--bd);background:var(--bg2);position:sticky;top:0;z-index:20}
 .logo-btn{font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg3);transition:all .2s;user-select:none}
 .logo-btn:hover{border-color:var(--acc);color:var(--acc2)}
@@ -1008,23 +1008,19 @@ function notify(m,t=2200){ const n=document.getElementById('notif'); n.textConte
 // ─── BACKGROUND VIDEO ─────────────────────────────────
 function updateBG(){
   const vid=document.getElementById('bgVideo');
-  const ovl=document.getElementById('bgOverlay');
   const stat=document.getElementById('bgStatic');
   const onHome=_activeTab==='home';
   if(!bgEnabled){
     if(vid)vid.style.opacity='0';
     if(stat)stat.style.opacity='0';
-    if(ovl)ovl.style.opacity='0';
   } else if(onHome){
     // Home tab: wordbook video as only background
     if(vid){vid.style.opacity='1';vid.style.transition='opacity .5s';}
     if(stat){stat.style.opacity='0';stat.style.transition='opacity .5s';}
-    if(ovl){ovl.style.opacity='.78';ovl.style.transition='opacity .5s';}
   } else {
     // Other tabs: Gemini_GenImage as only background
     if(vid){vid.style.opacity='0';vid.style.transition='opacity .5s';}
     if(stat){stat.style.opacity='1';stat.style.transition='opacity .5s';}
-    if(ovl){ovl.style.opacity='.4';ovl.style.transition='opacity .5s';}
   }
   const bgToggleBtn=document.getElementById('th-bg');
   if(bgToggleBtn)bgToggleBtn.className='thbtn'+(bgEnabled?' on':'');

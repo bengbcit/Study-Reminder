@@ -13,7 +13,7 @@
       "destination": "/app.html"
     },
     {
-      "source": "/vocab_ultimate_bilingual",
+      "source": "/vocab_ultimate_bilingual/(.*)",
       "destination": "/vocab_ultimate_bilingual.html"
     },
     {

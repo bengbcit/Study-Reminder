@@ -1255,8 +1255,20 @@ async function autoFillEN(word){
 }
 
 async function autoFillZH(word){
+  // 1. Gemini-powered endpoint (accurate pinyin, POS, HSK, JP defs)
+  try{
+    const r=await fetch('/api/word-fill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({word})});
+    if(r.ok){
+      const d=await r.json();
+      if(!d._demo&&d.defs&&d.defs.length){
+        renderAddForm({word:d.word||word,pron:d.pron||'',root:d.root||'',rel:d.rel||'',level:d.level||'',cat:d.cat||'',defs:d.defs});
+        notify(t('autoFillOk'));
+        return;
+      }
+    }
+  }catch(e){}
+  // 2. Fallback: free APIs (Google Translate + MyMemory + Tatoeba)
   let pron='',defs=[],cat='',rel='';
-  // 1. Google Translate unofficial API — pinyin + meaning + POS + synonyms
   const gtUrl=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=en&dt=t&dt=bd&dt=rm&q=${encodeURIComponent(word)}`;
   try{
     let gtData=null;
@@ -1266,9 +1278,7 @@ async function autoFillZH(word){
     if(gtData){
       const enMeaning=(gtData[0]||[]).map(x=>x&&x[0]).filter(Boolean).join(' ').trim();
       if(enMeaning)defs.push({meaning:enMeaning,ex:''});
-      // Pinyin: sometimes in [0][0][2] for short words
       pron=(gtData[0]&&gtData[0][0]&&gtData[0][0][2])||'';
-      // POS + synonyms from bd section [5]
       if(gtData[5]&&gtData[5][0]){
         const posMap={noun:'名词',pronoun:'代词',verb:'动词',adjective:'形容词',adverb:'副词',conjunction:'连词',particle:'助词',preposition:'介词'};
         cat=posMap[gtData[5][0][0]]||'';
@@ -1277,12 +1287,9 @@ async function autoFillZH(word){
       }
     }
   }catch(e){}
-  // 2. Fallback meaning via MyMemory
   if(!defs.length){const mm=await fetchMyMemory(word,'zh-CN','en').catch(()=>'');if(mm)defs.push({meaning:mm,ex:''});}
-  // 3. Japanese meaning as second definition
   const jp=await fetchMyMemory(word,'zh-CN','ja').catch(()=>'');
   if(jp&&(!defs.length||jp!==defs[0].meaning))defs.push({meaning:jp,ex:''});
-  // 4. Example sentence from Tatoeba
   try{
     const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),3500);
     const tatR=await fetch(`https://corsproxy.io/?${encodeURIComponent('https://tatoeba.org/en/api_v0/search?from=cmn&query='+encodeURIComponent(word)+'&limit=1')}`,{signal:ctrl.signal});

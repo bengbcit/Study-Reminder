@@ -1425,7 +1425,7 @@ function rw(){
         <div style="display:flex;align-items:center;gap:6px">
           <button class="ico trbtn" onclick="quickTranslate(${ri})" title="${t('transTip')}" style="padding:2px 5px;font-size:11px;flex-shrink:0">🌐</button>
           <span class="whead">${w.word}</span>
-          <button class="ico" onclick="speak('${w.word.replace(/'/g,"\\'")}'" style="font-size:11px;padding:2px 5px">🔊</button>
+          <button class="ico" onclick="speak('${w.word.replace(/'/g,"\\'")}')\" style="font-size:11px;padding:2px 5px">🔊</button>
         </div>
         ${sub?`<div class="wsub">${sub}</div>`:''}
         ${defsHTML}

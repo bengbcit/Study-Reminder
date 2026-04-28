@@ -195,6 +195,16 @@
     "note": ""
   },
   {
+    "name": "🔊 Speak button onclick is valid JS",
+    "passed": true,
+    "note": "onclick='speak('serendipity')'"
+  },
+  {
+    "name": "🔊 Speak button click causes no JS error",
+    "passed": true,
+    "note": ""
+  },
+  {
     "name": "🔍 Dict button in word card",
     "passed": true,
     "note": ""
@@ -205,9 +215,9 @@
     "note": ""
   },
   {
-    "name": "Search filter works",
+    "name": "Search filter works (filters out non-matching words)",
     "passed": true,
-    "note": "filtered to 3 cards"
+    "note": "before=3 filtered=0 after=3"
   },
   {
     "name": "Word input field present",
@@ -287,7 +297,7 @@
   {
     "name": "Theme buttons present (≥4)",
     "passed": true,
-    "note": "found 5"
+    "note": "found 6"
   },
   {
     "name": "Voice language dropdown present",

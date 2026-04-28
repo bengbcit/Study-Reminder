@@ -568,8 +568,8 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="font-size:12px;font-weight:600;color:var(--acc2)" id="pdfPreviewCount">0 个单词</div>
       <div style="display:flex;gap:6px">
-        <button class="bg-btn" style="font-size:11px;padding:4px 10px" onclick="pdfToggleAll(true)">全选</button>
-        <button class="bg-btn" style="font-size:11px;padding:4px 10px" onclick="pdfToggleAll(false)">取消</button>
+        <button class="bg-btn" id="btn-pdf-selall" style="font-size:11px;padding:4px 10px" onclick="pdfToggleAll(true)">全选</button>
+        <button class="bg-btn" id="btn-pdf-desall" style="font-size:11px;padding:4px 10px" onclick="pdfToggleAll(false)">取消</button>
       </div>
     </div>
     <div id="pdfPreviewList" style="max-height:380px;overflow-y:auto;border-radius:10px"></div>
@@ -611,6 +611,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
       <button class="thbtn" id="th-dark" onclick="setTheme('dark')">Dark</button>
       <button class="thbtn" id="th-blue" onclick="setTheme('blue')">Blue</button>
       <button class="thbtn" id="th-purple" onclick="setTheme('purple')">Purple</button>
+      <button class="thbtn on" id="th-bg" onclick="toggleBG()"><span id="lbl-bg-toggle">背景板</span></button>
     </div>
   </div>
   <div class="card">
@@ -632,6 +633,7 @@ try { W.jp = JSON.parse(localStorage.getItem('vocabJP') || '[]'); } catch(e){}
 try { W.zh = JSON.parse(localStorage.getItem('vocabZH') || '[]'); } catch(e){}
 
 let QW=[],QI=0,QSc=0,QAns=false,QFlip=false,curMode='mc';
+let bgEnabled = localStorage.getItem('bgEnabled') !== 'false'; // BG video on by default
 let Hist = { en: [], jp: [], zh: [] };
 try { Hist.en = JSON.parse(localStorage.getItem('histEN')||'[]'); } catch(e){}
 try { Hist.jp = JSON.parse(localStorage.getItem('histJP')||'[]'); } catch(e){}
@@ -697,6 +699,11 @@ const I18N = {
     importOk:'✅ Imported ',importSuf:' words',
     clearedMsg:'Cleared',clearAllConfirm:'Clear all words?',clearAllMsg:'Cleared',
     autoFillOk:'✅ Auto-filled from Jisho',
+    pdfTitle:'📄 PDF → Vocab Extract (Gemini AI)',pdfLangLbl:'Extract Language',pdfMaxLbl:'Max Words',
+    pdfDropLbl:'Select PDF file (max 15MB)',pdfExtractBtnLbl:'✨ Extract with Gemini AI',
+    pdfSelAll:'Select All',pdfDeselAll:'Deselect',pdfImportBtnLbl:'⬇ Import Selected',
+    pdfFoundLbl:'Found {n} words — select to import:',
+    mmEmptyLbl:'Choose a category or tap 🔗 on a word card',bgToggleLbl:'BG Video',
   },
   jp: {
     logo:'日本語単語',logoSub:'⇄ English',
@@ -752,6 +759,11 @@ const I18N = {
     importOk:'✅ インポート ',importSuf:' 語',
     clearedMsg:'クリアしました',clearAllConfirm:'全単語を削除しますか？',clearAllMsg:'全削除しました',
     autoFillOk:'✅ Jishoから自動入力しました',
+    pdfTitle:'📄 PDF → 語彙抽出 (Gemini AI)',pdfLangLbl:'抽出言語',pdfMaxLbl:'最大単語数',
+    pdfDropLbl:'PDF を選択 (max 15MB)',pdfExtractBtnLbl:'✨ Gemini AI で抽出',
+    pdfSelAll:'全選択',pdfDeselAll:'解除',pdfImportBtnLbl:'⬇ インポート',
+    pdfFoundLbl:'{n} 語を発見 — 選んでください：',
+    mmEmptyLbl:'カテゴリー選択または単語の 🔗 をタップ',bgToggleLbl:'背景板',
   },
   zh: {
     logo:'中文词汇',logoSub:'⇄ English',
@@ -807,6 +819,11 @@ const I18N = {
     importOk:'✅ 导入 ',importSuf:' 个',
     clearedMsg:'已清除',clearAllConfirm:'清空全部单词？',clearAllMsg:'已清空',
     autoFillOk:'✅ 已从 Jisho 自动补充',
+    pdfTitle:'📄 PDF → 词汇提取 (Gemini AI)',pdfLangLbl:'提取语言',pdfMaxLbl:'最多单词数',
+    pdfDropLbl:'选择 PDF 文件 (max 15MB)',pdfExtractBtnLbl:'✨ 用 Gemini AI 提取',
+    pdfSelAll:'全选',pdfDeselAll:'取消',pdfImportBtnLbl:'⬇ 导入选中',
+    pdfFoundLbl:'找到 {n} 个词 — 选择要导入的：',
+    mmEmptyLbl:'选择分类或点击单词上的 🔗',bgToggleLbl:'背景板',
   }
 };
 
@@ -886,6 +903,20 @@ function T(){ // apply translations to static elements
   // Section title labels
   const secLabels={home:[i.tabs[0],'Home'],trans:[i.tabs[1],'Translate'],words:[i.tabs[2],'Words'],add:[i.tabs[3],lang==='en'?'Add':'添加'],quiz:[i.tabs[4],lang==='en'?'Quiz':'测试'],map:[i.tabs[5],lang==='en'?'Map':'联想图'],more:[i.tabs[6],lang==='en'?'More':'更多']};
   Object.entries(secLabels).forEach(([k,v])=>{const el=document.getElementById('sec-lbl-'+k);if(el)el.textContent=v[0]||v[1];});
+  // PDF extractor section
+  const _si=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  _si('lbl-pdf-title',t('pdfTitle'));
+  _si('lbl-pdf-lang',t('pdfLangLbl'));
+  _si('lbl-pdf-max',t('pdfMaxLbl'));
+  _si('pdfDropLabel',t('pdfDropLbl'));
+  _si('pdfExtractBtn',t('pdfExtractBtnLbl'));
+  _si('btn-pdf-selall',t('pdfSelAll'));
+  _si('btn-pdf-desall',t('pdfDeselAll'));
+  _si('pdfImportBtn',t('pdfImportBtnLbl'));
+  // Map empty text
+  _si('mmEmpty',t('mmEmptyLbl'));
+  // BG toggle button text
+  _si('lbl-bg-toggle',t('bgToggleLbl'));
 }
 
 // ─── LANG SWITCH ─────────────────────────────────────
@@ -894,6 +925,8 @@ let _swLock = false;
 function switchLang(){
   lang = lang==='en'?'jp':lang==='jp'?'zh':'en';
   localStorage.setItem('vocabLang', lang);
+  // Load per-language goal value before rendering home
+  document.getElementById('goalN').value=localStorage.getItem(lang+'Goal')||5;
   T();
   renderHome();
   buildCatFilter();
@@ -902,6 +935,7 @@ function switchLang(){
   renderThemeBtns();
   renderTransTab();
   updateQuizPool();
+  renderHist(); // update mode labels in quiz history
   notify(lang==='en'?'Switched to English 🇬🇧':lang==='jp'?'已切換到日語 🇯🇵':'已切換到中文 🇨🇳');
 }
 
@@ -909,6 +943,22 @@ function switchLang(){
 function save(){ localStorage.setItem('vocabEN', JSON.stringify(W.en)); localStorage.setItem('vocabJP', JSON.stringify(W.jp)); localStorage.setItem('vocabZH', JSON.stringify(W.zh)); }
 function cw(){ return W[lang]; }
 function notify(m,t=2200){ const n=document.getElementById('notif'); n.textContent=m; n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),t); }
+
+// ─── BACKGROUND VIDEO ─────────────────────────────────
+function updateBG(){
+  const vid=document.getElementById('bgVideo');
+  const ovl=document.getElementById('bgOverlay');
+  const hide=!bgEnabled||_activeTab==='trans';
+  if(vid){vid.style.opacity=hide?'0':'1';vid.style.transition='opacity 0.5s';}
+  if(ovl){ovl.style.opacity=hide?'0':'.78';ovl.style.transition='opacity 0.5s';}
+  const bgToggleBtn=document.getElementById('th-bg');
+  if(bgToggleBtn)bgToggleBtn.className='thbtn'+(bgEnabled?' on':'');
+}
+function toggleBG(){
+  bgEnabled=!bgEnabled;
+  localStorage.setItem('bgEnabled',bgEnabled);
+  updateBG();
+}
 
 // ─── SRS ─────────────────────────────────────────────
 function nextRev(w){ const b=w.srsBox||0; const iv=[1,2,4,7,14,30]; const d=new Date(); d.setDate(d.getDate()+iv[Math.min(b,iv.length-1)]); return d.toDateString(); }
@@ -1092,14 +1142,24 @@ async function autoFillJP(word){
   const defs=[];
   (entry.senses||[]).slice(0,3).forEach(s=>{
     const meaning=s.english_definitions.join('; ');
-    const ex='';
-    if(meaning)defs.push({meaning,ex});
+    if(meaning)defs.push({meaning,ex:''});
   });
   const level=(entry.jlpt&&entry.jlpt[0]||'').toUpperCase().replace('JLPT-','N')||'';
   const cat=(entry.senses&&entry.senses[0]&&entry.senses[0].parts_of_speech&&entry.senses[0].parts_of_speech[0])||'';
   const catMap={'Noun':'名词','Verb':'动词','Adjective':'形容词','Adverb':'副词'};
   const catV=Object.keys(catMap).find(k=>cat.includes(k))||'';
-  renderAddForm({word,kana:reading,defs:defs.length?defs:[{meaning:'',ex:''}],level,cat:catMap[catV]||''});
+  // Related words from Jisho links
+  const links=(entry.senses&&entry.senses[0]&&entry.senses[0].links)||[];
+  const rel=links.map(l=>l.text).filter(Boolean).slice(0,5).join('、');
+  // Example sentence from Tatoeba
+  try{
+    const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),3500);
+    const tatR=await fetch(`https://corsproxy.io/?${encodeURIComponent('https://tatoeba.org/en/api_v0/search?from=jpn&query='+encodeURIComponent(word)+'&limit=1')}`,{signal:ctrl.signal});
+    clearTimeout(tid);
+    const tatD=await tatR.json();
+    if(tatD.results&&tatD.results[0]&&defs[0])defs[0].ex=tatD.results[0].text||'';
+  }catch(e){}
+  renderAddForm({word,kana:reading,defs:defs.length?defs:[{meaning:'',ex:''}],level,cat:catMap[catV]||'',rel});
   notify(t('autoFillOk'));
 }
 
@@ -1109,21 +1169,58 @@ async function autoFillEN(word){
   const entry=data[0];
   const pron=(entry.phonetics&&entry.phonetics.find(p=>p.text)&&entry.phonetics.find(p=>p.text).text)||'';
   const defs=[];
+  const allSyns=[];
   (entry.meanings||[]).forEach(m=>{
     (m.definitions||[]).slice(0,2).forEach(d=>{
-      defs.push({meaning:d.definition||(m.partOfSpeech||''),ex:d.example||''});
+      defs.push({meaning:d.definition,ex:d.example||''});
+      (d.synonyms||[]).forEach(s=>allSyns.push(s));
     });
+    (m.synonyms||[]).forEach(s=>allSyns.push(s));
   });
   const catRaw=(entry.meanings&&entry.meanings[0]&&entry.meanings[0].partOfSpeech)||'';
-  const catMap={'noun':'Academic','verb':'Academic','adjective':'Academic','adverb':'Academic'};
-  renderAddForm({word,pron,defs:defs.length?defs:[{meaning:'',ex:''}],level:'',cat:catMap[catRaw]||''});
+  const rel=[...new Set(allSyns)].slice(0,5).join(', ');
+  renderAddForm({word,pron,defs:defs.length?defs:[{meaning:'',ex:''}],level:'',cat:catRaw,rel});
   notify('✅ Auto-filled from dictionary');
 }
 
 async function autoFillZH(word){
-  const enMeaning=await fetchMyMemory(word,'zh-CN','en');
-  if(!enMeaning){notify(t('autoFillErr'));return;}
-  renderAddForm({word,defs:[{meaning:enMeaning,ex:''}]});
+  let pron='',defs=[],cat='',rel='';
+  // 1. Google Translate unofficial API — pinyin + meaning + POS + synonyms
+  const gtUrl=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=en&dt=t&dt=bd&dt=rm&q=${encodeURIComponent(word)}`;
+  try{
+    let gtData=null;
+    try{const r=await fetch(gtUrl);if(r.ok)gtData=await r.json();}catch(_){
+      const r2=await fetch(`https://corsproxy.io/?${encodeURIComponent(gtUrl)}`);if(r2.ok)gtData=await r2.json();
+    }
+    if(gtData){
+      const enMeaning=(gtData[0]||[]).map(x=>x&&x[0]).filter(Boolean).join(' ').trim();
+      if(enMeaning)defs.push({meaning:enMeaning,ex:''});
+      // Pinyin: sometimes in [0][0][2] for short words
+      pron=(gtData[0]&&gtData[0][0]&&gtData[0][0][2])||'';
+      // POS + synonyms from bd section [5]
+      if(gtData[5]&&gtData[5][0]){
+        const posMap={noun:'名词',pronoun:'代词',verb:'动词',adjective:'形容词',adverb:'副词',conjunction:'连词',particle:'助词',preposition:'介词'};
+        cat=posMap[gtData[5][0][0]]||'';
+        const syns=(gtData[5][0][1]||[]).slice(0,5);
+        rel=syns.join('、');
+      }
+    }
+  }catch(e){}
+  // 2. Fallback meaning via MyMemory
+  if(!defs.length){const mm=await fetchMyMemory(word,'zh-CN','en').catch(()=>'');if(mm)defs.push({meaning:mm,ex:''});}
+  // 3. Japanese meaning as second definition
+  const jp=await fetchMyMemory(word,'zh-CN','ja').catch(()=>'');
+  if(jp&&(!defs.length||jp!==defs[0].meaning))defs.push({meaning:jp,ex:''});
+  // 4. Example sentence from Tatoeba
+  try{
+    const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),3500);
+    const tatR=await fetch(`https://corsproxy.io/?${encodeURIComponent('https://tatoeba.org/en/api_v0/search?from=cmn&query='+encodeURIComponent(word)+'&limit=1')}`,{signal:ctrl.signal});
+    clearTimeout(tid);
+    const tatD=await tatR.json();
+    if(tatD.results&&tatD.results[0]&&defs[0])defs[0].ex=tatD.results[0].text||'';
+  }catch(e){}
+  if(!defs.length){notify(t('autoFillErr'));return;}
+  renderAddForm({word,pron,defs,cat,rel});
   notify(t('autoFillOk'));
 }
 
@@ -1393,7 +1490,14 @@ function showResult(){
   if(h.length>10)h.pop(); localStorage.setItem('hist'+lang.toUpperCase(),JSON.stringify(h));
 }
 function backSetup(){document.getElementById('qResult').style.display='none';document.getElementById('qGame').style.display='none';document.getElementById('qSetup').style.display='block';renderHist();}
-function renderHist(){const el=document.getElementById('qHist');const h=Hist[lang];if(!h.length){el.innerHTML='';return;}el.innerHTML=`<div style="font-size:11px;color:var(--tx2);margin-bottom:4px">${t('histLbl')}</div>`+h.slice(0,5).map(x=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--bd)"><span style="color:var(--tx2)">${x.date}</span><span>${x.mode}</span><span>${x.score}/${x.total}</span><span style="color:${x.pct>=70?'var(--suc)':'var(--dan)'}">${x.pct}%</span></div>`).join('');}
+function renderHist(){
+  const el=document.getElementById('qHist');
+  const h=Hist[lang];
+  if(!el||!h.length){if(el)el.innerHTML='';return;}
+  const modeMap={mc:I18N[lang].qModes[0],spell:I18N[lang].qModes[1],flip:I18N[lang].qModes[2],listen:I18N[lang].qModes[3]};
+  el.innerHTML=`<div style="font-size:11px;color:var(--tx2);margin-bottom:4px">${t('histLbl')}</div>`+
+    h.slice(0,5).map(x=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--bd)"><span style="color:var(--tx2)">${x.date}</span><span>${modeMap[x.mode]||x.mode}</span><span>${x.score}/${x.total}</span><span style="color:${x.pct>=70?'var(--suc)':'var(--dan)'}">${x.pct}%</span></div>`).join('');
+}
 
 // ─── WORD MAP ─────────────────────────────────────────
 function initMap(){
@@ -1490,7 +1594,12 @@ const TH={system:{},
   purple:{'--bg':'#100d1f','--bg2':'#1a1530','--bg3':'#221c3a','--bd':'#3a3060','--tx':'#ede8ff','--tx2':'#9080c0','--acc':'#a78bfa','--acc2':'#c4b5fd'}
 };
 function setTheme(th){curTheme=th;localStorage.setItem('vocabTheme',th);const r=document.documentElement;Object.keys(TH.dark).forEach(k=>r.style.removeProperty(k));if(th!=='system')Object.entries(TH[th]).forEach(([k,v])=>r.style.setProperty(k,v));renderThemeBtns();notify(t('themeMsg'));}
-function renderThemeBtns(){['system','light','dark','blue','purple'].forEach(t=>{const b=document.getElementById('th-'+t);if(b)b.className='thbtn'+(curTheme===t?' on':'');});}
+function renderThemeBtns(){
+  ['system','light','dark','blue','purple'].forEach(th=>{const b=document.getElementById('th-'+th);if(b)b.className='thbtn'+(curTheme===th?' on':'');});
+  const bgBtn=document.getElementById('th-bg');
+  if(bgBtn)bgBtn.className='thbtn'+(bgEnabled?' on':'');
+  // text is managed by T() via #lbl-bg-toggle span
+}
 function clearMastered(){cw().forEach(w=>w.mastered=false);save();rw();notify(t('clearedMsg'));}
 function clearAll(){if(confirm(t('clearAllConfirm'))){W[lang]=[];save();rw();buildCatFilter();notify(t('clearAllMsg'));}}
 
@@ -1512,6 +1621,7 @@ function updateFromScroll(){
       document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
       const idx=_tabOrder[key];
       if(idx!==undefined)document.querySelectorAll('.tab')[idx].classList.add('active');
+      updateBG(); // dim/show BG based on active tab
     }
   }
 }
@@ -1532,6 +1642,7 @@ function sw(tab, noScroll){
   }
   if(tab==='quiz'){renderHist();updateQuizPool();}
   if(tab==='map')initMap();
+  updateBG(); // dim BG on translate tab, restore on others
 }
 
 // ─── SEED DATA ────────────────────────────────────────
@@ -1572,6 +1683,7 @@ rw();
 renderAddForm();
 renderThemeBtns();
 renderTransTab();
+updateBG(); // apply BG state on first load
 
 // ─── PDF EXTRACTOR ───────────────────────────────────────────────────────────
 let _pdfLang = 'jp';
@@ -1594,11 +1706,12 @@ function pdfPreviewFile(input) {
 
   label.textContent = file.name;
   info.style.display = 'block';
+  const _langName = _pdfLang==='jp'?(lang==='en'?'Japanese':lang==='jp'?'日本語':'日语'):(lang==='en'?'English':lang==='jp'?'英語':'英语');
   info.innerHTML = `
     <b>${file.name}</b> &nbsp;·&nbsp; ${sizeMB} MB
     ${tooLarge
-      ? '<br><span style="color:var(--dan)">⚠️ 文件过大 (限15MB)。请压缩后重试。</span>'
-      : `<br><span style="color:var(--suc)">✅ 准备好提取 ${_pdfLang === 'jp' ? '日语' : '英语'}单词</span>`
+      ? `<br><span style="color:var(--dan)">⚠️ ${lang==='en'?'File too large (max 15MB). Please compress first.':lang==='jp'?'ファイルが大きすぎます (上限15MB)':'文件过大 (限15MB)，请压缩后重试'}</span>`
+      : `<br><span style="color:var(--suc)">✅ ${lang==='en'?'Ready to extract '+_langName+' words':lang==='jp'?_langName+'語を抽出する準備完了':'准备好提取'+_langName+'单词'}</span>`
     }`;
   btn.disabled = tooLarge;
 }
@@ -1606,7 +1719,7 @@ function pdfPreviewFile(input) {
 async function pdfExtract() {
   const input = document.getElementById('pdfFile');
   const file  = input?.files?.[0];
-  if (!file) { notify('请先选择PDF文件'); return; }
+  if (!file) { notify(lang==='en'?'Please select a PDF file first':lang==='jp'?'PDFファイルを選択してください':'请先选择PDF文件'); return; }
 
   const btn      = document.getElementById('pdfExtractBtn');
   const progress = document.getElementById('pdfProgress');
@@ -1621,7 +1734,7 @@ async function pdfExtract() {
 
   // Animate bar: 5% → 55% while reading
   requestAnimationFrame(() => { fill.style.width = '55%'; });
-  txt.textContent = lang === 'jp' ? '📄 読み込み中…' : '📄 Reading PDF…';
+  txt.textContent = lang==='jp'?'📄 読み込み中…':lang==='zh'?'📄 读取中…':'📄 Reading PDF…';
 
   try {
     // Convert PDF to base64
@@ -1656,7 +1769,7 @@ async function pdfExtract() {
     }
 
     _pdfWords = data.words || [];
-    txt.textContent = `✅ 找到 ${_pdfWords.length} 个单词`;
+    txt.textContent = `✅ ${t('pdfFoundLbl').replace('{n}',_pdfWords.length).replace(' — select to import:','').replace(' — 選んでください：','').replace(' — 选择要导入的：','')}`;
     pdfRenderPreview();
 
   } catch (e) {
@@ -1677,7 +1790,7 @@ function pdfRenderPreview() {
   const list    = document.getElementById('pdfPreviewList');
   const count   = document.getElementById('pdfPreviewCount');
 
-  count.textContent = `找到 ${_pdfWords.length} 个单词 — 选择要导入的：`;
+  count.textContent = t('pdfFoundLbl').replace('{n}', _pdfWords.length);
   section.style.display = 'block';
 
   list.innerHTML = _pdfWords.map((w, i) => {
@@ -1737,10 +1850,11 @@ function pdfImport() {
 
   if (added > 0) {
     save(); renderHome(); buildCatFilter();
-    notify(`✅ 导入 ${added} 个单词${skipped ? `（跳过 ${skipped} 个重复）` : ''}`, 3000);
+    const skipNote=skipped?(lang==='en'?` (${skipped} duplicates skipped)`:lang==='jp'?`（${skipped}件重複スキップ）`:`（跳过 ${skipped} 个重复）`):'';
+    notify(t('importOk')+added+t('importSuf')+skipNote, 3000);
     sw('words');
   } else {
-    notify(skipped ? `全部 ${skipped} 个已存在，跳过` : '没有选中单词');
+    notify(skipped?(lang==='en'?`All ${skipped} already exist`:lang==='jp'?`全て${skipped}件重複`:lang==='zh'?`全部 ${skipped} 个已存在，跳过`:''):(lang==='en'?'No words selected':lang==='jp'?'単語を選択してください':'没有选中单词'));
   }
 }
 

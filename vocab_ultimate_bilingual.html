@@ -425,12 +425,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
   <div class="card" style="margin-bottom:9px" id="addFormCard">
     <!-- Dynamic form rendered by JS -->
   </div>
-  <div class="card">
-    <div style="font-size:12px;font-weight:500;color:var(--acc2);margin-bottom:5px">⚡ <span id="lbl-bulk">Bulk Add</span></div>
-    <div style="font-size:11px;color:var(--tx2);margin-bottom:5px" id="lbl-bulkfmt">Format: word, meaning, example, level, category</div>
-    <textarea id="bulk" rows="3" placeholder=""></textarea>
-    <button class="bp" style="width:100%;margin-top:6px" onclick="bulkAdd()" id="btn-bulk">Bulk Import</button>
-  </div>
+  <div class="card" id="bulkAddCard"></div>
 </div>
 
 <!-- QUIZ -->
@@ -908,10 +903,7 @@ function T(){ // apply translations to static elements
   document.getElementById('opt-alpha').textContent=i.sortAlpha;
   document.getElementById('opt-hard').textContent=i.sortHard;
   document.getElementById('opt-due').textContent=i.sortDue;
-  document.getElementById('lbl-bulk').textContent=i.bulk;
-  document.getElementById('lbl-bulkfmt').textContent=i.bulkFmt;
-  document.getElementById('bulk').placeholder=i.bulkPH;
-  document.getElementById('btn-bulk').textContent=i.bulk;
+  renderBulkCard();
   document.getElementById('btn-startquiz').textContent=i.startQuiz;
   document.getElementById('lbl-qmode').textContent='Mode';
   document.getElementById('lbl-qdir').textContent='Direction';
@@ -1080,13 +1072,15 @@ function renderAddForm(populate){
   const defs=p.defs||[{meaning:'',ex:''}];
   defCount=defs.length;
   const defsHtml=defs.map((d,idx)=>buildDefHTML(idx,d.meaning,d.ex)).join('');
+  const strokeBtn = lang==='zh' ? `<button class="bg-btn" onclick="openStrokeModal()" style="font-size:12px;padding:0 11px;white-space:nowrap" title="查看笔顺">🖊 笔顺</button>` : '';
+  const chipBox = lang==='zh' ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px"></div>' : '';
   const extraFields = lang==='jp'
     ? `<div class="row"><label class="lbl">${i.fieldPron}</label><div style="display:flex;gap:6px"><input id="f-kana" value="${p.kana||''}" placeholder="${i.placeholder.pron}" style="flex:1"><button class="vbtn" id="vbtn-kana" onclick="voiceInput('f-kana','kana')" title="${i.voiceHint}">🎤</button></div></div>
        <div class="row"><label class="lbl">${i.fieldRoot}</label><input id="f-root" value="${p.root||''}" placeholder="${i.placeholder.root}"></div>
        <div class="row"><label class="lbl">${i.fieldRel}</label><input id="f-rel" value="${p.rel||''}" placeholder="${i.placeholder.rel}"></div>`
     : `<div class="row"><label class="lbl">${i.fieldPron}</label><div style="display:flex;gap:6px"><input id="f-pron" value="${p.pron||''}" placeholder="${i.placeholder.pron}" style="flex:1"><button class="vbtn" id="vbtn-pron" onclick="voiceInput('f-pron','pron')" title="${i.voiceHint}">🎤</button></div></div>
-       <div class="row"><label class="lbl">${i.fieldRoot}</label><input id="f-root" value="${p.root||''}" placeholder="${i.placeholder.root}"></div>
-       <div class="row"><label class="lbl">${i.fieldRel}</label><input id="f-rel" value="${p.rel||''}" placeholder="${i.placeholder.rel}"></div>`;
+       <div class="row"><label class="lbl">${i.fieldRoot}</label><input id="f-root" value="${p.root||''}" placeholder="${i.placeholder.root}">${chipBox.replace('<div ','<div id="chips-root" ')}</div>
+       <div class="row"><label class="lbl">${i.fieldRel}</label><input id="f-rel" value="${p.rel||''}" placeholder="${i.placeholder.rel}">${chipBox.replace('<div ','<div id="chips-rel" ')}</div>`;
   document.getElementById('addFormCard').innerHTML=`
     <div class="row"><label class="lbl">${i.fieldWord}</label>
       <div style="display:flex;gap:6px">
@@ -1094,7 +1088,10 @@ function renderAddForm(populate){
         <button class="vbtn" id="vbtn-word" onclick="voiceInput('f-word','word')" title="${i.voiceHint}">🎤</button>
         <button class="bg-btn" onclick="speakAdd()" style="width:36px;padding:0;font-size:14px">🔊</button>
       </div>
-      <button class="bg-btn" id="btn-autofill" onclick="autoFill()" style="width:100%;margin-top:6px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px">✨ ${t('autoFillBtn')}</button>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button class="bg-btn" id="btn-autofill" onclick="autoFill()" style="flex:1;font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px">✨ ${t('autoFillBtn')}</button>
+        ${strokeBtn}
+      </div>
     </div>
     ${extraFields}
     <div style="font-size:11px;color:var(--acc2);font-weight:500;margin-bottom:6px">${i.fieldMeaning}</div>
@@ -1261,7 +1258,12 @@ async function autoFillZH(word){
     if(r.ok){
       const d=await r.json();
       if(!d._demo&&d.defs&&d.defs.length){
-        renderAddForm({word:d.word||word,pron:d.pron||'',root:d.root||'',rel:d.rel||'',level:d.level||'',cat:d.cat||'',defs:d.defs});
+        window._autoFillChips={
+          root:(d.root||'').split(/[、,，]/).map(s=>s.trim()).filter(Boolean),
+          rel:(d.rel||'').split(/[、,，]/).map(s=>s.trim()).filter(Boolean)
+        };
+        renderAddForm({word:d.word||word,pron:d.pron||'',root:'',rel:'',level:d.level||'',cat:d.cat||'',defs:d.defs});
+        injectAutoFillChips();
         notify(t('autoFillOk'));
         return;
       }
@@ -1300,6 +1302,112 @@ async function autoFillZH(word){
   if(!defs.length){notify(t('autoFillErr'));return;}
   renderAddForm({word,pron,defs,cat,rel});
   notify(t('autoFillOk'));
+}
+
+// ─── CHIPS ───────────────────────────────────────────
+function injectAutoFillChips(){
+  const s=window._autoFillChips;
+  window._autoFillChips=null;
+  if(!s)return;
+  ['root','rel'].forEach(field=>{
+    const chips=s[field];
+    if(!chips||!chips.length)return;
+    const box=document.getElementById('chips-'+field);
+    if(!box)return;
+    chips.forEach(word=>{
+      const chip=document.createElement('span');
+      chip.textContent=word;
+      chip.className='chip';
+      chip.onclick=()=>{
+        const el=document.getElementById('f-'+field);
+        if(!el)return;
+        const parts=el.value.trim()?el.value.trim().split(/[、,，]/).map(x=>x.trim()).filter(Boolean):[];
+        if(!parts.includes(word)){parts.push(word);el.value=parts.join('、');}
+        chip.classList.toggle('on');
+      };
+      box.appendChild(chip);
+    });
+  });
+}
+
+// ─── STROKE ORDER MODAL ──────────────────────────────
+function openStrokeModal(){
+  const word=(document.getElementById('f-word')||{}).value.trim();
+  if(!word){notify(t('enterFirst'));return;}
+  const cjkChars=[...word].filter(c=>hasCJK(c));
+  if(!cjkChars.length){notify('No CJK characters');return;}
+  let modal=document.getElementById('strokeModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='strokeModal';
+    modal.className='dict-overlay';
+    modal.onclick=e=>{if(e.target===modal)modal.classList.remove('open');};
+    const panel=document.createElement('div');
+    panel.className='dict-panel';
+    panel.innerHTML=`<div class="dict-header"><span id="strokeModalWord" style="font-size:17px;font-weight:600"></span><button class="dict-close" onclick="document.getElementById('strokeModal').classList.remove('open')">✕</button></div><div style="padding:12px 16px"><div class="dict-sec-lbl">笔顺 · Stroke Order</div><div class="dict-stroke-row" id="strokeModalBox" style="min-height:80px"><div class="dict-loading">Animating…</div></div></div>`;
+    modal.appendChild(panel);
+    document.body.appendChild(modal);
+  }
+  document.getElementById('strokeModalWord').textContent=word;
+  modal.classList.add('open');
+  const box=document.getElementById('strokeModalBox');
+  box.innerHTML='<div class="dict-loading">Animating…</div>';
+  const cs=getComputedStyle(document.documentElement);
+  const strokeColor=cs.getPropertyValue('--acc').trim()||'#34d399';
+  const outlineColor=cs.getPropertyValue('--bd').trim()||'#2a4a3f';
+  setTimeout(()=>{
+    box.innerHTML='';
+    cjkChars.slice(0,6).forEach(char=>{
+      const wrap=document.createElement('div');
+      wrap.className='dict-char-box';
+      const b=document.createElement('div');
+      b.style.cssText='width:76px;height:76px;background:var(--bg3);border-radius:8px;border:1px solid var(--bd);overflow:hidden';
+      const lbl=document.createElement('div');
+      lbl.className='dict-char-lbl';lbl.textContent=char;
+      wrap.appendChild(b);wrap.appendChild(lbl);box.appendChild(wrap);
+      try{
+        const hw=HanziWriter.create(b,char,{width:76,height:76,padding:7,strokeColor,outlineColor,strokeAnimationSpeed:1,delayBetweenStrokes:100,showOutline:true,drawingFadeTime:0});
+        hw.animateCharacter();
+      }catch(e){b.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:28px">${char}</div>`;}
+    });
+  },60);
+}
+
+// ─── BULK ADD GRID ────────────────────────────────────
+let _bulkRowId=0;
+function renderBulkCard(){
+  const card=document.getElementById('bulkAddCard');
+  if(!card)return;
+  const i=I18N[lang];
+  if(lang==='zh'){
+    _bulkRowId=0;
+    card.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-size:12px;font-weight:600;color:var(--acc2)">⚡ ${i.bulk}</div><button class="bp" style="font-size:11px;padding:4px 10px" onclick="bulkAdd()">⬇ 导入全部</button></div><div style="overflow-x:auto;margin-bottom:6px"><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="color:var(--tx2);border-bottom:1px solid var(--bd)"><th style="padding:4px 4px;text-align:left;white-space:nowrap;font-weight:500">中文*</th><th style="padding:4px 4px;text-align:left;white-space:nowrap;font-weight:500">拼音</th><th style="padding:4px 4px;text-align:left;white-space:nowrap;font-weight:500">英文意思</th><th style="padding:4px 4px;text-align:left;white-space:nowrap;font-weight:500">日文意思</th><th style="padding:4px 4px;text-align:left;white-space:nowrap;font-weight:500">例句</th><th style="padding:4px 4px;text-align:left;white-space:nowrap;font-weight:500">HSK</th><th style="padding:4px 4px;text-align:left;white-space:nowrap;font-weight:500">词性</th><th style="padding:4px 4px"></th></tr></thead><tbody id="bulkBody">${buildBulkRow()}</tbody></table></div><button class="bg-btn" style="width:100%;font-size:12px" onclick="bulkAddRow()">+ 添加一行</button>`;
+  } else {
+    card.innerHTML=`<div style="font-size:12px;font-weight:500;color:var(--acc2);margin-bottom:5px">⚡ ${i.bulk}</div><div style="font-size:11px;color:var(--tx2);margin-bottom:5px">${i.bulkFmt}</div><textarea id="bulk" rows="3" placeholder="${i.bulkPH}"></textarea><button class="bp" style="width:100%;margin-top:6px" onclick="bulkAdd()">${i.bulk}</button>`;
+  }
+}
+
+function buildBulkRow(){
+  const rid=_bulkRowId++;
+  const i=I18N[lang];
+  const levOpts=i.levels.map(l=>`<option value="${l==='无'||l==='なし'||l==='None'?'':l}">${l}</option>`).join('');
+  const catOpts=i.cats.map(c=>`<option value="${c==='无'||c==='なし'||c==='None'?'':c}">${c}</option>`).join('');
+  const inp=(cls,ph)=>`<input class="${cls}" placeholder="${ph}" style="width:100%;min-width:52px;font-size:11px;padding:3px 4px;background:var(--bg3);border:1px solid var(--bd);border-radius:4px;color:var(--tx)">`;
+  const sel=(cls,opts)=>`<select class="${cls}" style="width:100%;font-size:11px;padding:3px 4px;background:var(--bg3);border:1px solid var(--bd);border-radius:4px;color:var(--tx)">${opts}</select>`;
+  return `<tr id="brow-${rid}" style="border-bottom:1px solid var(--bd)"><td style="padding:2px 3px">${inp('br-word','睡觉')}</td><td style="padding:2px 3px">${inp('br-pron','shuì jiào')}</td><td style="padding:2px 3px">${inp('br-en','to sleep')}</td><td style="padding:2px 3px">${inp('br-jp','眠る')}</td><td style="padding:2px 3px">${inp('br-ex','我每天八点睡觉。')}</td><td style="padding:2px 3px">${sel('br-lv',levOpts)}</td><td style="padding:2px 3px">${sel('br-cat',catOpts)}</td><td style="padding:2px 3px;text-align:center"><button onclick="bulkRemoveRow('brow-${rid}')" style="background:none;border:none;color:var(--dan);cursor:pointer;font-size:16px;line-height:1;padding:1px 5px" title="删除此行">−</button></td></tr>`;
+}
+
+function bulkAddRow(){
+  const body=document.getElementById('bulkBody');
+  if(!body)return;
+  const tmp=document.createElement('tbody');
+  tmp.innerHTML=buildBulkRow();
+  body.appendChild(tmp.firstElementChild);
+}
+
+function bulkRemoveRow(id){
+  const row=document.getElementById(id);
+  if(row)row.remove();
 }
 
 // ─── TRANSLATE TAB ───────────────────────────────────
@@ -1377,6 +1485,29 @@ function addTransWord(btn){
 }
 
 function bulkAdd(){
+  if(lang==='zh'){
+    const rows=document.querySelectorAll('#bulkBody tr');
+    let c=0;const today=new Date().toDateString();
+    rows.forEach(row=>{
+      const word=(row.querySelector('.br-word')||{}).value?.trim();
+      if(!word)return;
+      const pron=(row.querySelector('.br-pron')||{}).value?.trim()||'';
+      const en=(row.querySelector('.br-en')||{}).value?.trim()||'';
+      const jp=(row.querySelector('.br-jp')||{}).value?.trim()||'';
+      const ex=(row.querySelector('.br-ex')||{}).value?.trim()||'';
+      const level=(row.querySelector('.br-lv')||{}).value||'';
+      const cat=(row.querySelector('.br-cat')||{}).value||'';
+      const defs=[];
+      if(en)defs.push({meaning:en,ex});
+      if(jp)defs.push({meaning:jp,ex:''});
+      if(!defs.length)defs.push({meaning:'',ex});
+      cw().unshift({word,defs,pron,kana:'',root:'',rel:'',level,cat,mastered:false,addedDate:today,srsBox:0,nextReview:today,wrongCount:0});
+      c++;
+    });
+    if(c){save();renderBulkCard();notify(t('bulkOk')+c+t('bulkSuf'));buildCatFilter();}
+    else notify(t('bulkErr'));
+    return;
+  }
   const lines=document.getElementById('bulk').value.trim().split('\n').filter(Boolean);
   let c=0; const today=new Date().toDateString();
   lines.forEach(l=>{

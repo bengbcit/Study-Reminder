@@ -118,6 +118,28 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 /* Lang switch animation */
 .sec-fade{animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+/* ── 変形クイズ ── */
+.cq-wrap{background:var(--bg2);border:2px solid var(--acc);border-radius:13px;padding:15px;margin-top:12px;animation:fadeIn .25s ease}
+.cq-tabs{display:flex;gap:4px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.cq-tab{padding:5px 10px;border-radius:20px;font-size:11px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.cq-tab.on{background:var(--acc);border-color:var(--acc);color:#fff;box-shadow:0 0 8px rgba(167,139,250,.35)}
+.cq-inp-row{display:flex;gap:6px;margin-bottom:9px}
+.cq-inp-row input{font-size:14px;letter-spacing:.5px}
+.cq-dice{font-size:15px;padding:6px 10px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;cursor:pointer;flex-shrink:0;transition:border .15s}
+.cq-dice:hover{border-color:var(--acc)}
+.cq-display{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;text-align:center;padding:13px 10px;margin-bottom:9px;min-height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cq-form-big{font-size:30px;font-weight:600;color:var(--acc2);letter-spacing:1px;text-shadow:0 0 10px rgba(167,139,250,.4)}
+.cq-prompt{font-size:11px;color:var(--tx2);margin-top:5px}
+.cq-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px}
+.cq-opts.g2{grid-template-columns:1fr 1fr}
+.cq-opt{background:var(--bg2);border:1px solid var(--bd);color:var(--tx);border-radius:8px;padding:7px 4px;font-size:11px;cursor:pointer;transition:all .15s;text-align:center;line-height:1.35}
+.cq-opt:hover:not(:disabled){border-color:var(--acc);color:var(--acc2)}
+.cq-opt.ok{background:var(--suc-bg);border-color:var(--suc);color:var(--suc);font-weight:600}
+.cq-opt.no{background:var(--dan-bg);border-color:var(--dan);color:var(--dan)}
+.cq-opt:disabled{cursor:default;opacity:.8}
+.cq-score-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tx2);margin-bottom:7px}
+.cq-score-row .cq-pts{color:var(--acc2);font-weight:600;font-size:13px}
+.cq-empty{text-align:center;color:var(--tx2);font-size:12px;line-height:1.5}
 
 /* ── Thesaurus Trove pixel header — neon purple ── */
 :root{
@@ -428,6 +450,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
       </div>
     </div>
     <button class="bp" style="width:100%;padding:10px" onclick="startQuiz()" id="btn-startquiz">Start Quiz</button>
+    <button class="bg-btn" style="width:100%;padding:9px;margin-top:6px;border-color:var(--acc);color:var(--acc2);font-size:12px" onclick="cqOpen()">🔵 変形クイズ — Conjugation Quiz</button>
     <div id="qHist" style="margin-top:10px"></div>
   </div>
   <div id="qGame" style="display:none">
@@ -483,6 +506,42 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
     <div style="font-size:13px;color:var(--tx2);margin-bottom:13px" id="resDet"></div>
     <div id="wrongList" style="text-align:left;margin-bottom:11px"></div>
     <button class="bp" style="width:100%" onclick="backSetup()" id="btn-tryagain">Try Again</button>
+  </div>
+
+  <!-- ── 変形クイズ ──────────────────────────────────── -->
+  <div id="cqSection" style="display:none">
+    <div class="cq-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--tt-hacc);letter-spacing:.5px;text-shadow:0 0 8px var(--tt-hglow)">変形クイズ</div>
+        <button class="ico" onclick="cqClose()" style="font-size:11px;padding:2px 7px">✕</button>
+      </div>
+      <!-- type tabs -->
+      <div class="cq-tabs">
+        <button class="cq-tab on" id="cqt-verb" onclick="cqSetMode('verb')">動詞変形</button>
+        <button class="cq-tab" id="cqt-noun" onclick="cqSetMode('noun')">名詞活用</button>
+        <button class="cq-tab" id="cqt-iadj" onclick="cqSetMode('iadj')">い形容詞</button>
+        <button class="cq-tab" id="cqt-naadj" onclick="cqSetMode('naadj')">な形容詞</button>
+      </div>
+      <!-- word input row -->
+      <div class="cq-inp-row">
+        <input type="text" id="cqWord" placeholder="動詞を入力 e.g. 食べる" oninput="cqSetWord(this.value)" onkeydown="if(event.key==='Enter')cqNext()">
+        <button class="cq-dice" onclick="cqRandom()" title="ランダム">🎲</button>
+        <button class="bp" style="white-space:nowrap;padding:7px 11px;font-size:12px" onclick="cqNext()">Next ▶</button>
+      </div>
+      <!-- conjugated form display -->
+      <div class="cq-display" id="cqDisplay">
+        <div class="cq-empty">単語を入力して Next を押してください<br><span style="font-size:10px;opacity:.6">またはサイコロで自動入力</span></div>
+      </div>
+      <!-- score row -->
+      <div class="cq-score-row" id="cqScoreRow" style="display:none">
+        <span>⭐ <span class="cq-pts"><span id="cqScoreN">0</span> / <span id="cqTotal">0</span></span></span>
+        <button class="ico" style="font-size:10px;padding:2px 7px" onclick="cqResetScore()">Reset</button>
+      </div>
+      <!-- answer options -->
+      <div class="cq-opts" id="cqOpts"></div>
+      <!-- feedback -->
+      <div id="cqFB" style="text-align:center;font-size:12px;min-height:16px;margin-top:2px"></div>
+    </div>
   </div>
 </div>
 
@@ -2055,6 +2114,244 @@ function renderDefSection(res) {
     inner += `<div class="dict-attr">via <a href="https://dictionaryapi.dev" target="_blank">dictionaryapi.dev</a></div>`;
   }
   el.innerHTML = inner;
+}
+
+// ─── 変形クイズ (Conjugation Quiz) ──────────────────────────────────────────
+
+// 13 verb form labels
+const CQVF = ['①ます形','②て形','③た形','④ない形','⑤命令形','⑥意志形','⑦ば形','⑧可能形','⑨受身形','⑩尊敬形','⑪使役形','⑫使役受身','⑬禁止形'];
+// 7 noun conjugation labels
+const CQNF = ['現在肯定','現在否定','過去肯定','過去否定','て形','条件形','連体形'];
+// 7 い-adj labels
+const CQIF = ['基本形','否定形','て形','過去形','過去否定','ば形','副詞形'];
+// 7 な-adj labels
+const CQAF = ['基本形','否定形','て形','過去形','過去否定','条件形','副詞形'];
+
+// Preset random word lists
+const CQWORDS = {
+  verb:  ['食べる','飲む','書く','話す','見る','来る','する','行く','読む','聞く','泳ぐ','待つ','遊ぶ','買う','作る','起きる','寝る','歩く','勉強する','運動する'],
+  noun:  ['学生','先生','友達','本','家','仕事','時間','日本語','問題','映画'],
+  iadj:  ['高い','安い','大きい','小さい','新しい','古い','面白い','難しい','楽しい','おいしい'],
+  naadj: ['元気','静か','有名','便利','綺麗','好き','嫌い','上手','下手','丁寧']
+};
+
+// Detect verb group (g1=五段, g2=一段, suru=サ変, kuru=カ変)
+function _cqDetectGroup(v) {
+  if (v === 'する' || v.endsWith('する')) return 'suru';
+  if (v === 'くる' || v === '来る')       return 'kuru';
+  if (!v.endsWith('る')) return 'g1';
+  const pre = v.slice(0, -1);
+  if (!pre) return 'g1';
+  const lastCh = pre.slice(-1);
+  const iRow = 'いきしちにひみりぎじびぴ';
+  const eRow = 'えけせてねへめれげぜべぺ';
+  return (iRow.includes(lastCh) || eRow.includes(lastCh)) ? 'g2' : 'g1';
+}
+
+// Build consonant-row columns for 五段 verb
+function _g1Rows(v) {
+  const map = {
+    'う':['わ','い','う','え','お'],
+    'く':['か','き','く','け','こ'],
+    'ぐ':['が','ぎ','ぐ','げ','ご'],
+    'す':['さ','し','す','せ','そ'],
+    'つ':['た','ち','つ','て','と'],
+    'ぬ':['な','に','ぬ','ね','の'],
+    'ぶ':['ば','び','ぶ','べ','ぼ'],
+    'む':['ま','み','む','め','も'],
+    'る':['ら','り','る','れ','ろ']
+  };
+  const ending = v.slice(-1);
+  const base   = v.slice(0, -1);
+  const row    = map[ending];
+  if (!row) return null;
+  return { base, ending, a:base+row[0], i:base+row[1], u:v, e:base+row[3], o:base+row[4] };
+}
+
+// て/た 音便 for 五段
+function _g1Te(v) {
+  if (v === '行く') return { te:'行って', ta:'行った' };
+  const ending = v.slice(-1);
+  const base   = v.slice(0, -1);
+  const tbl = {
+    'う':['って','った'], 'つ':['って','った'], 'る':['って','った'],
+    'く':['いて','いた'], 'ぐ':['いで','いだ'],
+    'す':['して','した'],
+    'ぬ':['んで','んだ'], 'ぶ':['んで','んだ'], 'む':['んで','んだ']
+  };
+  const pair = tbl[ending];
+  return pair ? { te:base+pair[0], ta:base+pair[1] } : { te:v+'て', ta:v+'た' };
+}
+
+// Conjugate verb → 13 forms
+function _cqConjVerb(word) {
+  const gr = _cqDetectGroup(word);
+  if (gr === 'g2') {
+    const s = word.slice(0, -1);
+    return [s+'ます', s+'て', s+'た', s+'ない', s+'ろ', s+'よう',
+            s+'れば', s+'られる', s+'られる', 'お'+s+'になる',
+            s+'させる', s+'させられる', word+'な'];
+  }
+  if (gr === 'g1') {
+    const r  = _g1Rows(word);
+    const te = _g1Te(word);
+    if (!r) return Array(13).fill('?');
+    return [r.i+'ます', te.te, te.ta, r.a+'ない', r.e, r.o+'う',
+            r.e+'ば', r.e+'る', r.a+'れる', 'お'+r.i+'になる',
+            r.a+'せる', r.a+'せられる', word+'な'];
+  }
+  if (gr === 'suru') {
+    const pre = word === 'する' ? '' : word.slice(0, -2);
+    const s   = pre;
+    return [s+'します', s+'して', s+'した', s+'しない', s+'しろ', s+'しよう',
+            s+'すれば', s+'できる', s+'される', s+'なさる',
+            s+'させる', s+'させられる', s+'するな'];
+  }
+  // kuru
+  const isK = word === '来る';
+  const ki  = isK ? '来' : 'き';
+  const ko  = isK ? '来' : 'こ';
+  const kru = isK ? '来れば' : 'くれば';
+  const kna = isK ? '来るな' : 'くるな';
+  return [ki+'ます', ki+'て', ki+'た', ko+'ない', ko+'い', ko+'よう',
+          kru, ko+'られる', ko+'られる', 'いらっしゃる',
+          ko+'させる', ko+'させられる', kna];
+}
+
+// Conjugate noun → 7 forms
+function _cqConjNoun(w) {
+  return [w+'だ', w+'ではない', w+'だった', w+'ではなかった', w+'で', w+'なら', w+'の'];
+}
+
+// Conjugate い-adj → 7 forms (e.g. 高い → 高)
+function _cqConjIAdj(w) {
+  const s = w.slice(0, -1); // remove い
+  return [w, s+'くない', s+'くて', s+'かった', s+'くなかった', s+'ければ', s+'く'];
+}
+
+// Conjugate な-adj → 7 forms
+function _cqConjNaAdj(w) {
+  return [w+'だ', w+'ではない', w+'で', w+'だった', w+'ではなかった', w+'なら', w+'に'];
+}
+
+// Quiz state object
+const _CQ = { mode:'verb', word:'', forms:[], labels:[], qIdx:-1, score:0, total:0, answered:false };
+
+function cqOpen() {
+  const el = document.getElementById('cqSection');
+  if (!el) return;
+  el.style.display = 'block';
+  setTimeout(() => el.scrollIntoView({ behavior:'smooth', block:'nearest' }), 60);
+}
+function cqClose() {
+  const el = document.getElementById('cqSection');
+  if (el) el.style.display = 'none';
+}
+
+function cqSetMode(m) {
+  _CQ.mode = m;
+  ['verb','noun','iadj','naadj'].forEach(x => {
+    const b = document.getElementById('cqt-'+x);
+    if (b) b.className = 'cq-tab'+(x === m ? ' on' : '');
+  });
+  const ph = { verb:'動詞を入力 e.g. 食べる', noun:'名詞を入力 e.g. 学生', iadj:'い形容詞 e.g. 高い', naadj:'な形容詞 e.g. 元気' };
+  const inp = document.getElementById('cqWord');
+  if (inp) inp.placeholder = ph[m];
+  // Reset
+  _CQ.word = ''; _CQ.forms = []; _CQ.answered = false;
+  if (inp) inp.value = '';
+  document.getElementById('cqDisplay').innerHTML = '<div class="cq-empty">単語を入力して Next を押してください</div>';
+  document.getElementById('cqOpts').innerHTML = '';
+  document.getElementById('cqFB').textContent = '';
+  const grid = document.getElementById('cqOpts');
+  if (grid) grid.className = 'cq-opts'+(m === 'verb' ? '' : ' g2');
+}
+
+function cqRandom() {
+  const list = CQWORDS[_CQ.mode];
+  const w = list[Math.floor(Math.random() * list.length)];
+  const inp = document.getElementById('cqWord');
+  if (inp) inp.value = w;
+  cqSetWord(w);
+  cqNext();
+}
+
+function cqSetWord(v) { _CQ.word = v.trim(); }
+
+function _cqBuild() {
+  const w = _CQ.word;
+  if (!w) return false;
+  if      (_CQ.mode === 'verb')  { _CQ.forms = _cqConjVerb(w);   _CQ.labels = CQVF; }
+  else if (_CQ.mode === 'noun')  { _CQ.forms = _cqConjNoun(w);   _CQ.labels = CQNF; }
+  else if (_CQ.mode === 'iadj')  { _CQ.forms = _cqConjIAdj(w);   _CQ.labels = CQIF; }
+  else if (_CQ.mode === 'naadj') { _CQ.forms = _cqConjNaAdj(w);  _CQ.labels = CQAF; }
+  return _CQ.forms.length > 0;
+}
+
+function cqNext() {
+  _CQ.word = (document.getElementById('cqWord').value || '').trim();
+  if (!_CQ.word) { notify('単語を入力してください'); return; }
+  if (!_cqBuild()) return;
+  _CQ.qIdx    = Math.floor(Math.random() * _CQ.forms.length);
+  _CQ.answered = false;
+  _cqRenderQ();
+}
+
+function _cqRenderQ() {
+  const form  = _CQ.forms[_CQ.qIdx];
+  const prompts = { verb:'この動詞の変形は何ですか？', noun:'この名詞の形は何ですか？', iadj:'このい形容詞の形は何ですか？', naadj:'このな形容詞の形は何ですか？' };
+  // Display panel
+  document.getElementById('cqDisplay').innerHTML =
+    `<div class="cq-form-big">${form}</div>
+     <div class="cq-prompt" style="margin-top:6px">「${_CQ.word}」の変形 → ?</div>
+     <div style="font-size:10px;color:var(--tx2);margin-top:3px;opacity:.7">${prompts[_CQ.mode]}</div>`;
+  // Score row
+  const sr = document.getElementById('cqScoreRow');
+  if (sr) sr.style.display = 'flex';
+  document.getElementById('cqScoreN').textContent = _CQ.score;
+  document.getElementById('cqTotal').textContent  = _CQ.total;
+  // Clear feedback
+  document.getElementById('cqFB').textContent = '';
+  // Update grid class
+  const grid = document.getElementById('cqOpts');
+  grid.className = 'cq-opts'+(_CQ.mode === 'verb' ? '' : ' g2');
+  // Render buttons
+  grid.innerHTML = _CQ.labels.map((lbl, i) =>
+    `<button class="cq-opt" onclick="cqAnswer(${i})">${lbl}</button>`
+  ).join('');
+}
+
+function cqAnswer(idx) {
+  if (_CQ.answered) return;
+  _CQ.answered = true;
+  _CQ.total++;
+  const correct = (idx === _CQ.qIdx);
+  if (correct) _CQ.score++;
+  // Update score
+  document.getElementById('cqScoreN').textContent = _CQ.score;
+  document.getElementById('cqTotal').textContent  = _CQ.total;
+  // Style buttons
+  document.querySelectorAll('.cq-opt').forEach((b, i) => {
+    b.disabled = true;
+    if (i === _CQ.qIdx)             b.className = 'cq-opt ok';
+    else if (i === idx && !correct)  b.className = 'cq-opt no';
+  });
+  // Feedback text
+  const fb = document.getElementById('cqFB');
+  if (correct) {
+    fb.innerHTML = `<span style="color:var(--suc)">✓ 正解！ — ${_CQ.labels[_CQ.qIdx]}</span>`;
+  } else {
+    fb.innerHTML = `<span style="color:var(--dan)">✗ 不正解</span>　正解：<span style="color:var(--suc);font-weight:600">${_CQ.labels[_CQ.qIdx]}</span>`;
+  }
+  // Auto-advance
+  setTimeout(() => { if (_CQ.answered) cqNext(); }, 1500);
+}
+
+function cqResetScore() {
+  _CQ.score = 0; _CQ.total = 0;
+  document.getElementById('cqScoreN').textContent = '0';
+  document.getElementById('cqTotal').textContent  = '0';
+  notify('スコアリセット！');
 }
 
 function renderTransSection(res, tgtCode) {

@@ -141,6 +141,29 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 .cq-score-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tx2);margin-bottom:7px}
 .cq-score-row .cq-pts{color:var(--acc2);font-weight:600;font-size:13px}
 .cq-empty{text-align:center;color:var(--tx2);font-size:12px;line-height:1.5}
+/* ── 敬語クイズ ── */
+.kg-wrap{background:var(--bg2);border:2px solid #f59e0b;border-radius:13px;padding:15px;margin-top:12px;animation:fadeIn .25s ease}
+.kg-tabs{display:flex;gap:4px;margin-bottom:10px}
+.kg-tab{padding:5px 11px;border-radius:20px;font-size:11px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx2);cursor:pointer;white-space:nowrap;transition:all .15s}
+.kg-tab.on{background:#f59e0b;border-color:#f59e0b;color:#fff;box-shadow:0 0 8px rgba(245,158,11,.35)}
+.kg-inp-row{display:flex;gap:6px;margin-bottom:9px}
+.kg-inp-row input{font-size:14px;letter-spacing:.5px}
+.kg-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:9px}
+.kg-cell{background:var(--bg3);border:1px solid var(--bd);border-radius:9px;padding:9px 8px}
+.kg-cell-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;color:var(--tx2)}
+.kg-cell-form{font-size:15px;font-weight:600;color:#f59e0b;line-height:1.3;margin-bottom:4px}
+.kg-cell-ex{font-size:10px;color:var(--tx2);line-height:1.45}
+.kg-q-card{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:13px 12px;margin-bottom:8px;text-align:center}
+.kg-q-num{font-size:10px;color:var(--tx2);margin-bottom:6px}
+.kg-q-sent{font-size:14px;line-height:1.7;color:var(--tx)}
+.kg-q-opts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px}
+.kg-q-opt{background:var(--bg2);border:1px solid var(--bd);color:var(--tx);border-radius:8px;padding:8px 6px;font-size:12px;cursor:pointer;transition:all .15s;text-align:center;line-height:1.35}
+.kg-q-opt:hover:not(:disabled){border-color:#f59e0b;color:#f59e0b}
+.kg-q-opt.ok{background:#d1fae5;border-color:#10b981;color:#065f46;font-weight:600}
+.kg-q-opt.no{background:#fee2e2;border-color:#ef4444;color:#b91c1c}
+.kg-q-opt:disabled{cursor:default;opacity:.85}
+.kg-score-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tx2);margin-bottom:8px}
+.kg-score-row .kg-pts{color:#f59e0b;font-weight:600;font-size:13px}
 
 /* ── Thesaurus Trove pixel header — neon purple ── */
 :root{
@@ -448,6 +471,7 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
     </div>
     <button class="bp" style="width:100%;padding:10px" onclick="startQuiz()" id="btn-startquiz">Start Quiz</button>
     <button class="bg-btn" style="width:100%;padding:9px;margin-top:6px;border-color:var(--acc);color:var(--acc2);font-size:12px" onclick="cqOpen()">🔵 変形クイズ — Conjugation Quiz</button>
+    <button class="bg-btn" style="width:100%;padding:9px;margin-top:6px;border-color:#f59e0b;color:#f59e0b;font-size:12px" onclick="kgOpen()">🎌 敬語クイズ — Keigo Quiz</button>
     <div id="qHist" style="margin-top:10px"></div>
   </div>
   <div id="qGame" style="display:none">
@@ -538,6 +562,47 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
       <div class="cq-opts" id="cqOpts"></div>
       <!-- feedback -->
       <div id="cqFB" style="text-align:center;font-size:12px;min-height:16px;margin-top:2px"></div>
+    </div>
+  </div>
+  <!-- ── 敬語クイズ ──────────────────────────────────── -->
+  <div id="kgSection" style="display:none">
+    <div class="kg-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#f59e0b;letter-spacing:.5px;text-shadow:0 0 8px rgba(245,158,11,.55)">敬語クイズ</div>
+        <button class="ico" onclick="kgClose()" style="font-size:11px;padding:2px 7px">✕</button>
+      </div>
+      <div class="kg-tabs">
+        <button class="kg-tab on" id="kgt-look" onclick="kgSetMode('look')">📖 調べる</button>
+        <button class="kg-tab" id="kgt-quiz" onclick="kgSetMode('quiz')">✏️ テスト</button>
+      </div>
+      <!-- lookup pane -->
+      <div id="kgLookPane">
+        <div class="kg-inp-row">
+          <input type="text" id="kgWord" placeholder="動詞を入力 e.g. 行く" onkeydown="if(event.key==='Enter')kgSearch()">
+          <button class="cq-dice" onclick="kgRandom()" title="ランダム">🎲</button>
+          <button class="bp" style="white-space:nowrap;padding:7px 11px;font-size:12px" onclick="kgSearch()">調べる</button>
+        </div>
+        <div class="kg-grid">
+          <div class="kg-cell"><div class="kg-cell-lbl">尊敬語</div><div class="kg-cell-form" id="kgSon">—</div><div class="kg-cell-ex" id="kgSonEx"></div></div>
+          <div class="kg-cell"><div class="kg-cell-lbl">謙譲語</div><div class="kg-cell-form" id="kgKen">—</div><div class="kg-cell-ex" id="kgKenEx"></div></div>
+          <div class="kg-cell"><div class="kg-cell-lbl">丁寧語</div><div class="kg-cell-form" id="kgTei">—</div><div class="kg-cell-ex" id="kgTeiEx"></div></div>
+        </div>
+        <div id="kgLookFB" style="text-align:center;font-size:11px;color:var(--tx2);min-height:14px"></div>
+      </div>
+      <!-- quiz pane -->
+      <div id="kgQuizPane" style="display:none">
+        <div class="kg-score-row">
+          <span>⭐ <span class="kg-pts"><span id="kgScoreN">0</span> / <span id="kgScoreT">0</span></span></span>
+          <button class="ico" style="font-size:10px;padding:2px 7px" onclick="kgStartQuiz()">↺ 再スタート</button>
+        </div>
+        <div class="kg-q-card">
+          <div class="kg-q-num" id="kgQNum">Q 1 / 20</div>
+          <div class="kg-q-sent" id="kgQSent"></div>
+        </div>
+        <div class="kg-q-opts" id="kgQOpts"></div>
+        <div id="kgQFB" style="font-size:11px;color:var(--tx2);min-height:36px;padding:4px 2px;line-height:1.5"></div>
+        <div style="text-align:center;margin-top:4px"><button class="bg-btn" id="kgNextBtn" style="display:none;padding:6px 18px;font-size:12px" onclick="kgNextQ()">次の問題 ▶</button></div>
+      </div>
     </div>
   </div>
 </div>
@@ -2502,6 +2567,156 @@ function cqResetScore() {
   document.getElementById('cqScoreN').textContent = '0';
   document.getElementById('cqTotal').textContent  = '0';
   notify('スコアリセット！');
+}
+
+// ─── 敬語クイズ ─────────────────────────────────────────────────────────────
+const KEIGO_DB = {
+  '行く':       { cat:'verb', son:'いらっしゃる・おいでになる', sonEx:'先生（せんせい）はどちらへいらっしゃいますか。', ken:'参る（まいる）', kenEx:'明日（あした）、会社（かいしゃ）へ参（まい）ります。', tei:'行（い）きます', teiEx:'今日（きょう）、図書館（としょかん）へ行（い）きます。' },
+  '来る':       { cat:'verb', son:'いらっしゃる・おいでになる・お見えになる', sonEx:'社長（しゃちょう）がお見（み）えになりました。', ken:'参る（まいる）・伺う（うかがう）', kenEx:'明日（あした）必（かなら）ず参（まい）ります。', tei:'来（き）ます', teiEx:'来週（らいしゅう）また来（き）ます。' },
+  'いる':       { cat:'verb', son:'いらっしゃる・おいでになる', sonEx:'先生（せんせい）は今（いま）いらっしゃいますか。', ken:'おる', kenEx:'私（わたし）はここにおります。', tei:'います', teiEx:'今（いま）、家（いえ）にいます。' },
+  'する':       { cat:'verb', son:'なさる', sonEx:'何（なに）をなさっているのですか。', ken:'いたす', kenEx:'ご連絡（れんらく）いたします。', tei:'します', teiEx:'明日（あした）、会議（かいぎ）をします。' },
+  '言う':       { cat:'verb', son:'おっしゃる', sonEx:'先生（せんせい）がおっしゃった通（とお）りです。', ken:'申す（もうす）・申し上げる（もうしあげる）', kenEx:'田中（たなか）と申（もう）します。', tei:'言（い）います', teiEx:'何（なん）とも言（い）えません。' },
+  '見る':       { cat:'verb', son:'ご覧（らん）になる', sonEx:'このパンフレットをご覧（らん）ください。', ken:'拝見（はいけん）する', kenEx:'お手紙（てがみ）を拝見（はいけん）しました。', tei:'見（み）ます', teiEx:'映画（えいが）を見（み）ます。' },
+  '食べる・飲む': { cat:'verb', son:'召し上がる（めしあがる）', sonEx:'どうぞ召（め）し上（あ）がってください。', ken:'いただく', kenEx:'先（さき）ほどいただきました。', tei:'食（た）べます・飲（の）みます', teiEx:'では、遠慮（えんりょ）なくいただきます。' },
+  'もらう':     { cat:'verb', son:'お受け取りになる', sonEx:'ご賞品（しょうひん）をお受（う）け取（と）りになりましたか。', ken:'いただく', kenEx:'この辞書（じしょ）は先生（せんせい）にいただきました。', tei:'もらいます', teiEx:'プレゼントをもらいました。' },
+  'くれる':     { cat:'verb', son:'くださる', sonEx:'お忙（いそが）しいところ、ご出席（しゅっせき）くださいましてありがとうございます。', ken:'ー（自分はくれない）', kenEx:'', tei:'くれます', teiEx:'友達（ともだち）が助（たす）けてくれました。' },
+  '知っている': { cat:'verb', son:'ご存じ（ぞんじ）です', sonEx:'この件（けん）についてご存（ぞん）じですか。', ken:'存じております（ぞんじております）', kenEx:'はい、存（ぞん）じております。', tei:'知（し）っています', teiEx:'彼（かれ）の住所（じゅうしょ）を知（し）っています。' },
+  '聞く':       { cat:'verb', son:'お聞きになる', sonEx:'先生（せんせい）はもうお聞（き）きになりましたか。', ken:'伺う（うかがう）・承る（うけたまわる）', kenEx:'ご意見（いけん）を伺（うかが）いたいと思（おも）います。', tei:'聞（き）きます', teiEx:'先生（せんせい）に聞（き）きます。' },
+  'あげる':     { cat:'verb', son:'お与えになる', sonEx:'社長（しゃちょう）がお与（あた）えになりました。', ken:'差し上げる（さしあげる）', kenEx:'お土産（みやげ）を差（さ）し上（あ）げます。', tei:'あげます', teiEx:'友達（ともだち）にプレゼントをあげました。' },
+  'ある':       { cat:'verb', son:'おありになる', sonEx:'ご予定（よてい）はおありになりますか。', ken:'ー', kenEx:'', tei:'ございます', teiEx:'何（なに）かご用（よう）がございましたら、お知（し）らせください。' },
+  '会う':       { cat:'verb', son:'お会（あ）いになる', sonEx:'先生（せんせい）にお会（あ）いになったら、よろしくお伝（つた）えください。', ken:'お目にかかる', kenEx:'先生（せんせい）にお目（め）にかかりたいです。', tei:'会（あ）います', teiEx:'明日（あした）、友達（ともだち）に会（あ）います。' },
+};
+
+const KG_QUESTIONS = [
+  { q:'先生はどちらへ（　）ましたか。', opts:['行き', 'いらっしゃい', '参り', '来'], ans:1, exp:'「いらっしゃる」は「行く・来る・いる」の尊敬語です。' },
+  { q:'失礼ですが、お名前は何と（　）ますか。', opts:['言われ', 'おっしゃい', '申し', '話し'], ans:1, exp:'「おっしゃる」は「言う」の尊敬語です。' },
+  { q:'このパンフレットをご（　）ください。', opts:['見', '覧', '拝見', '閲覧'], ans:1, exp:'「ご覧ください」は「見る」の尊敬語パターンです。' },
+  { q:'先生は今朝（けさ）何を（　）ましたか。', opts:['食べ', '召し上がり', 'いただき', 'お食べし'], ans:1, exp:'「召し上がる」は「食べる・飲む」の尊敬語です。' },
+  { q:'先生はこの件についてご（　）ですか。', opts:['知り', '存知（ぞんち）', '存じ（ぞんじ）', '知存'], ans:2, exp:'「ご存じです」は「知っている」の尊敬語です。' },
+  { q:'そんなにご（　）なさらないでください。', opts:['心配し', '心配', '不安', '悩み'], ans:1, exp:'「ご〜なさる」は相手の動作を敬う尊敬語パターンです（ご心配なさる）。' },
+  { q:'お忙しいところ、ご出席（　）ましてありがとうございます。', opts:['いたし', 'くださり', 'なさり', 'いただき'], ans:1, exp:'「くださる」は「くれる」の尊敬語です。相手がしてくれる行為を敬います。' },
+  { q:'先生はいつアメリカからお（　）になりましたか。', opts:['帰り', '戻り', '来', '到着'], ans:0, exp:'「お〜になる」は相手の動作を敬う基本的な尊敬語パターンです。' },
+  { q:'私はあした部長のお宅に（　）つもりです。', opts:['いらっしゃる', '来る', '伺う', '行く'], ans:2, exp:'「伺う（うかがう）」は「行く・来る・聞く」の謙譲語です。' },
+  { q:'田中と（　）します。どうぞよろしく。', opts:['言い', 'おっしゃい', '申し', '話し'], ans:2, exp:'「申す（もうす）」は「言う」の謙譲語です。自己紹介でよく使われます。' },
+  { q:'お手紙を（　）しました。ありがとうございます。', opts:['ご覧に', '拝見', '見', 'ご見'], ans:1, exp:'「拝見（はいけん）する」は「見る」の謙譲語です。' },
+  { q:'はい、その件は（　）おります。', opts:['知って', 'ご存じで', '存じて', 'ご存知'], ans:2, exp:'「存じる（ぞんじる）」は「知っている」の謙譲語です。「存じております」の形でよく使われます。' },
+  { q:'先ほど昼食（ちゅうしょく）を（　）ました。', opts:['召し上がり', '食べさせ', 'いただき', 'お食事し'], ans:2, exp:'「いただく」は「食べる・飲む・もらう」の謙譲語です。' },
+  { q:'お荷物（にもつ）を（　）しましょうか。', opts:['持ち', 'お持ち', 'ご持ち', '持たれ'], ans:1, exp:'「お〜する」は自分の行為を下げる謙譲語パターンです（お持ちする）。' },
+  { q:'私がご案内（　）します。どうぞこちらへ。', opts:['なさ', 'いたし', 'いただき', 'なり'], ans:1, exp:'「ご〜いたす」はより格式的な謙譲語パターンです（ご案内いたします）。' },
+  { q:'先生にお（　）にかかれて光栄（こうえい）です。', opts:['会い', '目', '話し', '顔'], ans:1, exp:'「お目（め）にかかる」は「会う」の謙譲語です。' },
+  { q:'「ある」の丁寧語（ていねいご）はどれですか？', opts:['おる', 'おいでになる', 'ございます', 'なさる'], ans:2, exp:'「ございます」は「ある」の丁寧語です。「おる」は「いる」の丁寧語。' },
+  { q:'次のうち、謙譲語（けんじょうご）はどれですか？', opts:['いらっしゃる', 'おっしゃる', '参る（まいる）', 'ご覧になる'], ans:2, exp:'「参る（まいる）」は「行く・来る」の謙譲語。他は全て尊敬語です。' },
+  { q:'次のうち、尊敬語（そんけいご）はどれですか？', opts:['申す', '伺う', '拝見する', 'ご覧になる'], ans:3, exp:'「ご覧（らん）になる」は「見る」の尊敬語。他は全て謙譲語です。' },
+  { q:'「もらう」の謙譲語はどれですか？', opts:['くださる', 'あげる', 'いただく', '差し上げる'], ans:2, exp:'「いただく」は「もらう・食べる・飲む」の謙譲語。「くださる」は「くれる」の尊敬語、「差し上げる」は「あげる」の謙譲語。' },
+];
+
+const _KG = { mode:'look', qIdx:-1, score:0, total:0, answered:false, shuffled:[] };
+
+function kgOpen() {
+  const el = document.getElementById('kgSection');
+  if (!el) return;
+  el.style.display = 'block';
+  setTimeout(() => el.scrollIntoView({ behavior:'smooth', block:'nearest' }), 60);
+}
+function kgClose() {
+  const el = document.getElementById('kgSection');
+  if (el) el.style.display = 'none';
+}
+function kgSetMode(m) {
+  _KG.mode = m;
+  ['look','quiz'].forEach(x => {
+    const b = document.getElementById('kgt-'+x);
+    if (b) b.className = 'kg-tab'+(x === m ? ' on' : '');
+  });
+  document.getElementById('kgLookPane').style.display  = m === 'look' ? '' : 'none';
+  document.getElementById('kgQuizPane').style.display  = m === 'quiz' ? '' : 'none';
+  if (m === 'quiz' && _KG.qIdx === -1) kgStartQuiz();
+}
+function kgRandom() {
+  const keys = Object.keys(KEIGO_DB);
+  const word = keys[Math.floor(Math.random() * keys.length)];
+  document.getElementById('kgWord').value = word;
+  kgSearch();
+}
+function kgSearch() {
+  const raw = (document.getElementById('kgWord').value || '').trim();
+  let entry = KEIGO_DB[raw];
+  if (!entry && raw) {
+    const match = Object.keys(KEIGO_DB).find(k => k.includes(raw));
+    if (match) { document.getElementById('kgWord').value = match; entry = KEIGO_DB[match]; }
+  }
+  const fb = document.getElementById('kgLookFB');
+  if (!entry) {
+    ['Son','Ken','Tei'].forEach(t => { document.getElementById('kg'+t).textContent = '—'; document.getElementById('kg'+t+'Ex').textContent = ''; });
+    if (fb) fb.textContent = raw ? '「'+raw+'」は見つかりません。例: 行く、来る、する、言う…' : '';
+    return;
+  }
+  document.getElementById('kgSon').textContent    = entry.son;
+  document.getElementById('kgSonEx').textContent  = entry.sonEx;
+  document.getElementById('kgKen').textContent    = entry.ken;
+  document.getElementById('kgKenEx').textContent  = entry.kenEx;
+  document.getElementById('kgTei').textContent    = entry.tei;
+  document.getElementById('kgTeiEx').textContent  = entry.teiEx;
+  if (fb) fb.textContent = '';
+}
+function kgStartQuiz() {
+  _KG.score = 0; _KG.total = 0; _KG.answered = false;
+  _KG.shuffled = [...KG_QUESTIONS].sort(() => Math.random() - .5);
+  _KG.qIdx = -1;
+  document.getElementById('kgScoreN').textContent = '0';
+  document.getElementById('kgScoreT').textContent = '0';
+  document.getElementById('kgQFB').textContent = '';
+  document.getElementById('kgNextBtn').style.display = 'none';
+  kgNextQ();
+}
+function kgNextQ() {
+  _KG.qIdx++;
+  if (_KG.qIdx >= _KG.shuffled.length) {
+    const pct = _KG.total > 0 ? Math.round(_KG.score / _KG.total * 100) : 0;
+    document.getElementById('kgQSent').innerHTML = '<div style="font-size:26px;margin-bottom:6px">'+(pct >= 80 ? '🎉' : pct >= 60 ? '😊' : '💪')+'</div><b>'+_KG.score+' / '+_KG.total+'</b> 正解 ('+pct+'%)<br><span style="font-size:11px;color:var(--tx2)">もう一度挑戦しますか？</span>';
+    document.getElementById('kgQNum').textContent = '結果';
+    document.getElementById('kgQFB').textContent = '';
+    document.getElementById('kgNextBtn').style.display = 'none';
+    const optsEl = document.getElementById('kgQOpts');
+    optsEl.innerHTML = '';
+    const restart = document.createElement('button');
+    restart.className = 'bp'; restart.style.cssText = 'margin-top:8px;width:100%;padding:9px';
+    restart.textContent = '↺ もう一度'; restart.onclick = kgStartQuiz;
+    optsEl.appendChild(restart);
+    return;
+  }
+  _KG.answered = false;
+  const q = _KG.shuffled[_KG.qIdx];
+  document.getElementById('kgQNum').textContent = 'Q ' + (_KG.qIdx + 1) + ' / ' + _KG.shuffled.length;
+  document.getElementById('kgQSent').textContent = q.q;
+  document.getElementById('kgQFB').textContent = '';
+  document.getElementById('kgNextBtn').style.display = 'none';
+  const optsEl = document.getElementById('kgQOpts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'kg-q-opt';
+    btn.innerHTML = '<span style="font-size:10px;color:var(--tx2);display:block">'+'ABCD'[i]+'</span>'+opt;
+    btn.onclick = () => kgAnswerQ(i);
+    optsEl.appendChild(btn);
+  });
+}
+function kgAnswerQ(i) {
+  if (_KG.answered) return;
+  _KG.answered = true;
+  _KG.total++;
+  const q = _KG.shuffled[_KG.qIdx];
+  const correct = i === q.ans;
+  if (correct) _KG.score++;
+  document.getElementById('kgScoreN').textContent = _KG.score;
+  document.getElementById('kgScoreT').textContent = _KG.total;
+  document.querySelectorAll('#kgQOpts .kg-q-opt').forEach((btn, idx) => {
+    btn.disabled = true;
+    if (idx === q.ans) btn.classList.add('ok');
+    else if (idx === i && !correct) btn.classList.add('no');
+  });
+  document.getElementById('kgQFB').textContent = (correct ? '✅ 正解！ ' : '❌ 不正解。正解は「'+q.opts[q.ans]+'」 ') + q.exp;
+  document.getElementById('kgNextBtn').style.display = '';
 }
 
 function renderTransSection(res, tgtCode) {

@@ -265,12 +265,102 @@
     "note": ""
   },
   {
+    "name": "変形クイズ button present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "敬語クイズ button present",
+    "passed": true,
+    "note": ""
+  },
+  {
     "name": "Quiz starts on click",
     "passed": true,
     "note": ""
   },
   {
     "name": "Quiz end button present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Keigo section opens",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Lookup pane visible by default",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "尊敬語 / 謙譲語 / 丁寧語 cells present",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Search 行く → 尊敬語 shows いらっしゃる",
+    "passed": true,
+    "note": "got: 'いらっしゃる・おいでになる'"
+  },
+  {
+    "name": "Search 行く → 謙譲語 shows 参る",
+    "passed": true,
+    "note": "got: '参る（まいる）'"
+  },
+  {
+    "name": "🎲 Random button populates input",
+    "passed": true,
+    "note": "got: 'いる'"
+  },
+  {
+    "name": "Random word → 尊敬語 cell filled",
+    "passed": true,
+    "note": "got: 'いらっしゃる・おいでになる'"
+  },
+  {
+    "name": "Quiz pane shows after clicking テスト tab",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Quiz question renders with text",
+    "passed": true,
+    "note": "q: 'お荷物（にもつ）を（　）しましょうか。'"
+  },
+  {
+    "name": "4 answer options rendered",
+    "passed": true,
+    "note": "found 4"
+  },
+  {
+    "name": "Feedback shown after answering",
+    "passed": true,
+    "note": "fb: '❌ 不正解。正解は「お持ち」 「お〜する」は自分の行為を下げる謙譲語パターンです（お持ちする）。'"
+  },
+  {
+    "name": "Next button appears after answer",
+    "passed": true,
+    "note": ""
+  },
+  {
+    "name": "Next question loads after clicking 次の問題",
+    "passed": true,
+    "note": "q: '「もらう」の謙譲語はどれですか？'"
+  },
+  {
+    "name": "Score tracker updates (total ≥ 1)",
+    "passed": true,
+    "note": "0/1"
+  },
+  {
+    "name": "Restart resets score",
+    "passed": true,
+    "note": "score total: '0'"
+  },
+  {
+    "name": "Keigo section closes on ✕",
     "passed": true,
     "note": ""
   },

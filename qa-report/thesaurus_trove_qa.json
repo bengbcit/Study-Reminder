@@ -312,12 +312,12 @@
   {
     "name": "🎲 Random button populates input",
     "passed": true,
-    "note": "got: 'いる'"
+    "note": "got: '見る'"
   },
   {
     "name": "Random word → 尊敬語 cell filled",
     "passed": true,
-    "note": "got: 'いらっしゃる・おいでになる'"
+    "note": "got: 'ご覧（らん）になる'"
   },
   {
     "name": "Quiz pane shows after clicking テスト tab",
@@ -327,7 +327,7 @@
   {
     "name": "Quiz question renders with text",
     "passed": true,
-    "note": "q: 'お荷物（にもつ）を（　）しましょうか。'"
+    "note": "q: 'お忙しいところ、ご出席（　）ましてありがとうございます。'"
   },
   {
     "name": "4 answer options rendered",
@@ -337,7 +337,7 @@
   {
     "name": "Feedback shown after answering",
     "passed": true,
-    "note": "fb: '❌ 不正解。正解は「お持ち」 「お〜する」は自分の行為を下げる謙譲語パターンです（お持ちする）。'"
+    "note": "fb: '❌ 不正解。正解は「くださり」 「くださる」は「くれる」の尊敬語です。相手がしてくれる行為を敬います。'"
   },
   {
     "name": "Next button appears after answer",
@@ -347,7 +347,7 @@
   {
     "name": "Next question loads after clicking 次の問題",
     "passed": true,
-    "note": "q: '「もらう」の謙譲語はどれですか？'"
+    "note": "q: 'そんなにご（　）なさらないでください。'"
   },
   {
     "name": "Score tracker updates (total ≥ 1)",

@@ -8,11 +8,11 @@
 const THEMES = [
   { id:'engine1',
     label:{zh:'宇宙学习室',ja:'コズミックスタジオ',en:'Cosmic Studio'},
-    preview:'images/bg_engine_1.jpg',
+    preview:'images_vid/bg_engine_1.jpg',
     previewStyle:'',
     dark: true,
     topbar:{ bg:'rgba(10,18,58,0.90)', border:'rgba(60,120,240,0.40)', accent:'#5B9BFF', glow:'rgba(60,120,240,0.50)' },
-    css:`#mainApp{background-image:url('images/bg_engine_1.jpg');background-size:cover;background-attachment:fixed;background-position:center top;}` },
+    css:`#mainApp{background-image:url('images_vid/bg_engine_1.jpg');background-size:cover;background-attachment:fixed;background-position:center top;}` },
 
   { id:'default',
     label:{zh:'暖白默认',ja:'デフォルト',en:'Default'},
@@ -44,17 +44,17 @@ const THEMES = [
 
   { id:'paw1',
     label:{zh:'宇宙猫爪 I',ja:'宇宙の肉球 I',en:'Cosmic Paw I'},
-    preview:'images/bg-paw1.png', previewStyle:'',
+    preview:'images_vid/bg-paw1.png', previewStyle:'',
     dark: false,
     topbar:{ bg:'rgba(255,249,242,0.90)', border:'rgba(255,107,53,0.25)', accent:'#FF6B35', glow:'transparent' },
-    css:`#mainApp{background-image:url('images/bg-paw1.png');background-size:cover;background-attachment:fixed;background-position:center;}` },
+    css:`#mainApp{background-image:url('images_vid/bg-paw1.png');background-size:cover;background-attachment:fixed;background-position:center;}` },
 
   { id:'paw2',
     label:{zh:'宇宙猫爪 II',ja:'宇宙の肉球 II',en:'Cosmic Paw II'},
-    preview:'images/bg-paw2.png', previewStyle:'',
+    preview:'images_vid/bg-paw2.png', previewStyle:'',
     dark: false,
     topbar:{ bg:'rgba(255,249,242,0.90)', border:'rgba(255,107,53,0.25)', accent:'#FF6B35', glow:'transparent' },
-    css:`#mainApp{background-image:url('images/bg-paw2.png');background-size:cover;background-attachment:fixed;background-position:center;}` },
+    css:`#mainApp{background-image:url('images_vid/bg-paw2.png');background-size:cover;background-attachment:fixed;background-position:center;}` },
 ];
 
 const ThemeManager = {

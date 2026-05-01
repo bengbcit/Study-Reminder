@@ -22,7 +22,7 @@
 
 body {
   font-family: 'Nunito', sans-serif;
-  background: #06021A url('../images/bg_engine_1.jpg') center/cover fixed;
+  background: #06021A url('../images_vid/') center/cover fixed;
   color: var(--text);
   min-height: 100vh;
 }

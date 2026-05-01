@@ -249,21 +249,32 @@ const Report = {
     const name = S._localName || window.Auth?.user?.displayName || 'Student';
 
     // Build one combined report body — one email regardless of subject count
+    const enabled = S.subjects.filter(s => s.enabled);
+    const notDoneSubjects = enabled.filter(s => !doneSubjects.find(d => d.id === s.id));
+
     const subjectLines = doneSubjects.map(s => {
       const r = S.todayReport[s.id] || {};
       return `${s.icon} ${subjName(s)} · ${s.duration}min · ${'⭐'.repeat(r.diff || 0) || '—'}\n` +
              `📝 ${r.summary || '—'}\n🤔 ${r.hard || '—'}`;
     }).join('\n\n');
 
+    const notDoneLabel = { zh: '未完成', ja: '未完了', en: 'Not completed' }[I18n.lang] || 'Not completed';
+    const notDoneLines = notDoneSubjects.length
+      ? `\n\n─────\n❌ ${notDoneLabel}: ${notDoneSubjects.map(s => `${s.icon} ${subjName(s)}`).join('、')}`
+      : '';
+
     emailjs.send(SERVICE_ID, TEMPLATE_ID, {
       name,
       subject_name: doneSubjects.map(s => `${s.icon} ${subjName(s)}`).join(' / '),
       date:         today,
       time:         new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
-      done:         doneSubjects.map(s => `✅ ${subjName(s)}`).join(', '),
+      done:         [
+        ...doneSubjects.map(s => `✅ ${subjName(s)}`),
+        ...notDoneSubjects.map(s => `❌ ${subjName(s)}`),
+      ].join(', '),
       duration:     doneSubjects.map(s => s.duration + ' min').join(' + '),
       difficulty:   doneSubjects.map(s => '⭐'.repeat(S.todayReport[s.id]?.diff || 0) || '—').join(' / '),
-      summary:      subjectLines,
+      summary:      subjectLines + notDoneLines,
       hard_points:  '',
       points_earned: totalPts,
       total_points: String(S.points),

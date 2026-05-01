@@ -63,6 +63,7 @@ const Subjects = {
     const s = S.subjects.find(x => x.id === id);
     if (s) s.enabled = !s.enabled;
     saveLocal();
+    if (window.Auth?.user) Auth.saveUserData();
     this.render();
   },
 
@@ -70,6 +71,7 @@ const Subjects = {
     if (!confirm('确定删除这个科目？')) return;
     S.subjects = S.subjects.filter(x => x.id !== id);
     saveLocal();
+    if (window.Auth?.user) Auth.saveUserData();
     this.render();
   },
 
@@ -118,6 +120,7 @@ const Subjects = {
       enabled: true, duration: dur,
     });
     saveLocal();
+    if (window.Auth?.user) Auth.saveUserData();
     this.closeAdd();
     this.render();
     showToast('✅ 已添加：' + nm);
@@ -178,6 +181,7 @@ const Subjects = {
     s.color = _editState.color;
     s.bg    = _editState.bg;
     saveLocal();
+    if (window.Auth?.user) Auth.saveUserData();
     this.closeEdit();
     this.render();
     showToast('✅ 已更新');

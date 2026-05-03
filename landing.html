@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init('YOUR_PUBLIC_KEY');</script>
   <style>
     *,
     *::before,
@@ -515,24 +517,26 @@
     /* ── Social links ── */
     .social-links-row {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px;
       margin-top: 14px;
     }
 
     .social-link-btn {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      font-size: 13.5px;
+      gap: 5px;
+      font-size: 12px;
       font-weight: 700;
       color: rgba(255, 255, 255, .6);
       background: rgba(255, 255, 255, .05);
       border: 1px solid rgba(255, 255, 255, .1);
-      border-radius: 12px;
-      padding: 12px 18px;
+      border-radius: 50px;
+      padding: 6px 13px;
       text-decoration: none;
       transition: all .2s;
+      white-space: nowrap;
     }
 
     .social-link-btn:hover {
@@ -762,16 +766,17 @@
     .contact-email-link {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      font-size: 13.5px;
+      gap: 5px;
+      font-size: 12px;
       font-weight: 700;
       color: rgba(255, 255, 255, .6);
       background: rgba(255, 255, 255, .05);
       border: 1px solid rgba(255, 255, 255, .1);
-      border-radius: 12px;
-      padding: 12px 18px;
+      border-radius: 50px;
+      padding: 6px 13px;
       text-decoration: none;
       transition: all .2s;
+      white-space: nowrap;
     }
 
     .contact-email-link:hover {
@@ -1179,7 +1184,7 @@
     <!-- ════ HERO ════ -->
     <section class="hero-section">
       <div class="glass-card">
-        <span class="hero-icon">🌟</span>
+        <span class="hero-icon">🚀</span>
         <p class="hero-app-name" data-key="hero_name">Earn & Earnest</p>
         <h1 class="hero-headline" data-key="hero_headline">Every gate can be passed — the long road ahead still shines.</h1>
         <p class="hero-sub" data-key="hero_sub">Engineer · Explorer · Always Becoming</p>
@@ -1201,7 +1206,7 @@
         <p class="section-desc" data-key="about_desc">Engineer, explorer, always on the move.</p>
         <div class="about-grid">
           <p class="about-body" data-key="about_body">
-            Grew up in Dalian, China. Moved to Vancouver, Canada after high school and lived there for 17 years —
+            Grew up in Dalian, China. Moved to Vancouver, Canada after high school and lived there for over a decade —
             earning an Electrical Engineering degree and building a career in the field.<br><br>
             In early 2024, set out for a new chapter in Nagoya, Japan. Every journey is a chapter; every step
             forward is growth.
@@ -1328,18 +1333,21 @@
           <div>
             <p class="contact-body" data-key="contact_desc">Have a feature request, bug report, or just want to say hi?
               I'd love to hear from you.</p>
-            <a class="contact-email-link" href="mailto:bengbcit@gmail.com">✉ bengbcit@gmail.com</a>
             <div class="social-links-row">
+              <a class="social-link-btn" href="mailto:bengbcit@gmail.com">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                bengbcit@gmail.com
+              </a>
               <a class="social-link-btn" href="https://x.com/Daniel87Y" target="_blank" rel="noopener">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 @Daniel87Y
               </a>
               <a class="social-link-btn" href="https://www.linkedin.com/in/danieliueng" target="_blank" rel="noopener">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                 LinkedIn
               </a>
               <a class="social-link-btn" href="https://github.com/bengbcit" target="_blank" rel="noopener">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
                 GitHub
               </a>
             </div>
@@ -1368,7 +1376,7 @@
     <div class="auth-backdrop" onclick="closeAuth()"></div>
     <div class="auth-card">
       <button class="auth-close" onclick="closeAuth()">✕</button>
-      <span class="auth-logo">🌟</span>
+      <span class="auth-logo">🚀</span>
       <div class="auth-title" data-key="auth_title">Sign in</div>
       <div class="auth-subtitle" data-key="auth_subtitle">Continue to Earn & Earnest</div>
       <button class="google-btn" onclick="signInGoogle()">
@@ -1696,7 +1704,7 @@
         nav_about: 'About', nav_projects: 'Projects', nav_contact: 'Contact', langLabel: 'Languages',
         about_tag: 'About', about_title: 'About Me',
         about_desc: 'Engineer, explorer, always on the move.',
-        about_body: "Grew up in Dalian, China. Moved to Vancouver, Canada after high school and lived there for 17 years — earning an Electrical Engineering degree and building a career in the field.<br><br>In early 2024, set out for a new chapter in Nagoya, Japan. Every journey is a chapter; every step forward is growth.",
+        about_body: "Grew up in Dalian, China. Moved to Vancouver, Canada after high school and lived there for over a decade — earning an Electrical Engineering degree and building a career in the field.<br><br>In early 2024, set out for a new chapter in Nagoya, Japan. Every journey is a chapter; every step forward is growth.",
         stat1: 'Core modules', stat2: 'Languages', stat3: 'Study days', stat4: 'Free forever',
         proj_tag: 'Projects', proj_title: 'Projects',
         proj_desc: 'From daily tools to IoT solutions',
@@ -1834,12 +1842,34 @@
     function closeMobileNav() { document.getElementById('navCenter').classList.remove('open'); }
 
     /* ── Contact form ── */
-    function handleContact(e) {
+    async function handleContact(e) {
       e.preventDefault();
       const btn = e.target.querySelector('.contact-submit');
       const prev = btn.innerHTML;
-      btn.textContent = '✓'; btn.style.background = '#52C97A';
-      setTimeout(() => { btn.innerHTML = COPY[currentLang].contact_send; btn.style.background = ''; e.target.reset(); }, 2800);
+      btn.textContent = '...';
+      btn.disabled = true;
+      btn.style.opacity = '.7';
+      try {
+        await emailjs.send(
+          'YOUR_SERVICE_ID',   // ← replace after EmailJS setup
+          'YOUR_TEMPLATE_ID',  // ← replace after EmailJS setup
+          {
+            from_name:  document.getElementById('c_name').value,
+            from_email: document.getElementById('c_email').value,
+            message:    document.getElementById('c_msg').value,
+          }
+        );
+        btn.textContent = '✓ Sent!';
+        btn.style.background = '#52C97A';
+        btn.style.opacity = '1';
+        setTimeout(() => { btn.innerHTML = COPY[currentLang].contact_send; btn.style.background = ''; btn.disabled = false; e.target.reset(); }, 2800);
+      } catch (err) {
+        console.error('EmailJS error:', err);
+        btn.textContent = '✗ Failed';
+        btn.style.background = '#FF4757';
+        btn.style.opacity = '1';
+        setTimeout(() => { btn.innerHTML = prev; btn.style.background = ''; btn.disabled = false; }, 3000);
+      }
     }
 
     /* ── Navbar scroll tint ── */

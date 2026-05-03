@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Study Planet · スタディプラネット · 学习星球</title>
+  <title>Earn & Earnest · Daniel Liu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -492,6 +492,53 @@
       color: rgba(255, 255, 255, .58);
       line-height: 1.78;
       max-width: 500px;
+    }
+
+    /* ── About photo ── */
+    .about-photo-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 8px;
+    }
+
+    .about-photo {
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center top;
+      border: 3px solid rgba(255, 107, 53, .35);
+      box-shadow: 0 0 60px rgba(255, 107, 53, .18), 0 0 0 8px rgba(255, 107, 53, .06);
+    }
+
+    /* ── Social links ── */
+    .social-links-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .social-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, .6);
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 12px;
+      padding: 12px 18px;
+      text-decoration: none;
+      transition: all .2s;
+    }
+
+    .social-link-btn:hover {
+      color: #FF6B35;
+      border-color: rgba(255, 107, 53, .28);
+      background: rgba(255, 107, 53, .06);
     }
 
     /* ── About ── */
@@ -1062,7 +1109,7 @@
 
     <!-- ════ NAVBAR ════ -->
     <nav class="navbar" id="navbar">
-      <a class="nav-brand" href="#">Study Planet</a>
+      <a class="nav-brand" href="#">Earn & Earnest</a>
 
       <button class="nav-toggle" onclick="toggleMobileNav()">☰</button>
 
@@ -1132,10 +1179,10 @@
     <!-- ════ HERO ════ -->
     <section class="hero-section">
       <div class="glass-card">
-        <span class="hero-icon">🌏</span>
-        <p class="hero-app-name" data-key="hero_name">Study Planet</p>
-        <h1 class="hero-headline" data-key="hero_headline">Turn every study session into progress</h1>
-        <p class="hero-sub" data-key="hero_sub">Track subjects · Focus timer · Daily reports · Earn rewards</p>
+        <span class="hero-icon">🌟</span>
+        <p class="hero-app-name" data-key="hero_name">Earn & Earnest</p>
+        <h1 class="hero-headline" data-key="hero_headline">Every gate can be passed — the long road ahead still shines.</h1>
+        <p class="hero-sub" data-key="hero_sub">Engineer · Explorer · Always Becoming</p>
         <button class="cta-btn" id="heroCta" onclick="heroCTAClick()" data-key="hero_cta">Start for free →</button>
       </div>
       <div class="scroll-hint">
@@ -1150,32 +1197,17 @@
     <section class="section about-section" id="about">
       <div class="section-inner">
         <span class="section-tag" data-key="about_tag">About</span>
-        <h2 class="section-title" data-key="about_title">Built for learners<br>who mean it.</h2>
-        <p class="section-desc" data-key="about_desc">Study Planet is a personal learning tracker that helps you build
-          consistency, measure progress, and stay motivated — one session at a time.</p>
+        <h2 class="section-title" data-key="about_title">About Me</h2>
+        <p class="section-desc" data-key="about_desc">Engineer, explorer, always on the move.</p>
         <div class="about-grid">
           <p class="about-body" data-key="about_body">
-            Whether you're studying for exams, learning a new language, or building a career skill — Study Planet gives
-            you a structured space to track what you learn, how long you studied, and how hard it felt.<br><br>
-            With streaks, points, and an AI coach, it turns studying from a chore into a habit you actually enjoy.
+            Grew up in Dalian, China. Moved to Vancouver, Canada after high school and lived there for 17 years —
+            earning an Electrical Engineering degree and building a career in the field.<br><br>
+            In early 2024, set out for a new chapter in Nagoya, Japan. Every journey is a chapter; every step
+            forward is growth.
           </p>
-          <div class="stat-grid">
-            <div class="stat-card">
-              <div class="stat-num">8</div>
-              <div class="stat-label" data-key="stat1">Core modules</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-num">3</div>
-              <div class="stat-label" data-key="stat2">Languages</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-num">∞</div>
-              <div class="stat-label" data-key="stat3">Study days</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-num">0¥</div>
-              <div class="stat-label" data-key="stat4">Free forever</div>
-            </div>
+          <div class="about-photo-wrap">
+            <img class="about-photo" src="images_vid/selfie.png" alt="Daniel Liu">
           </div>
         </div>
       </div>
@@ -1297,6 +1329,20 @@
             <p class="contact-body" data-key="contact_desc">Have a feature request, bug report, or just want to say hi?
               I'd love to hear from you.</p>
             <a class="contact-email-link" href="mailto:bengbcit@gmail.com">✉ bengbcit@gmail.com</a>
+            <div class="social-links-row">
+              <a class="social-link-btn" href="https://x.com/Daniel87Y" target="_blank" rel="noopener">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                @Daniel87Y
+              </a>
+              <a class="social-link-btn" href="https://www.linkedin.com/in/danieliueng" target="_blank" rel="noopener">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                LinkedIn
+              </a>
+              <a class="social-link-btn" href="https://github.com/bengbcit" target="_blank" rel="noopener">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                GitHub
+              </a>
+            </div>
           </div>
           <form class="contact-form" onsubmit="handleContact(event)">
             <input class="contact-input" id="c_name" type="text" data-ph-key="contact_name_ph" placeholder="Name">
@@ -1311,8 +1357,8 @@
 
     <!-- ════ FOOTER ════ -->
     <footer class="footer">
-      <span>© 2026 Study Planet</span>
-      <span data-key="footer_copy">Built with ❤ for lifelong learners</span>
+      <span>© 2026 Earn & Earnest</span>
+      <span data-key="footer_copy">Grow through what you go through.</span>
     </footer>
 
   </div><!-- /page -->
@@ -1322,9 +1368,9 @@
     <div class="auth-backdrop" onclick="closeAuth()"></div>
     <div class="auth-card">
       <button class="auth-close" onclick="closeAuth()">✕</button>
-      <span class="auth-logo">🌏</span>
+      <span class="auth-logo">🌟</span>
       <div class="auth-title" data-key="auth_title">Sign in</div>
-      <div class="auth-subtitle" data-key="auth_subtitle">Continue to Study Planet</div>
+      <div class="auth-subtitle" data-key="auth_subtitle">Continue to Earn & Earnest</div>
       <button class="google-btn" onclick="signInGoogle()">
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path fill="#4285F4"
@@ -1587,15 +1633,15 @@
 
     const COPY = {
       zh: {
-        hero_name: '学习星球', hero_headline: '让每一天的学习，都有迹可循',
-        hero_sub: '科目追踪 · 专注计时 · 学习报告 · 积分奖励', hero_cta: '免费开始 →',
+        hero_name: 'Earn & Earnest', hero_headline: '关关难过关关过，前路漫漫亦灿灿。',
+        hero_sub: '工程师 · 探索者 · 永远在路上', hero_cta: '免费开始 →',
         nav_about: '关于', nav_projects: '项目', nav_contact: '联系', langLabel: '语言',
-        about_tag: '关于', about_title: '为认真学习的人<br>而生。',
-        about_desc: '学习星球是一款个人学习追踪工具，帮助你建立一致性、衡量进步、保持动力——每一次学习都算数。',
-        about_body: '无论你是备考的学生、语言学习者，还是在构建职业技能——学习星球给你一个结构化的空间，记录你学了什么、学了多久、有多难。<br><br>通过连续打卡、积分和 AI 教练，让学习从苦差事变成你真正享受的习惯。',
+        about_tag: '关于', about_title: '关于我',
+        about_desc: '工程师、探索者，永远在路上。',
+        about_body: '成长于中国大连，高中毕业后只身赴加拿大温哥华，在那片土地生活了17年，取得电子工程学位，积累了数年工程工作经验。<br><br>2024年初，带着全新的憧憬踏上日本名古屋，开启了人生的全新篇章。每一段旅程都是积累，每一次出发都是成长。',
         stat1: '核心模块', stat2: '支持语言', stat3: '学习天数', stat4: '永久免费',
         proj_tag: '项目', proj_title: '项目',
-        proj_desc: '为日常生活打造的应用与工具——点击任意项目即可打开。',
+        proj_desc: '从日常工具到物联网解决方案',
         proj1_title: 'Efficient Learning Engine', proj1_desc: '个人学习操作系统——追踪科目、计时、记录每日简报、获得奖励。',
         proj2_title: 'Thesaurus Trove', proj2_desc: '双语单词学习——日语（JLPT N1–N5）与英语（CEFR A1–C2），间隔记忆算法，多种测验模式。',
         proj3_title: 'Happy Meal', proj3_desc: '智能饮食规划 — 追踪每日营养、获取食谱灵感、管理购物清单。',
@@ -1606,8 +1652,8 @@
         contact_tag: '联系', contact_title: '联系我。',
         contact_desc: '有功能建议、Bug 反馈，或者只是想打个招呼？很高兴听到你的声音。',
         contact_name_ph: '姓名', contact_email_ph: '邮箱', contact_msg_ph: '消息内容', contact_send: '发送 →',
-        footer_copy: '为终身学习者用❤打造',
-        auth_title: '登录', auth_subtitle: '继续使用学习星球',
+        footer_copy: 'Grow through what you go through.',
+        auth_title: '登录', auth_subtitle: '继续使用 Earn & Earnest',
         google_btn: '使用 Google 登录', auth_or: '或',
         email_ph: '邮箱地址', password_ph: '密码', name_ph: '显示名称',
         signin_btn: '登录', register_btn: '创建账号',
@@ -1616,15 +1662,15 @@
         menu_profile: '个人资料', menu_account: '账号设置', menu_signin: '登录', menu_signout: '退出登录',
       },
       ja: {
-        hero_name: 'スタディプラネット', hero_headline: '毎日の学びを、記録に変えよう',
-        hero_sub: '科目管理 · 集中タイマー · 学習レポート · ポイント報酬', hero_cta: '無料で始める →',
+        hero_name: 'Earn & Earnest', hero_headline: 'どんな関門も越えられる——長い道の先に光がある。',
+        hero_sub: 'エンジニア · 探求者 · 道を歩み続ける', hero_cta: '無料で始める →',
         nav_about: '概要', nav_projects: 'プロジェクト', nav_contact: 'お問い合わせ', langLabel: '言語',
-        about_tag: '概要', about_title: '本気で学ぶ人のために<br>作られました。',
-        about_desc: 'スタディプラネットは、継続性を築き、進捗を測り、モチベーションを保つパーソナル学習トラッカーです。',
-        about_body: '試験勉強、語学学習、スキルアップ——スタディプラネットは学んだこと・時間・難易度を記録する構造化された場所を提供します。<br><br>連続記録、ポイント、AIコーチで、勉強を苦痛から楽しい習慣へ変えましょう。',
+        about_tag: '概要', about_title: '私について',
+        about_desc: 'エンジニア、探求者、常に前進。',
+        about_body: '中国・大連で育ち、高校卒業後にカナダのバンクーバーへ渡る。17年間を過ごし、電気工学の学位を取得してエンジニアとして働いた。<br><br>2024年初頭、新たな夢を胸に日本の名古屋へ。旅は続き、成長もまた続く。',
         stat1: 'コアモジュール', stat2: '対応言語', stat3: '学習日数', stat4: '永久無料',
         proj_tag: 'プロジェクト', proj_title: 'プロジェクト',
-        proj_desc: '日常のために作られたアプリとツール——クリックして開きましょう。',
+        proj_desc: 'デイリーツールからIoTソリューションまで',
         proj1_title: 'Efficient Learning Engine', proj1_desc: 'パーソナル学習OS——科目・時間・レポート・報酬を一括管理。',
         proj2_title: 'Thesaurus Trove', proj2_desc: 'バイリンガル単語学習——日本語（JLPT N1–N5）と英語（CEFR A1–C2）。間隔反復アルゴリズムと複数のクイズモード。',
         proj3_title: 'Happy Meal', proj3_desc: 'スマート食事管理 — 毎日の栄養を追跡、レシピのアイデア、買い物リストを管理。',
@@ -1635,8 +1681,8 @@
         contact_tag: 'お問い合わせ', contact_title: 'お気軽にどうぞ。',
         contact_desc: '機能リクエスト、バグ報告、またはただ挨拶したい方もお気軽に！',
         contact_name_ph: '名前', contact_email_ph: 'メールアドレス', contact_msg_ph: 'メッセージ', contact_send: '送信 →',
-        footer_copy: '生涯学習者のために❤を込めて',
-        auth_title: 'サインイン', auth_subtitle: 'スタディプラネットを続ける',
+        footer_copy: 'Grow through what you go through.',
+        auth_title: 'サインイン', auth_subtitle: 'Earn & Earnest を続ける',
         google_btn: 'Googleでサインイン', auth_or: 'または',
         email_ph: 'メールアドレス', password_ph: 'パスワード', name_ph: '表示名',
         signin_btn: 'サインイン', register_btn: 'アカウント作成',
@@ -1645,15 +1691,15 @@
         menu_profile: 'プロフィール', menu_account: 'アカウント', menu_signin: 'サインイン', menu_signout: 'サインアウト',
       },
       en: {
-        hero_name: 'Study Planet', hero_headline: 'Turn every study session into progress',
-        hero_sub: 'Track subjects · Focus timer · Daily reports · Earn rewards', hero_cta: 'Start for free →',
+        hero_name: 'Earn & Earnest', hero_headline: 'Every gate can be passed — the long road ahead still shines.',
+        hero_sub: 'Engineer · Explorer · Always Becoming', hero_cta: 'Start for free →',
         nav_about: 'About', nav_projects: 'Projects', nav_contact: 'Contact', langLabel: 'Languages',
-        about_tag: 'About', about_title: 'Built for learners<br>who mean it.',
-        about_desc: 'Study Planet is a personal learning tracker that helps you build consistency, measure progress, and stay motivated — one session at a time.',
-        about_body: "Whether you're studying for exams, learning a new language, or building a career skill — Study Planet gives you a structured space to track what you learn, how long you studied, and how hard it felt.<br><br>With streaks, points, and an AI coach, it turns studying from a chore into a habit you actually enjoy.",
+        about_tag: 'About', about_title: 'About Me',
+        about_desc: 'Engineer, explorer, always on the move.',
+        about_body: "Grew up in Dalian, China. Moved to Vancouver, Canada after high school and lived there for 17 years — earning an Electrical Engineering degree and building a career in the field.<br><br>In early 2024, set out for a new chapter in Nagoya, Japan. Every journey is a chapter; every step forward is growth.",
         stat1: 'Core modules', stat2: 'Languages', stat3: 'Study days', stat4: 'Free forever',
         proj_tag: 'Projects', proj_title: 'Projects',
-        proj_desc: 'Apps and tools built for everyday life — click any project to open it.',
+        proj_desc: 'From daily tools to IoT solutions',
         proj1_title: 'Efficient Learning Engine', proj1_desc: 'Personal study OS — track subjects, time sessions, log daily reports, and earn rewards.',
         proj2_title: 'Thesaurus Trove', proj2_desc: 'Bilingual vocabulary builder — Japanese (JLPT N1–N5) and English (CEFR A1–C2), spaced-repetition algorithm, multiple quiz modes.',
         proj3_title: 'Happy Meal', proj3_desc: 'Smart meal planning — track daily nutrition, discover recipes, and manage your shopping list.',
@@ -1664,8 +1710,8 @@
         contact_tag: 'Contact', contact_title: 'Get in touch.',
         contact_desc: "Have a feature request, bug report, or just want to say hi? I'd love to hear from you.",
         contact_name_ph: 'Name', contact_email_ph: 'Email', contact_msg_ph: 'Message', contact_send: 'Send →',
-        footer_copy: 'Built with ❤ for lifelong learners',
-        auth_title: 'Sign in', auth_subtitle: 'Continue to Study Planet',
+        footer_copy: 'Grow through what you go through.',
+        auth_title: 'Sign in', auth_subtitle: 'Continue to Earn & Earnest',
         google_btn: 'Continue with Google', auth_or: 'or',
         email_ph: 'Email address', password_ph: 'Password', name_ph: 'Display name',
         signin_btn: 'Sign in', register_btn: 'Create account',

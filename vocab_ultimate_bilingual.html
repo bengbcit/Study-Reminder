@@ -2745,4 +2745,51 @@ function renderTransSection(res, tgtCode) {
   </div>
   <div id="dpBody"></div>
 </div>
+
+<!-- ── Pixel Runner ─────────────────────────────────────────────── -->
+<style>
+  #pxr-wrap{position:fixed;pointer-events:none;z-index:9999;will-change:left,top;}
+  #pxr-char{width:62px;height:153px;background-image:url('images_vid/Pixel_RPG.png');background-size:493px 269px;background-repeat:no-repeat;background-position:0 -51px;image-rendering:pixelated;image-rendering:crisp-edges;}
+  #pxr-shadow{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:30px;height:7px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.45) 0%,transparent 70%);}
+  .pxr-dust{position:fixed;width:4px;height:4px;border-radius:50%;background:rgba(200,200,255,.5);pointer-events:none;animation:pxrDust .45s ease-out forwards;z-index:9998;}
+  @keyframes pxrDust{0%{transform:translate(0,0) scale(1);opacity:.55;}100%{transform:translate(var(--tx),var(--ty)) scale(.2);opacity:0;}}
+</style>
+<div id="pxr-wrap"><div id="pxr-char"></div><div id="pxr-shadow"></div></div>
+<script>
+(function(){
+  const FRAMES=8,FW=62,CLIP=-51,CH=153,FPS=10,LERP=0.11,THRESH=1.5;
+  const wrap=document.getElementById('pxr-wrap');
+  const chr=document.getElementById('pxr-char');
+  const shd=document.getElementById('pxr-shadow');
+  let tx=innerWidth/2,ty=innerHeight/2,px=tx,py=ty,ppx=px;
+  let fr=0,fms=0,lt=0,right=true,dustX=px,dustCd=0;
+  document.addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;});
+  document.addEventListener('touchmove',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  function tick(ts){
+    const dt=Math.min(ts-lt,80);lt=ts;
+    px+=(tx-px)*LERP;py+=(ty-py)*LERP;
+    const dx=px-ppx,spd=Math.abs(dx),moving=spd>THRESH;
+    if(spd>.4)right=dx>0;
+    ppx=px;
+    if(moving){fms+=dt;if(fms>=1000/FPS){fms-=1000/FPS;fr=(fr+1)%FRAMES;}}
+    else{fr=0;fms=0;}
+    chr.style.backgroundPosition=`${-(fr*FW)}px ${CLIP}px`;
+    chr.style.transform=right?'scaleX(1)':'scaleX(-1)';
+    wrap.style.left=(px-FW/2)+'px';
+    wrap.style.top=(py-CH)+'px';
+    shd.style.width=Math.max(16,30-spd*1.5)+'px';
+    dustCd-=dt;
+    if(moving&&dustCd<=0&&Math.abs(px-dustX)>28){
+      const d=document.createElement('div');d.className='pxr-dust';
+      d.style.setProperty('--tx',(Math.random()-.5)*18+'px');
+      d.style.setProperty('--ty',-(Math.random()*10+4)+'px');
+      d.style.left=(px+(Math.random()-.5)*18)+'px';d.style.top=py+'px';
+      document.body.appendChild(d);setTimeout(()=>d.remove(),460);
+      dustX=px;dustCd=110;
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
 </body></html>

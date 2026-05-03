@@ -570,18 +570,36 @@ const LangDD = {
 <!-- ── Pixel Runner ─────────────────────────────────────────────── -->
 <style>
   #pxr-wrap{position:fixed;pointer-events:none;z-index:9999;will-change:left,top;}
-  #pxr-char{width:62px;height:153px;background-image:url('images_vid/Pixel_RPG.png');background-size:493px 269px;background-repeat:no-repeat;background-position:0 -51px;image-rendering:pixelated;image-rendering:crisp-edges;}
-  #pxr-shadow{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:30px;height:7px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.45) 0%,transparent 70%);}
-  .pxr-dust{position:fixed;width:4px;height:4px;border-radius:50%;background:rgba(200,200,255,.5);pointer-events:none;animation:pxrDust .45s ease-out forwards;z-index:9998;}
+  #pxr-char{display:block;width:24px;height:60px;image-rendering:pixelated;image-rendering:crisp-edges;}
+  #pxr-shadow{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:14px;height:4px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.45) 0%,transparent 70%);}
+  .pxr-dust{position:fixed;width:3px;height:3px;border-radius:50%;background:rgba(200,200,255,.5);pointer-events:none;animation:pxrDust .45s ease-out forwards;z-index:9998;}
   @keyframes pxrDust{0%{transform:translate(0,0) scale(1);opacity:.55;}100%{transform:translate(var(--tx),var(--ty)) scale(.2);opacity:0;}}
 </style>
-<div id="pxr-wrap"><div id="pxr-char"></div><div id="pxr-shadow"></div></div>
+<div id="pxr-wrap"><canvas id="pxr-char" width="24" height="60"></canvas><div id="pxr-shadow"></div></div>
 <script>
 (function(){
-  const FRAMES=8,FW=62,CLIP=-51,CH=153,FPS=10,LERP=0.11,THRESH=1.5;
+  const FRAMES=8,FW=24,CLIP=20,CH=60,FPS=10,LERP=0.11,THRESH=1.5;
   const wrap=document.getElementById('pxr-wrap');
-  const chr=document.getElementById('pxr-char');
+  const canvas=document.getElementById('pxr-char');
+  const ctx=canvas.getContext('2d');
   const shd=document.getElementById('pxr-shadow');
+  let spriteReady=false,offscreen=null;
+  const img=new Image();
+  img.src='images_vid/Pixel_RPG.png';
+  img.onload=function(){
+    offscreen=document.createElement('canvas');
+    offscreen.width=192;offscreen.height=105;
+    const oc=offscreen.getContext('2d');
+    oc.drawImage(img,0,0,192,105);
+    const bg=oc.getImageData(0,0,1,1).data;
+    const idata=oc.getImageData(0,0,192,105),d=idata.data;
+    for(let i=0;i<d.length;i+=4){
+      const dr=d[i]-bg[0],dg=d[i+1]-bg[1],db=d[i+2]-bg[2];
+      if(dr*dr+dg*dg+db*db<2500)d[i+3]=0;
+    }
+    oc.putImageData(idata,0,0);
+    spriteReady=true;
+  };
   let tx=innerWidth/2,ty=innerHeight/2,px=tx,py=ty,ppx=px;
   let fr=0,fms=0,lt=0,right=true,dustX=px,dustCd=0;
   document.addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;});
@@ -590,21 +608,25 @@ const LangDD = {
     const dt=Math.min(ts-lt,80);lt=ts;
     px+=(tx-px)*LERP;py+=(ty-py)*LERP;
     const dx=px-ppx,spd=Math.abs(dx),moving=spd>THRESH;
-    if(spd>.4)right=dx>0;
-    ppx=px;
+    if(spd>.4)right=dx>0;ppx=px;
     if(moving){fms+=dt;if(fms>=1000/FPS){fms-=1000/FPS;fr=(fr+1)%FRAMES;}}
     else{fr=0;fms=0;}
-    chr.style.backgroundPosition=`${-(fr*FW)}px ${CLIP}px`;
-    chr.style.transform=right?'scaleX(1)':'scaleX(-1)';
+    if(spriteReady){
+      ctx.clearRect(0,0,FW,CH);
+      ctx.save();
+      if(!right){ctx.translate(FW,0);ctx.scale(-1,1);}
+      ctx.drawImage(offscreen,fr*FW,CLIP,FW,CH,0,0,FW,CH);
+      ctx.restore();
+    }
     wrap.style.left=(px-FW/2)+'px';
     wrap.style.top=(py-CH)+'px';
-    shd.style.width=Math.max(16,30-spd*1.5)+'px';
+    shd.style.width=Math.max(8,14-spd)+'px';
     dustCd-=dt;
-    if(moving&&dustCd<=0&&Math.abs(px-dustX)>28){
+    if(moving&&dustCd<=0&&Math.abs(px-dustX)>20){
       const d=document.createElement('div');d.className='pxr-dust';
-      d.style.setProperty('--tx',(Math.random()-.5)*18+'px');
-      d.style.setProperty('--ty',-(Math.random()*10+4)+'px');
-      d.style.left=(px+(Math.random()-.5)*18)+'px';d.style.top=py+'px';
+      d.style.setProperty('--tx',(Math.random()-.5)*12+'px');
+      d.style.setProperty('--ty',-(Math.random()*8+3)+'px');
+      d.style.left=(px+(Math.random()-.5)*14)+'px';d.style.top=py+'px';
       document.body.appendChild(d);setTimeout(()=>d.remove(),460);
       dustX=px;dustCd=110;
     }

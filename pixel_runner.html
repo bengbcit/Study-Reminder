@@ -51,7 +51,7 @@
     position: absolute;
     bottom: -5px; left: 50%;
     transform: translateX(-50%);
-    width: 30px; height: 7px;
+    width: 14px; height: 4px;
     border-radius: 50%;
     background: radial-gradient(ellipse, rgba(0,0,0,.55) 0%, transparent 70%);
     transition: width .08s, opacity .08s;
@@ -76,12 +76,9 @@
     Tune CLIP_Y and CHAR_H in the <script> below if the crop is off.
   */
   #runner {
-    width: 62px;
-    height: 153px;
-    background-image: url('images_vid/Pixel_RPG.png');
-    background-size: 493px 269px;
-    background-repeat: no-repeat;
-    background-position: 0px -51px;
+    display: block;
+    width: 24px;
+    height: 60px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
@@ -118,118 +115,98 @@
 <div class="ground"></div>
 
 <div id="runner-wrap">
-  <div id="runner"></div>
+  <canvas id="runner" width="24" height="60"></canvas>
   <div id="runner-shadow"></div>
 </div>
 
 <p class="hint">Move your mouse — the pixel runner follows you</p>
 
 <script>
-  // ── Sprite / display constants ─────────────────────────────────
-  const TOTAL_FRAMES   = 8;
-  const SCALED_FRAME_W = 62;    // 176 * 0.35
-  const CLIP_Y         = -51;   // shift up to cut title text  ← tune if needed
-  const CHAR_H         = 153;   // visible character height     ← tune if needed
-  const FPS_RUN        = 10;    // animation speed while running (frames / sec)
-  const LERP           = 0.11;  // position smoothness  (0 = frozen, 1 = instant)
-  const MOVE_THRESH    = 1.5;   // px/frame; below this → idle pose
+  const TOTAL_FRAMES = 8, SCALED_FRAME_W = 24, CLIP = 20, CHAR_H = 60;
+  const FPS_RUN = 10, LERP = 0.11, MOVE_THRESH = 1.5;
 
-  // ── DOM refs ───────────────────────────────────────────────────
   const wrap   = document.getElementById('runner-wrap');
-  const runner = document.getElementById('runner');
+  const canvas = document.getElementById('runner');
+  const ctx    = canvas.getContext('2d');
   const shadow = document.getElementById('runner-shadow');
 
-  // ── State ──────────────────────────────────────────────────────
-  let targetX = window.innerWidth  / 2;
-  let targetY = window.innerHeight / 2;
-  let posX    = targetX;
-  let posY    = targetY;
-  let prevX   = posX;
+  let spriteReady = false, offscreen = null;
+  const img = new Image();
+  img.src = 'images_vid/Pixel_RPG.png';
+  img.onload = function() {
+    offscreen = document.createElement('canvas');
+    offscreen.width = 192; offscreen.height = 105;
+    const oc = offscreen.getContext('2d');
+    oc.drawImage(img, 0, 0, 192, 105);
+    const bg = oc.getImageData(0, 0, 1, 1).data;
+    const idata = oc.getImageData(0, 0, 192, 105), d = idata.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const dr = d[i]-bg[0], dg = d[i+1]-bg[1], db = d[i+2]-bg[2];
+      if (dr*dr + dg*dg + db*db < 2500) d[i+3] = 0;
+    }
+    oc.putImageData(idata, 0, 0);
+    spriteReady = true;
+  };
 
-  let frame    = 0;
-  let frameMs  = 0;
-  let lastTs   = 0;
-  let facingRight = true;
+  let targetX = window.innerWidth / 2, targetY = window.innerHeight / 2;
+  let posX = targetX, posY = targetY, prevX = posX;
+  let frame = 0, frameMs = 0, lastTs = 0, facingRight = true;
+  let lastDustX = posX, dustCooldown = 0;
 
-  // Dust throttle
-  let lastDustX = posX;
-  let dustCooldown = 0;
-
-  // ── Input ──────────────────────────────────────────────────────
   function updateTarget(x, y) { targetX = x; targetY = y; }
-
   document.addEventListener('mousemove', e => updateTarget(e.clientX, e.clientY));
   document.addEventListener('touchmove', e => {
     e.preventDefault();
     updateTarget(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: false });
 
-  // ── Dust spawner ───────────────────────────────────────────────
   function spawnDust(x, y) {
     for (let i = 0; i < 2; i++) {
       const d = document.createElement('div');
       d.className = 'dust';
-      const tx = (Math.random() - .5) * 18;
-      const ty = -(Math.random() * 10 + 4);
-      d.style.setProperty('--tx', tx + 'px');
-      d.style.setProperty('--ty', ty + 'px');
-      d.style.left = (x + (Math.random() - .5) * 20) + 'px';
+      d.style.setProperty('--tx', (Math.random() - .5) * 12 + 'px');
+      d.style.setProperty('--ty', -(Math.random() * 8 + 3) + 'px');
+      d.style.left = (x + (Math.random() - .5) * 14) + 'px';
       d.style.top  = y + 'px';
       document.body.appendChild(d);
       setTimeout(() => d.remove(), 460);
     }
   }
 
-  // ── Main loop ──────────────────────────────────────────────────
   function tick(ts) {
-    const dt = Math.min(ts - lastTs, 80);   // cap to avoid jumps on tab-switch
+    const dt = Math.min(ts - lastTs, 80);
     lastTs = ts;
 
-    // Smooth chase
     posX += (targetX - posX) * LERP;
     posY += (targetY - posY) * LERP;
 
-    // Speed + direction
-    const dx    = posX - prevX;
-    const speed = Math.abs(dx);
-    const moving = speed > MOVE_THRESH;
-
+    const dx = posX - prevX, speed = Math.abs(dx), moving = speed > MOVE_THRESH;
     if (speed > 0.4) facingRight = dx > 0;
     prevX = posX;
 
-    // Advance frame
     if (moving) {
       frameMs += dt;
-      if (frameMs >= 1000 / FPS_RUN) {
-        frameMs -= 1000 / FPS_RUN;
-        frame = (frame + 1) % TOTAL_FRAMES;
-      }
-    } else {
-      frame   = 0;
-      frameMs = 0;
+      if (frameMs >= 1000 / FPS_RUN) { frameMs -= 1000 / FPS_RUN; frame = (frame + 1) % TOTAL_FRAMES; }
+    } else { frame = 0; frameMs = 0; }
+
+    if (spriteReady) {
+      ctx.clearRect(0, 0, SCALED_FRAME_W, CHAR_H);
+      ctx.save();
+      if (!facingRight) { ctx.translate(SCALED_FRAME_W, 0); ctx.scale(-1, 1); }
+      ctx.drawImage(offscreen, frame * SCALED_FRAME_W, CLIP, SCALED_FRAME_W, CHAR_H, 0, 0, SCALED_FRAME_W, CHAR_H);
+      ctx.restore();
     }
 
-    // Apply sprite frame  (background-position-x = -frame * frameWidth)
-    runner.style.backgroundPosition =
-      `${-(frame * SCALED_FRAME_W)}px ${CLIP_Y}px`;
-
-    // Flip for left/right direction
-    runner.style.transform = facingRight ? 'scaleX(1)' : 'scaleX(-1)';
-
-    // Position: character feet anchored to cursor Y
     wrap.style.left = (posX - SCALED_FRAME_W / 2) + 'px';
     wrap.style.top  = (posY - CHAR_H) + 'px';
 
-    // Shadow pulse with speed
-    const shadowW = Math.max(18, 30 - speed * 1.5);
-    shadow.style.width   = shadowW + 'px';
+    shadow.style.width   = Math.max(8, 14 - speed) + 'px';
     shadow.style.opacity = moving ? '1' : '0.5';
 
-    // Dust puffs (throttled)
     dustCooldown -= dt;
-    if (moving && dustCooldown <= 0 && Math.abs(posX - lastDustX) > 28) {
+    if (moving && dustCooldown <= 0 && Math.abs(posX - lastDustX) > 20) {
       spawnDust(posX, posY + 2);
-      lastDustX  = posX;
+      lastDustX = posX;
       dustCooldown = 120;
     }
 

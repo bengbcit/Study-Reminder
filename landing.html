@@ -1946,8 +1946,8 @@
   #pxr-wrap{position:fixed;pointer-events:none;z-index:9999;will-change:left,top;}
   #pxr-char{display:block;width:24px;height:60px;image-rendering:pixelated;image-rendering:crisp-edges;}
   #pxr-shadow{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:14px;height:4px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.45) 0%,transparent 70%);}
-  .pxr-dust{position:fixed;width:3px;height:3px;border-radius:50%;background:rgba(200,200,255,.5);pointer-events:none;animation:pxrDust .45s ease-out forwards;z-index:9998;}
-  @keyframes pxrDust{0%{transform:translate(0,0) scale(1);opacity:.55;}100%{transform:translate(var(--tx),var(--ty)) scale(.2);opacity:0;}}
+  .pxr-dust{position:fixed;width:8px;height:8px;pointer-events:none;animation:pxrDust .5s ease-out forwards;z-index:9998;image-rendering:pixelated;image-rendering:crisp-edges;}
+  @keyframes pxrDust{0%{transform:translate(0,0) scale(1);opacity:.8;}100%{transform:translate(var(--tx),var(--ty)) scale(.3);opacity:0;}}
 </style>
 <div id="pxr-wrap"><canvas id="pxr-char" width="24" height="60"></canvas><div id="pxr-shadow"></div></div>
 <script>
@@ -1978,6 +1978,25 @@
   let fr=0,fms=0,lt=0,right=true,dustX=px,dustCd=0;
   document.addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;});
   document.addEventListener('touchmove',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  const DCOLS=['#c8a264','#b8944a','#d4b476','#a07840','#e8c880','#6b4c2a','#ddc090','#f0d4a0'];
+  function spawnPixelDust(ox,oy){
+    for(let i=0;i<3;i++){
+      const dc=document.createElement('canvas');
+      dc.width=8;dc.height=8;
+      const dctx=dc.getContext('2d');
+      for(let p=0;p<4;p++){
+        dctx.fillStyle=DCOLS[Math.floor(Math.random()*DCOLS.length)];
+        dctx.fillRect(Math.floor(Math.random()*6),Math.floor(Math.random()*6),2,2);
+      }
+      dc.style.setProperty('--tx',(Math.random()-.5)*18+'px');
+      dc.style.setProperty('--ty',-(Math.random()*10+3)+'px');
+      dc.style.left=(ox+(Math.random()-.5)*16)+'px';
+      dc.style.top=oy+'px';
+      dc.className='pxr-dust';
+      document.body.appendChild(dc);
+      setTimeout(()=>dc.remove(),500);
+    }
+  }
   function tick(ts){
     const dt=Math.min(ts-lt,80);lt=ts;
     px+=(tx-px)*LERP;py+=(ty-py)*LERP;
@@ -1997,16 +2016,43 @@
     shd.style.width=Math.max(8,14-spd)+'px';
     dustCd-=dt;
     if(moving&&dustCd<=0&&Math.abs(px-dustX)>20){
-      const d=document.createElement('div');d.className='pxr-dust';
-      d.style.setProperty('--tx',(Math.random()-.5)*12+'px');
-      d.style.setProperty('--ty',-(Math.random()*8+3)+'px');
-      d.style.left=(px+(Math.random()-.5)*14)+'px';d.style.top=py+'px';
-      document.body.appendChild(d);setTimeout(()=>d.remove(),460);
-      dustX=px;dustCd=110;
+      spawnPixelDust(px,py);
+      dustX=px;dustCd=100;
     }
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+  (function(){
+    const S=2,map=[
+      [1,0,0,0,0,0,0,0,0,0,0],
+      [1,1,0,0,0,0,0,0,0,0,0],
+      [1,2,1,0,0,0,0,0,0,0,0],
+      [1,2,2,1,0,0,0,0,0,0,0],
+      [1,2,2,2,1,0,0,0,0,0,0],
+      [1,2,2,2,2,1,0,0,0,0,0],
+      [1,2,2,2,2,2,1,0,0,0,0],
+      [1,2,2,2,2,2,2,1,0,0,0],
+      [1,2,2,2,2,2,2,2,1,0,0],
+      [1,2,2,2,2,2,2,2,2,1,0],
+      [1,2,2,2,2,2,1,1,1,1,0],
+      [1,2,2,2,1,2,1,0,0,0,0],
+      [1,2,2,1,0,1,2,1,0,0,0],
+      [1,2,1,0,0,0,1,2,1,0,0],
+      [1,1,0,0,0,0,0,1,2,1,0],
+      [0,0,0,0,0,0,0,0,1,1,0],
+    ];
+    const cc=document.createElement('canvas');
+    cc.width=map[0].length*S;cc.height=map.length*S;
+    const cctx=cc.getContext('2d');
+    map.forEach((row,r)=>row.forEach((v,col)=>{
+      if(!v)return;
+      cctx.fillStyle=v===1?'#000':'#fff';
+      cctx.fillRect(col*S,r*S,S,S);
+    }));
+    const cur='url('+cc.toDataURL()+') 0 0,auto';
+    document.body.style.cursor=cur;
+    document.documentElement.style.cursor=cur;
+  })();
 })();
 </script>
 </body>

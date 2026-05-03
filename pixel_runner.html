@@ -86,15 +86,15 @@
   /* ── Dust particles ─────────────────────────── */
   .dust {
     position: fixed;
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    background: rgba(200, 200, 255, .55);
+    width: 8px; height: 8px;
     pointer-events: none;
-    animation: dustFade .45s ease-out forwards;
+    animation: dustFade .5s ease-out forwards;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
   }
   @keyframes dustFade {
-    0%   { transform: translate(0, 0) scale(1); opacity: .6; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(.2); opacity: 0; }
+    0%   { transform: translate(0, 0) scale(1); opacity: .8; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(.3); opacity: 0; }
   }
 
   /* ── Hint label ─────────────────────────────── */
@@ -160,16 +160,23 @@
     updateTarget(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: false });
 
+  const DCOLS = ['#c8a264','#b8944a','#d4b476','#a07840','#e8c880','#6b4c2a','#ddc090','#f0d4a0'];
   function spawnDust(x, y) {
-    for (let i = 0; i < 2; i++) {
-      const d = document.createElement('div');
-      d.className = 'dust';
-      d.style.setProperty('--tx', (Math.random() - .5) * 12 + 'px');
-      d.style.setProperty('--ty', -(Math.random() * 8 + 3) + 'px');
-      d.style.left = (x + (Math.random() - .5) * 14) + 'px';
-      d.style.top  = y + 'px';
-      document.body.appendChild(d);
-      setTimeout(() => d.remove(), 460);
+    for (let i = 0; i < 3; i++) {
+      const dc = document.createElement('canvas');
+      dc.width = 8; dc.height = 8;
+      const dctx = dc.getContext('2d');
+      for (let p = 0; p < 4; p++) {
+        dctx.fillStyle = DCOLS[Math.floor(Math.random() * DCOLS.length)];
+        dctx.fillRect(Math.floor(Math.random() * 6), Math.floor(Math.random() * 6), 2, 2);
+      }
+      dc.style.setProperty('--tx', (Math.random() - .5) * 18 + 'px');
+      dc.style.setProperty('--ty', -(Math.random() * 10 + 3) + 'px');
+      dc.style.left = (x + (Math.random() - .5) * 16) + 'px';
+      dc.style.top  = y + 'px';
+      dc.className = 'dust';
+      document.body.appendChild(dc);
+      setTimeout(() => dc.remove(), 500);
     }
   }
 
@@ -214,6 +221,38 @@
   }
 
   requestAnimationFrame(tick);
+
+  (function() {
+    const S = 2, map = [
+      [1,0,0,0,0,0,0,0,0,0,0],
+      [1,1,0,0,0,0,0,0,0,0,0],
+      [1,2,1,0,0,0,0,0,0,0,0],
+      [1,2,2,1,0,0,0,0,0,0,0],
+      [1,2,2,2,1,0,0,0,0,0,0],
+      [1,2,2,2,2,1,0,0,0,0,0],
+      [1,2,2,2,2,2,1,0,0,0,0],
+      [1,2,2,2,2,2,2,1,0,0,0],
+      [1,2,2,2,2,2,2,2,1,0,0],
+      [1,2,2,2,2,2,2,2,2,1,0],
+      [1,2,2,2,2,2,1,1,1,1,0],
+      [1,2,2,2,1,2,1,0,0,0,0],
+      [1,2,2,1,0,1,2,1,0,0,0],
+      [1,2,1,0,0,0,1,2,1,0,0],
+      [1,1,0,0,0,0,0,1,2,1,0],
+      [0,0,0,0,0,0,0,0,1,1,0],
+    ];
+    const cc = document.createElement('canvas');
+    cc.width = map[0].length * S; cc.height = map.length * S;
+    const cctx = cc.getContext('2d');
+    map.forEach((row, r) => row.forEach((v, col) => {
+      if (!v) return;
+      cctx.fillStyle = v === 1 ? '#000' : '#fff';
+      cctx.fillRect(col * S, r * S, S, S);
+    }));
+    const cur = 'url(' + cc.toDataURL() + ') 0 0, auto';
+    document.body.style.cursor = cur;
+    document.documentElement.style.cursor = cur;
+  })();
 </script>
 </body>
 </html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Runner</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 50% 60%, #1c1c3e 0%, #080818 100%);
+    overflow: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── Starfield ──────────────────────────────── */
+  .stars {
+    position: fixed; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at  8% 12%, rgba(255,255,255,.50) 0%, transparent 0%),
+      radial-gradient(1px 1px at 22% 55%, rgba(255,255,255,.35) 0%, transparent 0%),
+      radial-gradient(1px 1px at 37%  8%, rgba(255,255,255,.40) 0%, transparent 0%),
+      radial-gradient(1px 1px at 52% 38%, rgba(255,255,255,.25) 0%, transparent 0%),
+      radial-gradient(1px 1px at 65% 72%, rgba(255,255,255,.45) 0%, transparent 0%),
+      radial-gradient(1px 1px at 78% 20%, rgba(255,255,255,.30) 0%, transparent 0%),
+      radial-gradient(1px 1px at 88% 48%, rgba(255,255,255,.50) 0%, transparent 0%),
+      radial-gradient(1px 1px at 14% 82%, rgba(255,255,255,.35) 0%, transparent 0%),
+      radial-gradient(1px 1px at 44% 90%, rgba(255,255,255,.40) 0%, transparent 0%),
+      radial-gradient(1px 1px at 93% 85%, rgba(255,255,255,.30) 0%, transparent 0%);
+  }
+
+  /* ── Ground line ────────────────────────────── */
+  .ground {
+    position: fixed; bottom: 55px; left: 0; right: 0;
+    height: 1px; pointer-events: none;
+    background: linear-gradient(90deg,
+      transparent 0%, rgba(120,160,255,.20) 20%,
+      rgba(120,160,255,.35) 50%, rgba(120,160,255,.20) 80%, transparent 100%);
+  }
+
+  /* ── Character wrapper ──────────────────────── */
+  #runner-wrap {
+    position: fixed;
+    pointer-events: none;
+    will-change: left, top;
+  }
+
+  /* Shadow under feet */
+  #runner-shadow {
+    position: absolute;
+    bottom: -5px; left: 50%;
+    transform: translateX(-50%);
+    width: 30px; height: 7px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(0,0,0,.55) 0%, transparent 70%);
+    transition: width .08s, opacity .08s;
+  }
+
+  /*
+    Sprite sheet: images_vid/Pixel_RPG.png
+    ─────────────────────────────────────
+    Full size   : 1408 × 768 px
+    Frames      : 8 (horizontal strip)
+    Frame size  : 176 × 768 px each
+
+    Render scale: 35%
+      → scaled image  : 492.8 × 268.8 px  (≈493 × 269)
+      → scaled frame W: 61.6 px            (≈62 px)
+
+    Vertical crop (removes title text + bottom caption):
+      character top  ≈ 19% of 269 ≈  51 px  → background-position-y = -51px
+      character base ≈ 76% of 269 ≈ 204 px
+      display height ≈ 204 - 51     = 153 px
+
+    Tune CLIP_Y and CHAR_H in the <script> below if the crop is off.
+  */
+  #runner {
+    width: 62px;
+    height: 153px;
+    background-image: url('images_vid/Pixel_RPG.png');
+    background-size: 493px 269px;
+    background-repeat: no-repeat;
+    background-position: 0px -51px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  /* ── Dust particles ─────────────────────────── */
+  .dust {
+    position: fixed;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(200, 200, 255, .55);
+    pointer-events: none;
+    animation: dustFade .45s ease-out forwards;
+  }
+  @keyframes dustFade {
+    0%   { transform: translate(0, 0) scale(1); opacity: .6; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(.2); opacity: 0; }
+  }
+
+  /* ── Hint label ─────────────────────────────── */
+  .hint {
+    position: fixed; bottom: 16px; left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,.18);
+    font: 10px/1 'Courier New', monospace;
+    letter-spacing: 3px; text-transform: uppercase;
+    pointer-events: none; user-select: none;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="stars"></div>
+<div class="ground"></div>
+
+<div id="runner-wrap">
+  <div id="runner"></div>
+  <div id="runner-shadow"></div>
+</div>
+
+<p class="hint">Move your mouse — the pixel runner follows you</p>
+
+<script>
+  // ── Sprite / display constants ─────────────────────────────────
+  const TOTAL_FRAMES   = 8;
+  const SCALED_FRAME_W = 62;    // 176 * 0.35
+  const CLIP_Y         = -51;   // shift up to cut title text  ← tune if needed
+  const CHAR_H         = 153;   // visible character height     ← tune if needed
+  const FPS_RUN        = 10;    // animation speed while running (frames / sec)
+  const LERP           = 0.11;  // position smoothness  (0 = frozen, 1 = instant)
+  const MOVE_THRESH    = 1.5;   // px/frame; below this → idle pose
+
+  // ── DOM refs ───────────────────────────────────────────────────
+  const wrap   = document.getElementById('runner-wrap');
+  const runner = document.getElementById('runner');
+  const shadow = document.getElementById('runner-shadow');
+
+  // ── State ──────────────────────────────────────────────────────
+  let targetX = window.innerWidth  / 2;
+  let targetY = window.innerHeight / 2;
+  let posX    = targetX;
+  let posY    = targetY;
+  let prevX   = posX;
+
+  let frame    = 0;
+  let frameMs  = 0;
+  let lastTs   = 0;
+  let facingRight = true;
+
+  // Dust throttle
+  let lastDustX = posX;
+  let dustCooldown = 0;
+
+  // ── Input ──────────────────────────────────────────────────────
+  function updateTarget(x, y) { targetX = x; targetY = y; }
+
+  document.addEventListener('mousemove', e => updateTarget(e.clientX, e.clientY));
+  document.addEventListener('touchmove', e => {
+    e.preventDefault();
+    updateTarget(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: false });
+
+  // ── Dust spawner ───────────────────────────────────────────────
+  function spawnDust(x, y) {
+    for (let i = 0; i < 2; i++) {
+      const d = document.createElement('div');
+      d.className = 'dust';
+      const tx = (Math.random() - .5) * 18;
+      const ty = -(Math.random() * 10 + 4);
+      d.style.setProperty('--tx', tx + 'px');
+      d.style.setProperty('--ty', ty + 'px');
+      d.style.left = (x + (Math.random() - .5) * 20) + 'px';
+      d.style.top  = y + 'px';
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 460);
+    }
+  }
+
+  // ── Main loop ──────────────────────────────────────────────────
+  function tick(ts) {
+    const dt = Math.min(ts - lastTs, 80);   // cap to avoid jumps on tab-switch
+    lastTs = ts;
+
+    // Smooth chase
+    posX += (targetX - posX) * LERP;
+    posY += (targetY - posY) * LERP;
+
+    // Speed + direction
+    const dx    = posX - prevX;
+    const speed = Math.abs(dx);
+    const moving = speed > MOVE_THRESH;
+
+    if (speed > 0.4) facingRight = dx > 0;
+    prevX = posX;
+
+    // Advance frame
+    if (moving) {
+      frameMs += dt;
+      if (frameMs >= 1000 / FPS_RUN) {
+        frameMs -= 1000 / FPS_RUN;
+        frame = (frame + 1) % TOTAL_FRAMES;
+      }
+    } else {
+      frame   = 0;
+      frameMs = 0;
+    }
+
+    // Apply sprite frame  (background-position-x = -frame * frameWidth)
+    runner.style.backgroundPosition =
+      `${-(frame * SCALED_FRAME_W)}px ${CLIP_Y}px`;
+
+    // Flip for left/right direction
+    runner.style.transform = facingRight ? 'scaleX(1)' : 'scaleX(-1)';
+
+    // Position: character feet anchored to cursor Y
+    wrap.style.left = (posX - SCALED_FRAME_W / 2) + 'px';
+    wrap.style.top  = (posY - CHAR_H) + 'px';
+
+    // Shadow pulse with speed
+    const shadowW = Math.max(18, 30 - speed * 1.5);
+    shadow.style.width   = shadowW + 'px';
+    shadow.style.opacity = moving ? '1' : '0.5';
+
+    // Dust puffs (throttled)
+    dustCooldown -= dt;
+    if (moving && dustCooldown <= 0 && Math.abs(posX - lastDustX) > 28) {
+      spawnDust(posX, posY + 2);
+      lastDustX  = posX;
+      dustCooldown = 120;
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+</script>
+</body>
+</html>

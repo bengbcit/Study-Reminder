@@ -12,30 +12,68 @@
 study-reminder/
 ├── landing.html                    # Multi-project hub (ELE + TT + HM)
 ├── index.html                      # ELE main app shell
-├── app.html                        # ELE app (pixel topbar, sidebar)
+├── app.html                        # ELE app (pixel topbar, sidebar, Pixel Runner)
+├── pixel_runner.html               # Pixel Runner standalone mini-game
 ├── vocab_ultimate_bilingual.html   # Thesaurus Trove standalone app
+├── design-wizard.html              # Design wizard tool
 ├── vercel.json                     # Routing + body-size config
+├── hm_qa_agent.py                  # Happy Meal QA automation agent
+├── thesaurus_trove_qa.py           # Thesaurus Trove QA automation agent
 ├── css/
 │   └── style.css
 ├── js/
-│   ├── firebase-config.js
+│   ├── firebase-config.js          
 │   ├── firebase-init.js            # Auth + avatar dropdown UX
-│   ├── i18n.js
-│   ├── state.js
+│   ├── i18n.js                     # Language switcher + translation function
+│   ├── state.js                    
 │   ├── app.js
 │   ├── subjects.js / remind.js / timer.js
 │   ├── report.js / calendar.js / stats.js
 │   ├── rewards.js / keys.js / notion.js / theme.js
 │   └── auth.js
-└── api/
-    ├── encourage.js                # Claude AI encouragement
-    ├── notion.js                   # Notion proxy
-    └── extract-pdf.js              # Gemini PDF → vocab extraction
+├── images_vid/
+│   ├── Pixel_RPG.png               # Pixel Runner idle character sprite
+│   ├── Running_RPG.png             # Pixel Runner running character sprite
+│   └── ...                         # Background images and videos
+├── api/
+│   ├── encourage.js                # Claude AI encouragement
+│   ├── notion.js                   # Notion proxy
+│   ├── extract-pdf.js              # Gemini PDF → vocab extraction
+│   ├── generate-bg.js              # Stability AI background generation
+│   ├── generate-avatar.js          # Stability AI avatar generation
+│   ├── seedance.js                 # Seedance video generation
+│   └── word-fill.js                # Word fill game API
+└── docs/
+    └── superpowers/                # Plans and specs
 ```
 
 ---
 
 ## Changelog / 変更履歴
+
+### V1.3 — Pixel Runner Game + New API Endpoints (2026-05-04)
+
+**English:**
+
+- **Pixel Runner mini-game** — new `pixel_runner.html` standalone game page; also embedded as a widget in `app.html`, `landing.html`, and `vocab_ultimate_bilingual.html`
+- **Canvas-based character rendering** — character sprite switched to `<canvas>` for smoother frame-by-frame animation and layered visual effects
+- **Enhanced dust particle effects** — improved dust trail animation with per-frame rendering and better timing
+- **Map scale adjustments** — gameplay map scale tuned across all HTML embeds for a more balanced in-browser feel
+- **New sprite assets** — added `images_vid/Pixel_RPG.png` (idle) and `images_vid/Running_RPG.png` (running) character sprites
+- **New API endpoints** — `api/seedance.js` (Seedance video generation), `api/word-fill.js` (word fill game), `api/generate-bg.js` & `api/generate-avatar.js` (Stability AI image generation)
+- **QA agents** — added `hm_qa_agent.py` and `thesaurus_trove_qa.py` for automated QA testing
+
+**日本語：**
+
+- **Pixel Runner ミニゲーム** — 新規スタンドアロンページ `pixel_runner.html` を追加；`app.html`・`landing.html`・`vocab_ultimate_bilingual.html` にもウィジェットとして埋め込み
+- **キャンバスベースのキャラクター描画** — `<canvas>` を使ったフレームアニメーションに切り替え、エフェクトの重ね描きが可能に
+- **ダスト（ほこり）エフェクト強化** — フレームごとの描画タイミングを改善し、より滑らかなダストトレイルを実現
+- **マップスケール調整** — 全HTMLファイルのゲーム内マップスケールをブラウザ表示に最適化
+- **新スプライト素材** — `images_vid/Pixel_RPG.png`（待機）および `images_vid/Running_RPG.png`（走行）を追加
+- **新APIエンドポイント** — `api/seedance.js`（Seedance動画生成）、`api/word-fill.js`（穴埋めゲーム）、`api/generate-bg.js` & `api/generate-avatar.js`（Stability AI 画像生成）
+- **QAエージェント** — `hm_qa_agent.py` および `thesaurus_trove_qa.py` による自動テストスクリプトを追加
+
+---
 
 ### V1.2 — Multi-Project Platform + AI PDF Vocab Extraction (2026-04-23)
 

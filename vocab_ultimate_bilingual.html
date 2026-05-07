@@ -826,6 +826,7 @@ const I18N = {
     pdfFoundLbl:'Found {n} words — select to import:',
     mmEmptyLbl:'Choose a category or tap 🔗 on a word card',bgToggleLbl:'BG Video',
     cqBtn:'🔵 変形クイズ — Conjugation Quiz',kgBtn:'🎌 敬語クイズ — Keigo Quiz',pdfLangJp:'🇯🇵 Japanese',
+    qModeLbl:'Mode',qDirLbl:'Direction',qPoolLbl:'Pool',qCntLbl:'Count',spellPH:'Type the word...',
   },
   jp: {
     logo:'日本語単語',logoSub:'⇄ English',
@@ -887,6 +888,7 @@ const I18N = {
     pdfFoundLbl:'{n} 語を発見 — 選んでください：',
     mmEmptyLbl:'カテゴリー選択または単語の 🔗 をタップ',bgToggleLbl:'背景板',
     cqBtn:'🔵 変形クイズ — 活用テスト',kgBtn:'🎌 敬語クイズ — 敬語テスト',pdfLangJp:'🇯🇵 日本語',
+    qModeLbl:'モード',qDirLbl:'方向',qPoolLbl:'範囲',qCntLbl:'問題数',spellPH:'単語を入力...',
   },
   zh: {
     logo:'中文词汇',logoSub:'⇄ English',
@@ -948,6 +950,7 @@ const I18N = {
     pdfFoundLbl:'找到 {n} 个词 — 选择要导入的：',
     mmEmptyLbl:'选择分类或点击单词上的 🔗',bgToggleLbl:'背景板',
     cqBtn:'🔵 変形クイズ — 变形测试',kgBtn:'🎌 敬語クイズ — 敬语测试',pdfLangJp:'🇯🇵 日語',
+    qModeLbl:'模式',qDirLbl:'方向',qPoolLbl:'题库',qCntLbl:'题数',spellPH:'输入单词...',
   }
 };
 
@@ -973,10 +976,10 @@ function T(){ // apply translations to static elements
   document.getElementById('opt-due').textContent=i.sortDue;
   renderBulkCard();
   document.getElementById('btn-startquiz').textContent=i.startQuiz;
-  document.getElementById('lbl-qmode').textContent='Mode';
-  document.getElementById('lbl-qdir').textContent='Direction';
-  document.getElementById('lbl-qpool').textContent='Pool';
-  document.getElementById('lbl-qcnt').textContent='Count';
+  document.getElementById('lbl-qmode').textContent=i.qModeLbl;
+  document.getElementById('lbl-qdir').textContent=i.qDirLbl;
+  document.getElementById('lbl-qpool').textContent=i.qPoolLbl;
+  document.getElementById('lbl-qcnt').textContent=i.qCntLbl;
   document.getElementById('qm-mc').textContent=i.qModes[0];
   document.getElementById('qm-spell').textContent=i.qModes[1];
   document.getElementById('qm-flip').textContent=i.qModes[2];
@@ -1043,6 +1046,11 @@ function T(){ // apply translations to static elements
   _si('btn-kg-open',t('kgBtn'));
   // More section — PDF language selector
   _si('pdf-lang-jp',t('pdfLangJp'));
+  // Quiz game — spell check button and input placeholder
+  _si('btn-check',i.checkBtn);
+  const spellEl=document.getElementById('spellInp');if(spellEl)spellEl.placeholder=i.spellPH;
+  // Map section — category dropdown default option
+  const mapOpt=document.querySelector('#mapCat option[value=""]');if(mapOpt)mapOpt.textContent=i.catPH;
 }
 
 // ─── LANG SWITCH ─────────────────────────────────────
@@ -1669,7 +1677,7 @@ function rw(){
 
 function toggleMaster(i){cw()[i].mastered=!cw()[i].mastered;save();rw();}
 function deleteWord(i){const w=cw()[i];if(confirm(t('deleteStart')+w.word+t('deleteEnd'))){cw().splice(i,1);save();rw();buildCatFilter();notify(t('deletedMsg'));}}
-function editWord(i){const w=cw()[i];const copy=JSON.parse(JSON.stringify(w));cw().splice(i,1);save();sw('add');renderAddForm(copy);}
+function editWord(i){const w=cw()[i];const copy=JSON.parse(JSON.stringify(w));cw().splice(i,1);save();sw('add');renderAddForm(copy);renderBulkCard();}
 function mapWord(i){const w=cw()[i];if(!w.rel){notify(t('mapNeedRel'));return;}sw('map');setTimeout(()=>buildMapForWord(w),80);}
 
 // ─── SPEECH ───────────────────────────────────────────

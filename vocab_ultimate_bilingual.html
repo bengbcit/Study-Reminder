@@ -1654,7 +1654,7 @@ function buildCatFilter(){
 
 function updateQuizPool(){
   const sel=document.getElementById('q-cat'); if(!sel)return;
-  const baseopts=`<option value="">All</option><option value="hard">${I18N[lang].qPool[1]}</option><option value="due">${I18N[lang].qPool[2]}</option>`;
+  const baseopts=`<option value="">All</option><option value="hard" id="qp-hard">${I18N[lang].qPool[1]}</option><option value="due" id="qp-due">${I18N[lang].qPool[2]}</option>`;
   const cats=[...new Set(cw().flatMap(w=>[w.level,w.cat].filter(Boolean)))];
   sel.innerHTML=baseopts+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
 }

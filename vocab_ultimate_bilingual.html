@@ -445,6 +445,14 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
 <!-- ADD -->
 <div class="sec" id="tab-add">
 <div class="sec-title">✏️ <span id="sec-lbl-add">Add</span></div>
+  <div class="card" style="margin-bottom:9px">
+    <div style="font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:8px" id="lbl-add-new">Add New Word</div>
+    <div style="display:flex;gap:6px">
+      <button class="bg-btn" id="btn-add-zh" style="flex:1;font-size:12px" onclick="sw_addLang('zh')">单词</button>
+      <button class="bg-btn" id="btn-add-jp" style="flex:1;font-size:12px" onclick="sw_addLang('jp')">単語</button>
+      <button class="bg-btn" id="btn-add-en" style="flex:1;font-size:12px" onclick="sw_addLang('en')">Vocabulary</button>
+    </div>
+  </div>
   <div class="card" style="margin-bottom:9px" id="addFormCard">
     <!-- Dynamic form rendered by JS -->
   </div>
@@ -827,6 +835,7 @@ const I18N = {
     mmEmptyLbl:'Choose a category or tap 🔗 on a word card',bgToggleLbl:'BG Video',
     cqBtn:'🔵 変形クイズ — Conjugation Quiz',kgBtn:'🎌 敬語クイズ — Keigo Quiz',pdfLangJp:'🇯🇵 Japanese',
     qModeLbl:'Mode',qDirLbl:'Direction',qPoolLbl:'Pool',qCntLbl:'Count',spellPH:'Type the word...',
+    addNewWord:'Add New Word',transInputPH:'Enter text...',
   },
   jp: {
     logo:'日本語単語',logoSub:'⇄ English',
@@ -889,6 +898,7 @@ const I18N = {
     mmEmptyLbl:'カテゴリー選択または単語の 🔗 をタップ',bgToggleLbl:'背景板',
     cqBtn:'🔵 変形クイズ — 活用テスト',kgBtn:'🎌 敬語クイズ — 敬語テスト',pdfLangJp:'🇯🇵 日本語',
     qModeLbl:'モード',qDirLbl:'方向',qPoolLbl:'範囲',qCntLbl:'問題数',spellPH:'単語を入力...',
+    addNewWord:'新規単語追加',transInputPH:'テキストを入力...',
   },
   zh: {
     logo:'中文词汇',logoSub:'⇄ English',
@@ -951,6 +961,7 @@ const I18N = {
     mmEmptyLbl:'选择分类或点击单词上的 🔗',bgToggleLbl:'背景板',
     cqBtn:'🔵 変形クイズ — 变形测试',kgBtn:'🎌 敬語クイズ — 敬语测试',pdfLangJp:'🇯🇵 日語',
     qModeLbl:'模式',qDirLbl:'方向',qPoolLbl:'题库',qCntLbl:'题数',spellPH:'输入单词...',
+    addNewWord:'添加新单词',transInputPH:'输入文字...',
   }
 };
 
@@ -1051,6 +1062,15 @@ function T(){ // apply translations to static elements
   const spellEl=document.getElementById('spellInp');if(spellEl)spellEl.placeholder=i.spellPH;
   // Map section — category dropdown default option
   const mapOpt=document.querySelector('#mapCat option[value=""]');if(mapOpt)mapOpt.textContent=i.catPH;
+  // Translate tab — textarea placeholder
+  const transInp=document.getElementById('transInput');if(transInp)transInp.placeholder=i.transInputPH;
+  // Add section — header label + active button highlight
+  _si('lbl-add-new',i.addNewWord);
+  ['zh','jp','en'].forEach(l=>{
+    const btn=document.getElementById('btn-add-'+l);
+    if(btn)btn.style.borderColor=l===lang?'var(--acc)':'';
+    if(btn)btn.style.color=l===lang?'var(--acc2)':'';
+  });
 }
 
 // ─── LANG SWITCH ─────────────────────────────────────
@@ -1071,6 +1091,21 @@ function switchLang(){
   updateQuizPool();
   renderHist(); // update mode labels in quiz history
   notify(lang==='en'?'Switched to English 🇬🇧':lang==='jp'?'已切換到日語 🇯🇵':'已切換到中文 🇨🇳');
+}
+
+// Switch active word library from Add tab buttons (zh/jp/en)
+function sw_addLang(targetLang){
+  lang = targetLang;
+  localStorage.setItem('vocabLang', targetLang);
+  document.getElementById('goalN').value=localStorage.getItem(targetLang+'Goal')||5;
+  T();
+  renderHome();
+  buildCatFilter();
+  rw();
+  renderAddForm();
+  renderBulkCard();
+  renderTransTab();
+  updateQuizPool();
 }
 
 // ─── SAVE/LOAD ────────────────────────────────────────

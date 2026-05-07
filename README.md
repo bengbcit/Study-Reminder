@@ -8,45 +8,24 @@
 
 ## Project Structure / プロジェクト構造
 
-```
-study-reminder/
-├── landing.html                    # Multi-project hub (ELE + TT + HM)
-├── index.html                      # ELE main app shell
-├── app.html                        # ELE app (pixel topbar, sidebar, Pixel Runner)
-├── pixel_runner.html               # Pixel Runner standalone mini-game
-├── vocab_ultimate_bilingual.html   # Thesaurus Trove standalone app
-├── design-wizard.html              # Design wizard tool
-├── vercel.json                     # Routing + body-size config
-├── hm_qa_agent.py                  # Happy Meal QA automation agent
-├── thesaurus_trove_qa.py           # Thesaurus Trove QA automation agent
-├── css/
-│   └── style.css
-├── js/
-│   ├── firebase-config.js          
-│   ├── firebase-init.js            # Auth + avatar dropdown UX
-│   ├── i18n.js                     # Language switcher + translation function
-│   ├── state.js                    
-│   ├── app.js
-│   ├── subjects.js / remind.js / timer.js
-│   ├── report.js / calendar.js / stats.js
-│   ├── rewards.js / keys.js / notion.js / theme.js
-│   └── auth.js
-├── images_vid/
-│   ├── Pixel_RPG.png               # Pixel Runner idle character sprite
-│   ├── Running_RPG.png             # Pixel Runner running character sprite
-│   └── ...                         # Background images and videos
-├── api/
-│   ├── encourage.js                # Claude AI encouragement
-│   ├── notion.js                   # Notion proxy
-│   ├── extract-pdf.js              # Gemini PDF → vocab extraction
-│   ├── generate-bg.js              # Stability AI background generation
-│   ├── generate-avatar.js          # Stability AI avatar generation
-│   ├── seedance.js                 # Seedance video generation
-│   └── word-fill.js                # Word fill game API
-└── docs/
-    └── superpowers/                # Plans and specs
-```
 
+## 📁 Project Structure / プロジェクト構造
+
+```bash
+study-reminder/                          # Efficient Learning Engine / 学習リマインダー
+├── CLAUDE.md                            # Core Guidelines / 核心規則
+├── .claude/context.md                   # Project Context / 詳細コンテキスト
+├── index.html                           # Main App
+├── landing.html                         # Multi-Project Hub
+├── css/style.css
+├── js/
+│   ├── app.js                           # Main + Routing
+│   ├── firebase-init.js                 # Firebase Auth
+│   ├── report.js                        # Daily Report + AI
+│   └── ... (subjects, timer, rewards...)
+├── api/                                 # Serverless API
+└── images_vid/                          # Assets
+```
 ---
 
 ## Changelog / 変更履歴

@@ -470,8 +470,8 @@ button{cursor:pointer;border:none;border-radius:8px;padding:7px 12px;font-size:1
       </div>
     </div>
     <button class="bp" style="width:100%;padding:10px" onclick="startQuiz()" id="btn-startquiz">Start Quiz</button>
-    <button class="bg-btn" style="width:100%;padding:9px;margin-top:6px;border-color:var(--acc);color:var(--acc2);font-size:12px" onclick="cqOpen()">🔵 変形クイズ — Conjugation Quiz</button>
-    <button class="bg-btn" style="width:100%;padding:9px;margin-top:6px;border-color:#f59e0b;color:#f59e0b;font-size:12px" onclick="kgOpen()">🎌 敬語クイズ — Keigo Quiz</button>
+    <button class="bg-btn" id="btn-cq-open" style="width:100%;padding:9px;margin-top:6px;border-color:var(--acc);color:var(--acc2);font-size:12px" onclick="cqOpen()">🔵 変形クイズ — Conjugation Quiz</button>
+    <button class="bg-btn" id="btn-kg-open" style="width:100%;padding:9px;margin-top:6px;border-color:#f59e0b;color:#f59e0b;font-size:12px" onclick="kgOpen()">🎌 敬語クイズ — Keigo Quiz</button>
     <div id="qHist" style="margin-top:10px"></div>
   </div>
   <div id="qGame" style="display:none">
@@ -825,6 +825,7 @@ const I18N = {
     pdfSelAll:'Select All',pdfDeselAll:'Deselect',pdfImportBtnLbl:'⬇ Import Selected',
     pdfFoundLbl:'Found {n} words — select to import:',
     mmEmptyLbl:'Choose a category or tap 🔗 on a word card',bgToggleLbl:'BG Video',
+    cqBtn:'🔵 変形クイズ — Conjugation Quiz',kgBtn:'🎌 敬語クイズ — Keigo Quiz',pdfLangJp:'🇯🇵 Japanese',
   },
   jp: {
     logo:'日本語単語',logoSub:'⇄ English',
@@ -885,6 +886,7 @@ const I18N = {
     pdfSelAll:'全選択',pdfDeselAll:'解除',pdfImportBtnLbl:'⬇ インポート',
     pdfFoundLbl:'{n} 語を発見 — 選んでください：',
     mmEmptyLbl:'カテゴリー選択または単語の 🔗 をタップ',bgToggleLbl:'背景板',
+    cqBtn:'🔵 変形クイズ — 活用テスト',kgBtn:'🎌 敬語クイズ — 敬語テスト',pdfLangJp:'🇯🇵 日本語',
   },
   zh: {
     logo:'中文词汇',logoSub:'⇄ English',
@@ -945,6 +947,7 @@ const I18N = {
     pdfSelAll:'全选',pdfDeselAll:'取消',pdfImportBtnLbl:'⬇ 导入选中',
     pdfFoundLbl:'找到 {n} 个词 — 选择要导入的：',
     mmEmptyLbl:'选择分类或点击单词上的 🔗',bgToggleLbl:'背景板',
+    cqBtn:'🔵 変形クイズ — 变形测试',kgBtn:'🎌 敬語クイズ — 敬语测试',pdfLangJp:'🇯🇵 日語',
   }
 };
 
@@ -1035,6 +1038,11 @@ function T(){ // apply translations to static elements
   _si('mmEmpty',t('mmEmptyLbl'));
   // BG toggle button text
   _si('lbl-bg-toggle',t('bgToggleLbl'));
+  // Quiz section — conjugation & keigo buttons
+  _si('btn-cq-open',t('cqBtn'));
+  _si('btn-kg-open',t('kgBtn'));
+  // More section — PDF language selector
+  _si('pdf-lang-jp',t('pdfLangJp'));
 }
 
 // ─── LANG SWITCH ─────────────────────────────────────
